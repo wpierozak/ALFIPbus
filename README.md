@@ -5,7 +5,7 @@
 ### Class: DimRpcParallel
 
 ### Constructors:  
-`
+\
 * public DimRpcParallel ( char * name, char * format_in, char *format_out, int bank) ; First parameter is the Service Name. The format parameters specifies the contents of the data to be received (format_in) and to be sent in response (format_out) in the in the form described here. Bank is non-negative integer, services registered in same bank are executed sequentially, different banks are executed in parallel.
 `
 ### Destructors:
