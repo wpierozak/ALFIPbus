@@ -1,6 +1,6 @@
 # DimRpcParallel
 
-## Usage
+## Description
 
 ### Class: DimRpcParallel
 
