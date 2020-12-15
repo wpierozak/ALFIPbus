@@ -17,7 +17,9 @@
 Handler: Gets Called when an RPC is requested by a Client (DimRpcInfo) 
 `
 * virtual void rpcHandler ( ) ; // Has to be provided by the user.
+`
 Get Methods: To be used inside rpcHandler in order to get the data received from the client 
+`
 * int getInt ( ) ; // Get an Integer
 * float getFloat ( ) ;
 * double getDouble ( );
@@ -26,7 +28,9 @@ Get Methods: To be used inside rpcHandler in order to get the data received from
 * const char *getString ( );
 * int getSize ( ); //Get the size of the data (for complex types)
 * void *getData ( ); //Get the data (for complex types)
+`
 Set Methods: To be used inside rpcHandler in order to send the result back to the client 
+`
 * int setData ( int &value) ; //Send back an Integer
 * int setData ( float &value) ;
 * int setData ( double &value) ;
