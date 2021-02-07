@@ -3,8 +3,8 @@
 
 #include <dim/dis.hxx>
 
-#include "dimrpcqueue.h"
-#include "dimrpcparallel.h"
+#include "DimRpcParallel/dimrpcqueue.h"
+#include "DimRpcParallel/dimrpcparallel.h"
 
 class DimCommandParallel: public DimCommand
 {

@@ -1,5 +1,5 @@
-#include "dimrpcparallel.h"
-#include "dimcommandparallel.h"
+#include "DimRpcParallel/dimrpcparallel.h"
+#include "DimRpcParallel/dimcommandparallel.h"
 
 #include <string>
 

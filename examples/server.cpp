@@ -4,7 +4,7 @@
 #include <signal.h>
 #include <mutex>
 #include <sys/time.h>
-#include "dimrpcparallel.h"
+#include "DimRpcParallel/dimrpcparallel.h"
 
 using namespace std;
 

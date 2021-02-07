@@ -7,7 +7,7 @@
 #include <condition_variable>
 #include <atomic>
 
-#include "dimrpcparallel.h"
+#include "DimRpcParallel/dimrpcparallel.h"
 
 class DimRpcQueue
 {

@@ -1,4 +1,4 @@
-#include "dimcommandparallel.h"
+#include "DimRpcParallel/dimcommandparallel.h"
 
 DimCommandParallel::DimCommandParallel(const char *name, const char *format, DimRpcQueue *queue, DimRpcParallel *rpc): DimCommand(name, format)
 {

@@ -1,4 +1,4 @@
-#include "dimrpcqueue.h"
+#include "DimRpcParallel/dimrpcqueue.h"
 
 DimRpcQueue::DimRpcQueue()
 {
