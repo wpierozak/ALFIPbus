@@ -1,5 +1,36 @@
 #include "DimRpcParallel/dimrpcqueue.h"
 
+DimRpcQueue::QueueLock::QueueLock(uint32_t capacity)
+{
+    this->available = 0;
+    this->capacity = capacity;
+}
+
+DimRpcQueue::QueueLock::~QueueLock()
+{
+    notify();
+}
+
+void DimRpcQueue::QueueLock::wait()
+{
+    std::unique_lock<std::mutex> guard(this->lock);
+    while (!this->available)
+    {
+        this->condition.wait(guard);
+    }
+    --this->available;
+}
+
+void DimRpcQueue::QueueLock::notify()
+{
+    std::lock_guard<std::mutex> guard(this->lock);
+    if (this->available < this->capacity)
+    {
+        ++this->available;
+    }
+    this->condition.notify_one();
+}
+
 DimRpcQueue::DimRpcQueue()
 {
     this->running = true;
@@ -9,19 +40,16 @@ DimRpcQueue::DimRpcQueue()
 DimRpcQueue::~DimRpcQueue()
 {
     this->running = false;
-    this->requestWait.notify_one();
+    queueLock.notify();
     this->threadRef->join();
     delete this->threadRef;
 }
 
 void DimRpcQueue::processRequests()
 {
-    std::mutex requestMutex;
-    std::unique_lock<std::mutex> requestLock(requestMutex);
-
     while (this->running)
     {
-        this->requestWait.wait(requestLock);
+        queueLock.wait();
 
         while (!this->requests.empty())
         {
@@ -54,5 +82,5 @@ void DimRpcQueue::newRequest(DimRpcParallel* referer, int clientId, void* data, 
 
     std::lock_guard<std::mutex> lock(this->accessMutex);
     this->requests.push_back(request);
-    this->requestWait.notify_one();
+    queueLock.notify();
 }

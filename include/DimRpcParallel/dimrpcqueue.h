@@ -25,12 +25,27 @@ public:
         int size;
     };
 
+    class QueueLock
+    {
+    private:
+        std::mutex lock;
+        std::condition_variable condition;
+        uint32_t available, capacity;
+
+    public:
+        QueueLock(uint32_t capacity = 0xFFFFFFFF);
+        ~QueueLock();
+
+        void wait();
+        void notify();
+    };
+
 private:
     std::thread* threadRef;
     std::atomic_bool running;
 
     std::mutex accessMutex;
-    std::condition_variable requestWait;
+    QueueLock queueLock;
 
     void processRequests();
     std::list<Request> requests;
