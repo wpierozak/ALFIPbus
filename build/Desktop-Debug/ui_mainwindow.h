@@ -11,7 +11,7 @@
 
 #include <QtCore/QVariant>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QLabel>
+#include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QPushButton>
@@ -25,11 +25,10 @@ class Ui_MainWindow
 {
 public:
     QWidget *centralwidget;
-    QTextEdit *in;
-    QLabel *label;
-    QLabel *label_2;
-    QTextEdit *out;
-    QPushButton *send;
+    QLineEdit *input;
+    QPushButton *send_ip;
+    QLineEdit *lineEdit_2;
+    QTextEdit *debug;
     QMenuBar *menubar;
     QStatusBar *statusbar;
 
@@ -40,21 +39,18 @@ public:
         MainWindow->resize(800, 600);
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
-        in = new QTextEdit(centralwidget);
-        in->setObjectName(QString::fromUtf8("in"));
-        in->setGeometry(QRect(210, 100, 261, 41));
-        label = new QLabel(centralwidget);
-        label->setObjectName(QString::fromUtf8("label"));
-        label->setGeometry(QRect(30, 110, 66, 17));
-        label_2 = new QLabel(centralwidget);
-        label_2->setObjectName(QString::fromUtf8("label_2"));
-        label_2->setGeometry(QRect(30, 190, 66, 17));
-        out = new QTextEdit(centralwidget);
-        out->setObjectName(QString::fromUtf8("out"));
-        out->setGeometry(QRect(210, 170, 261, 41));
-        send = new QPushButton(centralwidget);
-        send->setObjectName(QString::fromUtf8("send"));
-        send->setGeometry(QRect(500, 110, 88, 25));
+        input = new QLineEdit(centralwidget);
+        input->setObjectName(QString::fromUtf8("input"));
+        input->setGeometry(QRect(50, 70, 351, 25));
+        send_ip = new QPushButton(centralwidget);
+        send_ip->setObjectName(QString::fromUtf8("send_ip"));
+        send_ip->setGeometry(QRect(440, 70, 88, 25));
+        lineEdit_2 = new QLineEdit(centralwidget);
+        lineEdit_2->setObjectName(QString::fromUtf8("lineEdit_2"));
+        lineEdit_2->setGeometry(QRect(50, 150, 351, 25));
+        debug = new QTextEdit(centralwidget);
+        debug->setObjectName(QString::fromUtf8("debug"));
+        debug->setGeometry(QRect(50, 200, 731, 321));
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName(QString::fromUtf8("menubar"));
@@ -72,9 +68,7 @@ public:
     void retranslateUi(QMainWindow *MainWindow)
     {
         MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "MainWindow", nullptr));
-        label->setText(QCoreApplication::translate("MainWindow", "SWT IN", nullptr));
-        label_2->setText(QCoreApplication::translate("MainWindow", "SWT OUT", nullptr));
-        send->setText(QCoreApplication::translate("MainWindow", "Send", nullptr));
+        send_ip->setText(QCoreApplication::translate("MainWindow", "Send", nullptr));
     } // retranslateUi
 
 };

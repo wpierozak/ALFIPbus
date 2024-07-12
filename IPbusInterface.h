@@ -13,8 +13,8 @@
 class IPbusTarget: public QObject {
     Q_OBJECT
     const quint16 localport;
-    /** @brief Handles communication via UDP*/          
-    QUdpSocket *qsocket = new QUdpSocket(this);     
+    /** @brief Handles communication via UDP*/
+    QUdpSocket *qsocket = new QUdpSocket(this);
     /** @brief Packet used in the connection diagnostic*/
     const StatusPacket statusRequest;
     /** @brief Response from the remote site involved in the connection diagnostic*/
@@ -24,12 +24,12 @@ class IPbusTarget: public QObject {
 
 public:
     /** @brief IP address of the remote site */
-    QString IPaddress = "172.20.75.180";
+    QString IPaddress;
     bool isOnline = false;
     QTimer *updateTimer = new QTimer(this);
     quint16 updatePeriod_ms = 1000;
 
-    IPbusTarget(quint16 lport = 0) : localport(lport) {
+    IPbusTarget(QString address = "172.20.75.180", quint16 lport = 0) : localport(lport), IPaddress(address)  {
         qRegisterMetaType<errorType>("errorType");
         qRegisterMetaType<QAbstractSocket::SocketError>("socketError");
         updateTimer->setTimerType(Qt::PreciseTimer);

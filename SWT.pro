@@ -18,6 +18,7 @@ HEADERS += \
     IPbusHeaders.h \
     IPbusInterface.h \
     SWT.h \
+    SWTelectronics.h \
     ipbusswt.h \
     mainwindow.h
 

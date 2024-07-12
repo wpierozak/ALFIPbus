@@ -1,43 +1,42 @@
 #ifndef IPBUSSWT_H
 #define IPBUSSWT_H
-#include"IPbusInterface.h"
 #include"SWT.h"
+#include"IPbusControlPacket.h"
 
-class IPbusSWT: public IPbusTarget
+class IPbusSWT_Packet
 {
 public:
-    IPbusSWT(QString address, quint16 lport): IPbusTarget(lport)
+    IPbusSWT_Packet()
     {
-        IPaddress = address;
-        reconnect();
+
     }
 
-    void add_transaction(const char* str)
+    void add_transaction(const quint8* bytes)
     {
-        frames.push_back(string_to_swt(str));
-        r_frames.push_back(swt_ready(frames.back()));
-        if(r_frames.back().type == SWT_IPBUS_READY::Type::Read)
-            packet.addTransaction(TransactionType::ipread, r_frames.back().address, &r_frames.back().data, 1);
+        swt_req.push_back(byte_to_swt(bytes));
+        rswt.push_back(swt_ready(swt_req.back()));
+        if(rswt.back().type == SWT_IPBUS_READY::Type::Read)
+            packet.addTransaction(TransactionType::ipread, rswt.back().address, &rswt.back().data, 1);
         else
-            packet.addTransaction(TransactionType::ipwrite, r_frames.back().address, &r_frames.back().data, 1);
+            packet.addTransaction(TransactionType::ipwrite, rswt.back().address, &rswt.back().data, 1);
     }
 
     void swt_response(SWT frame, SWT_IPBUS_READY r_frame)
     {
         if(r_frame.type == SWT_IPBUS_READY::Type::Write)
-            responses.push_back(frame);
+            swt_res.push_back(frame);
         frame.data = r_frame.data;
-        responses.push_back(frame);
+        swt_res.push_back(frame);
     }
 
-    void sync() final
+    void translate_response(int transaction_id)
     {
-        reconnect();
+        swt_response(swt_req[transaction_id], rswt[transaction_id]);
     }
 
-    QList<SWT> responses;
-    QList<SWT> frames;
-    QList<SWT_IPBUS_READY> r_frames;
+    QList<SWT> swt_res;
+    QList<SWT> swt_req;
+    QList<SWT_IPBUS_READY> rswt;
     IPbusControlPacket packet;
 };
 

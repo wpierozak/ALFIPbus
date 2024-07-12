@@ -29,8 +29,7 @@ union word
 
 quint8 charToHex(char ch);
 quint8 string_to_byte(char c1, char c2);
-
-
+char hexToChar(uint8_t hex);
         /*      SWT     */
 
 
@@ -41,11 +40,13 @@ struct SWT
     quint32 module     : 7;
     quint32 mode       : 1;
     quint32 blank_A    : 32;
-    quint32 blank_B    : 32;
-    quint32 ID         : 4;
+    quint32 blank_B    : 12;
+    quint32 SWT_ID     : 4;
 };
 
 SWT string_to_swt(const char* str);
+SWT byte_to_swt(const quint8* bytes);
+void swt_to_byte(SWT swt, quint8* bytes);
 
 struct SWT_IPBUS_READY
 {
