@@ -8,7 +8,9 @@ m_local_endpoint(boost::asio::ip::udp::v4(), lport),
 m_remote_endpoint(boost::asio::ip::address::from_string(address), rport),
 m_socket(io_service)
 {
+    std::cerr << "Connecting to " + address << std::endl;
     m_socket.connect(m_remote_endpoint);
+    std::cerr << "Connected successfully\n";
     start_async_recv();
 }
 
