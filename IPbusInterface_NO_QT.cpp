@@ -10,7 +10,13 @@ m_socket(io_service)
 {
     std::cerr << "Connecting to " + address << std::endl;
     m_socket.connect(m_remote_endpoint);
-    std::cerr << "Connected successfully\n";
+    if(m_socket.is_open())
+    {
+        std::cerr << "Connected successfully\n";
+    }
+    else{
+        std::cerr << "Connection failed!\n";
+    }
     start_async_recv();
 }
 
