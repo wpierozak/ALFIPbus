@@ -23,6 +23,7 @@ void IPbusTarget::handle_recv(const boost::system::error_code& error, std::size_
 {
     if(error) return;
     std::memcpy((char*)&m_packet.response, m_buffer, bytes_transferred);
+    std::cout<<"\nMessage recevieved\n!";
 }
 
 bool IPbusTarget::reconnect()
