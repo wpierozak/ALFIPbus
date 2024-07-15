@@ -23,12 +23,17 @@ void IPbusTarget::start_async_recv()
 
 void IPbusTarget::handle_recv(const boost::system::error_code& error, std::size_t bytes_transferred)
 {
-    if(error) return;
+     if (error) {
+        std::cerr << "Receive error: " << error.message() << std::endl;
+        return;
+    }
     std::memcpy((char*)&m_packet.response, m_buffer, bytes_transferred);
-    std::cout<<"\nMessage recevieved\n!";
+    std::cout << "Message received: " << std::string(m_buffer, bytes_transferred) << std::endl;
+    start_async_recv();  // Start receiving the next message
 }
 
 bool IPbusTarget::reconnect()
 {
+    std::cerr<< "Reconnecting to " + m_IPaddress << std::endl;
     m_socket.send_to(boost::asio::buffer((char*)&m_status, sizeof(StatusPacket)), m_remote_endpoint);
 }
