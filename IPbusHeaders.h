@@ -19,6 +19,27 @@
 #include<cstdint>
 #include<cstring>
 #include<string>
+#include <climits>
+
+template <typename T>
+T swap_endian(T u)
+{
+    static_assert (CHAR_BIT == 8, "CHAR_BIT != 8");
+
+    union
+    {
+        T u;
+        unsigned char u8[sizeof(T)];
+    } source, dest;
+
+    source.u = u;
+
+    for (size_t k = 0; k < sizeof(T); k++)
+        dest.u8[k] = source.u8[sizeof(T) - k - 1];
+
+    return dest.u;
+}
+
 /**
  * @brief Size of one word in bytes
 */
@@ -130,7 +151,7 @@ struct Transaction {
 /** @brief A struct containing definition of the packet used to check the connection
 */
 struct StatusPacket {
-    PacketHeader header = __builtin_bswap32(uint32_t(PacketHeader(status))); //0x200000F1: {0xF1, 0, 0, 0x20} -> {0x20, 0, 0, 0xF1}
+    PacketHeader header = swap_endian<uint32_t>(uint32_t(PacketHeader(status))); //0x200000F1: {0xF1, 0, 0, 0x20} -> {0x20, 0, 0, 0xF1}
     uint32_t MTU = 0,
         nResponseBuffers = 0,
         nextPacketID = 0;
