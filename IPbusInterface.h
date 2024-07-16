@@ -39,8 +39,8 @@ class IPbusTarget
 
     // Async communication //
 
-    void IPbusTarget::start_async_recv();
-    void IPbusTarget::handle_recv(const boost::system::error_code& error, std::size_t bytes_transferred);
+    void start_async_recv();
+    void handle_recv(const boost::system::error_code& error, std::size_t bytes_transferred);
 
     char m_async_buffer[IO_BUFFER_SIZE];
 
