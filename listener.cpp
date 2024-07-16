@@ -36,16 +36,16 @@ private:
         if (!error || error == boost::asio::error::message_size) {
             std::cout << "Hello, World\n";
             for (std::size_t i = 0; i < bytes_transferred; ++i) {
-                std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(_recvBuffer[i]) << ' ';
+                std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>( _recvBuffer[i] )<< ' ';
             }
             std::cout << "\n";
 
             // Check if the resend flag is set
-            if (_resendFlag) {
-                std::cout <<"Resending..." << std::endl;
-                auto message = std::make_shared<std::string>(_recvBuffer.data(), bytes_transferred);
-                _socket.send_to(boost::asio::buffer(*message), _remoteEndpoint);
-            } 
+            //if (_resendFlag) {
+            //    std::cout <<"Resending..." << std::endl;
+            //    auto message = std::make_shared<std::string>(_recvBuffer.data(), bytes_transferred);
+            //    _socket.send_to(boost::asio::buffer(*message), _remoteEndpoint);
+            //} 
             startReceive();
         }
     }
@@ -58,7 +58,7 @@ private:
 
     udp::socket _socket;
     udp::endpoint _remoteEndpoint =  udp::endpoint(boost::asio::ip::address::from_string("127.0.0.1"), 50002);
-    std::array<char, 1024> _recvBuffer;
+    std::array<uint8_t, 1024> _recvBuffer;
     bool _resendFlag; // Flag to control whether to resend the received message
 };
 

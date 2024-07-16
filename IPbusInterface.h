@@ -27,13 +27,23 @@ class IPbusTarget
     StatusPacket m_status_respone;
     IPbusControlPacket m_packet;
 
-    bool open_socket();
-    void start_async_recv();
-    void handle_recv(const boost::system::error_code& error, std::size_t bytes_transferred);
+    bool is_available;
 
-    void sync_recv(char* dest_buffer, size_t max_size);
+    bool open_socket();
+
+    // Sync communication
+
+    size_t sync_recv(char* dest_buffer, size_t max_size);
 
     char m_buffer[IO_BUFFER_SIZE];
+
+    // Async communication //
+
+    void IPbusTarget::start_async_recv();
+    void IPbusTarget::handle_recv(const boost::system::error_code& error, std::size_t bytes_transferred);
+
+    char m_async_buffer[IO_BUFFER_SIZE];
+
 public:
 
     IPbusTarget(boost::asio::io_context & io_context, std::string address = "172.20.75.175", uint16_t lport=0, uint16_t rport=50001);
@@ -41,5 +51,7 @@ public:
     bool checkStatus();
     bool reopen();
 
+    bool transcieve(IPbusControlPacket &p, bool shouldResponseBeProcessed = true);
+    virtual void sync();
 };
 
