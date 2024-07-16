@@ -18,16 +18,20 @@ class IPbusTarget
     std::string m_IPaddress;
     bool isOnline = false;
 
+    boost::asio::ip::udp::endpoint m_local_endpoint;
     boost::asio::ip::udp::endpoint m_remote_endpoint;
 
     boost::asio::ip::udp::socket m_socket;
 
     const StatusPacket m_status;
+    StatusPacket m_status_respone;
     IPbusControlPacket m_packet;
 
     bool open_socket();
     void start_async_recv();
     void handle_recv(const boost::system::error_code& error, std::size_t bytes_transferred);
+
+    void sync_recv(char* dest_buffer, size_t max_size);
 
     char m_buffer[IO_BUFFER_SIZE];
 public:

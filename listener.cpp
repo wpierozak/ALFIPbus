@@ -42,14 +42,11 @@ private:
 
             // Check if the resend flag is set
             if (_resendFlag) {
+                std::cout <<"Resending..." << std::endl;
                 auto message = std::make_shared<std::string>(_recvBuffer.data(), bytes_transferred);
-                _socket.async_send_to(boost::asio::buffer(*message), _remoteEndpoint,
-                                      boost::bind(&HelloWorldServer::handleSend, this, message,
-                                                  boost::asio::placeholders::error,
-                                                  boost::asio::placeholders::bytes_transferred));
-            } else {
-                startReceive(); // Start receiving the next message if not resending
-            }
+                _socket.send_to(boost::asio::buffer(*message), _remoteEndpoint);
+            } 
+            startReceive();
         }
     }
 
@@ -60,20 +57,20 @@ private:
     }
 
     udp::socket _socket;
-    udp::endpoint _remoteEndpoint;
+    udp::endpoint _remoteEndpoint =  udp::endpoint(boost::asio::ip::address::from_string("127.0.0.1"), 50002);
     std::array<char, 1024> _recvBuffer;
     bool _resendFlag; // Flag to control whether to resend the received message
 };
 
 }  // namespace
 
-int main() {
+int main(int argc, const char** argv) {
     try {
         boost::asio::io_service io_service;
         HelloWorldServer server(io_service);
 
         // Example: Set the resend flag to true
-        server.setResendFlag(false);
+        server.setResendFlag(std::stoi(argv[1]));
 
         io_service.run();
     } catch (const std::exception& ex) {
