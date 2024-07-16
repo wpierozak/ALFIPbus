@@ -36,7 +36,7 @@ class IPbusTarget
     char m_buffer[IO_BUFFER_SIZE];
 public:
 
-    IPbusTarget(boost::asio::io_context & io_context, std::string address = "172.20.75.175", uint16_t lport=17, uint16_t rport=50001);
+    IPbusTarget(boost::asio::io_context & io_context, std::string address = "172.20.75.175", uint16_t lport=0, uint16_t rport=50001);
 
     bool checkStatus();
     bool reopen();

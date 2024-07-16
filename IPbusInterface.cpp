@@ -65,7 +65,7 @@ void IPbusTarget::handle_recv(const boost::system::error_code& error, std::size_
 
 void IPbusTarget::sync_recv(char* dest_buffer, size_t max_size) {
     try {
-
+        std::cerr << "Synchronized receiving..." << std::endl;
         size_t bytes_transferred = m_socket.receive_from(boost::asio::buffer(m_buffer, IO_BUFFER_SIZE), m_remote_endpoint);
         std::cout << "Message received: " << bytes_transferred << " bytes" << std::endl;
         std::memcpy(dest_buffer, m_buffer, bytes_transferred);
@@ -91,7 +91,7 @@ bool IPbusTarget::checkStatus()
         // Send a status packet to the remote endpoint
         m_socket.send_to(boost::asio::buffer(&m_status, sizeof(m_status)), m_remote_endpoint);
         sync_recv((char*) &m_status_respone, sizeof(m_status_respone));
-        std::cout << "Status packet has been sent" << std::endl;
+        std::cerr << "Status check successful: Device is available." << std::endl;
         return true;
     } catch (const std::exception& e) {
         std::cerr << "Failed to check status: " << e.what() << std::endl;
