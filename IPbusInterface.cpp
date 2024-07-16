@@ -4,9 +4,9 @@
 
 IPbusTarget::IPbusTarget(boost::asio::io_context & io_context, std::string address, uint16_t lport, uint16_t rport):
     m_io_context(io_context),
-    m_IPaddress(address), 
     m_localport(lport), 
     m_remoteport(rport),
+    m_IPaddress(address), 
     m_socket(io_context)
 {
     open_socket();
