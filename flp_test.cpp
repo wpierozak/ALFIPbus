@@ -4,7 +4,7 @@
 int main() {
 try {
         boost::asio::io_context io_service;
-        IPbusTarget target(io_service,"127.0.0.1");
+        IPbusTarget target(io_service,"172.20.75.175", 0, 50001);
         
         for(int i = 0; i < 10; i++)
         {
