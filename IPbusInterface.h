@@ -72,5 +72,7 @@ public:
 
     std::chrono::seconds timer_tick() {return m_tick;}
     std::chrono::seconds timer_tick(std::chrono::seconds tick) {m_tick = tick;}
+
+    bool isIPbusOK() { return is_available;}
 };
 

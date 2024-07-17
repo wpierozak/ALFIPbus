@@ -82,7 +82,7 @@ bool IPbusTarget::checkStatus()
         std::cerr << "Checking status of device at " << m_IPaddress << std::endl;
         // Send a status packet to the remote endpoint
         m_socket.send_to(boost::asio::buffer(&m_status, sizeof(m_status)), m_remote_endpoint);
-        //sync_recv((char*) &m_status_respone, sizeof(m_status_respone));
+        sync_recv((char*) &m_status_respone, sizeof(m_status_respone));
         std::cerr << "Status check successful: Device is available." << std::endl;
         is_available = true;
         return true;
