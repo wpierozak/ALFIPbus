@@ -1,6 +1,7 @@
 
 #include<mutex>
 #include<boost/asio.hpp>
+#include<memory>
 #include"IPbusControlPacket.h"
 
 #define IO_BUFFER_SIZE 1024
@@ -41,6 +42,20 @@ class IPbusTarget
 
     void start_async_recv();
     void handle_recv(const boost::system::error_code& error, std::size_t bytes_transferred);
+    
+    void io_context_run();
+    std::shared_ptr<std::thread> m_thread{nullptr};
+
+    void start_io_thread();
+    void stop_io_thread();
+
+    // Periodic communication //
+
+    boost::asio::deadline_timer m_timer;
+    boost::posix_time::seconds m_tick{1};
+    void reset_timer();
+
+    virtual void sync(const boost::system::error_code& error);
 
     char m_async_buffer[IO_BUFFER_SIZE];
 
@@ -52,6 +67,8 @@ public:
     bool reopen();
 
     bool transcieve(IPbusControlPacket &p, bool shouldResponseBeProcessed = true);
-    virtual void sync();
+
+    boost::posix_time::seconds timer_tick() {return m_tick;}
+    boost::posix_time::seconds timer_tick(boost::posix_time::seconds tick) {m_tick = tick;}
 };
 

@@ -9,10 +9,13 @@ IPbusTarget::IPbusTarget(boost::asio::io_context & io_context, std::string addre
     m_IPaddress(address),
     m_local_endpoint(boost::asio::ip::udp::v4(), m_localport),
     m_remote_endpoint(boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(m_IPaddress), m_remoteport)),
-    m_socket(io_context)
+    m_socket(io_context),
+
+    m_timer(m_io_context, m_tick)
 {
     open_socket();
-    checkStatus();
+    reset_timer();
+    start_io_thread();
 }
 
 
@@ -159,7 +162,29 @@ bool IPbusTarget::transcieve(IPbusControlPacket &p, bool shouldResponseBeProcess
     }
 }
 
-void IPbusTarget::sync()
+void IPbusTarget::reset_timer()
+{
+    m_timer.async_wait(boost::bind(&IPbusTarget::sync, this, boost::asio::placeholders::error));
+    m_timer.expires_at(m_timer.expires_at() + m_tick);
+}
+
+void IPbusTarget::sync(const boost::system::error_code& error)
 {
     checkStatus();
+    reset_timer();
+}
+
+void IPbusTarget::io_context_run()
+{
+    m_io_context.run();
+}
+
+void IPbusTarget::start_io_thread()
+{
+    m_thread = std::make_shared<std::thread>([this](){this->io_context_run();});
+}
+
+void IPbusTarget::stop_io_thread()
+{
+    m_thread->~thread();
 }
