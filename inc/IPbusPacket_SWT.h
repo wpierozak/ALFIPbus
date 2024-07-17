@@ -2,6 +2,8 @@
 #define IPBUSSWT_H
 #include"SWT.h"
 #include"IPbusControlPacket.h"
+#include <vector>
+
 
 class IPbusSWT_Packet
 {
@@ -11,7 +13,7 @@ public:
 
     }
 
-    void add_transaction(const quint8* bytes)
+    void add_transaction(const uint8_t* bytes)
     {
         swt_req.push_back(byte_to_swt(bytes));
         rswt.push_back(swt_ready(swt_req.back()));
@@ -34,9 +36,9 @@ public:
         swt_response(swt_req[transaction_id], rswt[transaction_id]);
     }
 
-    QList<SWT> swt_res;
-    QList<SWT> swt_req;
-    QList<SWT_IPBUS_READY> rswt;
+    std::vector<SWT> swt_res;
+    std::vector<SWT> swt_req;
+    std::vector<SWT_IPBUS_READY> rswt;
     IPbusControlPacket packet;
 };
 

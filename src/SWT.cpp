@@ -6,7 +6,7 @@
 
         /*      HEX     */
 
-quint8 charToHex(char ch) {
+uint8_t charToHex(char ch) {
     switch (ch) {
         case '0': return 0;
         case '1': return 1;
@@ -28,7 +28,7 @@ quint8 charToHex(char ch) {
     }
 }
 
-quint8 string_to_byte(char c1, char c2)
+uint8_t string_to_byte(char c1, char c2)
 {
     return 16*charToHex(c1) + charToHex(c2);
 }
@@ -67,7 +67,7 @@ SWT string_to_swt(const char* str)
     return frame;
 }
 
-SWT byte_to_swt(const quint8* bytes)
+SWT byte_to_swt(const uint8_t* bytes)
 {
     SWT frame;
 
@@ -114,9 +114,9 @@ void swt_to_byte(SWT swt, uint8_t* bytes)
 SWT_IPBUS_READY swt_ready(SWT swt)
 {
     if(swt.mode == 0 )
-        return { SWT_IPBUS_READY::Type::Read, (quint32(swt.module) << 8) + swt.submodule, swt.data};
+        return { SWT_IPBUS_READY::Type::Read, (uint32_t(swt.module) << 8) + swt.submodule, swt.data};
     else
-        return { SWT_IPBUS_READY::Type::Write, (quint32(swt.module) << 8) + swt.submodule, swt.data};
+        return { SWT_IPBUS_READY::Type::Write, (uint32_t(swt.module) << 8) + swt.submodule, swt.data};
 }
 
 void printSWT(struct SWT swt) {

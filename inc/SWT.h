@@ -6,52 +6,52 @@ union half_word
 {
     struct fields
     {
-        quint8 first_byte;
-        quint8 second_byte;
+        uint8_t first_byte;
+        uint8_t second_byte;
     } fields;
-    quint16 data;
+    uint16_t data;
 };
 
 union word
 {
     struct hex
     {
-        quint8 first_byte;
-        quint8 second_byte;
-        quint8 third_byte;
-        quint8 fourth_byte;
+        uint8_t first_byte;
+        uint8_t second_byte;
+        uint8_t third_byte;
+        uint8_t fourth_byte;
             /* data */
     } fields;
-    quint32 data;
+    uint32_t data;
 };
 
-quint8 charToHex(char ch);
-quint8 string_to_byte(char c1, char c2);
+uint8_t charToHex(char ch);
+uint8_t string_to_byte(char c1, char c2);
 char hexToChar(uint8_t hex);
         /*      SWT     */
 
 
 struct SWT
 {
-    quint32 data       : 16;
-    quint32 submodule  : 8;
-    quint32 module     : 7;
-    quint32 mode       : 1;
-    quint32 blank_A    : 32;
-    quint32 blank_B    : 12;
-    quint32 SWT_ID     : 4;
+    uint32_t data       : 16;
+    uint32_t submodule  : 8;
+    uint32_t  module     : 7;
+    uint32_t mode       : 1;
+    uint32_t blank_A    : 32;
+    uint32_t blank_B    : 12;
+    uint32_t SWT_ID     : 4;
 };
 
 SWT string_to_swt(const char* str);
-SWT byte_to_swt(const quint8* bytes);
-void swt_to_byte(SWT swt, quint8* bytes);
+SWT byte_to_swt(const uint8_t* bytes);
+void swt_to_byte(SWT swt, uint8_t* bytes);
 
 struct SWT_IPBUS_READY
 {
     enum class Type{Read=0, Write=1};
     Type type;
-    quint32 address;
-    quint32 data;
+    uint32_t address;
+    uint32_t data;
 };
 
 SWT_IPBUS_READY swt_ready(SWT swt);
