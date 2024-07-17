@@ -11,32 +11,20 @@ IPbusTarget::IPbusTarget(boost::asio::io_context & io_context, std::string addre
     m_remote_endpoint(boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(m_IPaddress), m_remoteport)),
     m_socket(io_context),
 
-    m_timer(m_io_context, m_tick)
+    m_timer(m_io_context)
 {
     open_socket();
-    reset_timer();
+    start_timer();
     start_io_thread();
 }
 
-
-void IPbusTarget::start_async_recv()
+IPbusTarget::~IPbusTarget()
 {
-    std::cerr<< "Initializing async message receiving" << std::endl;
-    m_socket.async_receive_from(boost::asio::buffer(m_buffer, IO_BUFFER_SIZE), m_remote_endpoint, 
-    boost::bind(&IPbusTarget::handle_recv, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+    stop_timer();
+    m_socket.cancel();
+    m_socket.close();
+    m_thread->join();
 }
-
-void IPbusTarget::handle_recv(const boost::system::error_code& error, std::size_t bytes_transferred)
-{
-    if (error) {
-        std::cerr << "Error receiving data: " << error.message() << std::endl;
-        return;
-    }
-    std::cout << "Message received: " <<  bytes_transferred << " bytes" << std::endl;
-    std::memcpy((char*)&m_packet.response, m_buffer, bytes_transferred);
-    start_async_recv();  // Start receiving the next message
-}
-
 
 bool IPbusTarget::open_socket()
 {
@@ -92,15 +80,9 @@ bool IPbusTarget::checkStatus()
 
     try {
         std::cerr << "Checking status of device at " << m_IPaddress << std::endl;
-
-        if (!m_socket.is_open()) {
-            std::cerr << "Socket is not open. Attempting to open socket..." << std::endl;
-            m_socket.open(boost::asio::ip::udp::v4());
-        }
-
         // Send a status packet to the remote endpoint
         m_socket.send_to(boost::asio::buffer(&m_status, sizeof(m_status)), m_remote_endpoint);
-        sync_recv((char*) &m_status_respone, sizeof(m_status_respone));
+        //sync_recv((char*) &m_status_respone, sizeof(m_status_respone));
         std::cerr << "Status check successful: Device is available." << std::endl;
         is_available = true;
         return true;
@@ -164,9 +146,14 @@ bool IPbusTarget::transcieve(IPbusControlPacket &p, bool shouldResponseBeProcess
 
 void IPbusTarget::reset_timer()
 {
-    if(!m_timer_work) return;
+    std::lock_guard<std::mutex> lock(m_timer_mutex);
+    if(m_stop_timer)
+    {   
+        m_timer.cancel();
+        return;
+    }
+    m_timer.expires_from_now(m_tick);
     m_timer.async_wait(boost::bind(&IPbusTarget::sync, this, boost::asio::placeholders::error));
-    m_timer.expires_at(m_timer.expires_at() + m_tick);
 }
 
 void IPbusTarget::sync(const boost::system::error_code& error)
@@ -190,7 +177,16 @@ void IPbusTarget::stop_io_thread()
     m_thread->~thread();
 }
 
+void IPbusTarget::start_timer()
+{
+    std::lock_guard<std::mutex> lock(m_timer_mutex);
+    m_stop_timer = false;
+    m_timer.expires_from_now(m_tick);
+    m_timer.async_wait(boost::bind(&IPbusTarget::sync, this, boost::asio::placeholders::error));
+}
+
 void IPbusTarget::stop_timer()
 {
-    m_timer_work = false;
+    std::lock_guard<std::mutex> lock(m_timer_mutex); 
+    m_stop_timer = true;
 }

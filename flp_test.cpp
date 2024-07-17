@@ -1,4 +1,6 @@
 #include <iostream>
+#include<chrono>
+#include<thread>
 #include "IPbusInterface.h"
 
 int main() {
@@ -9,6 +11,8 @@ try {
         {
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
+        target.stop_timer();
+        std::cout<< "\nOK\n";    
         //`io_service.run();  // Run the io_service to process async operations
     } catch (const std::exception& e) {
         std::cerr << "Exception: " << e.what() << std::endl;

@@ -38,22 +38,20 @@ class IPbusTarget
 
     char m_buffer[IO_BUFFER_SIZE];
 
-    // Async communication //
+    // Periodic communication //
 
-    void start_async_recv();
-    void handle_recv(const boost::system::error_code& error, std::size_t bytes_transferred);
-    
     void io_context_run();
     std::shared_ptr<std::thread> m_thread{nullptr};
 
     void start_io_thread();
     void stop_io_thread();
 
-    // Periodic communication //
 
-    boost::asio::deadline_timer m_timer;
-    boost::posix_time::seconds m_tick{1};
-    bool m_timer_work{true};
+    bool m_stop_timer{false};
+    boost::asio::steady_timer m_timer;
+    std::chrono::seconds m_tick{1};
+
+    std::mutex m_timer_mutex;
     void reset_timer();
 
     virtual void sync(const boost::system::error_code& error);
@@ -63,7 +61,8 @@ class IPbusTarget
 public:
 
     IPbusTarget(boost::asio::io_context & io_context, std::string address = "172.20.75.175", uint16_t lport=0, uint16_t rport=50001);
-
+    ~IPbusTarget();
+    void start_timer();
     void stop_timer();
 
     bool checkStatus();
@@ -71,7 +70,7 @@ public:
 
     bool transcieve(IPbusControlPacket &p, bool shouldResponseBeProcessed = true);
 
-    boost::posix_time::seconds timer_tick() {return m_tick;}
-    boost::posix_time::seconds timer_tick(boost::posix_time::seconds tick) {m_tick = tick;}
+    std::chrono::seconds timer_tick() {return m_tick;}
+    std::chrono::seconds timer_tick(std::chrono::seconds tick) {m_tick = tick;}
 };
 
