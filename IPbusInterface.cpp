@@ -164,6 +164,7 @@ bool IPbusTarget::transcieve(IPbusControlPacket &p, bool shouldResponseBeProcess
 
 void IPbusTarget::reset_timer()
 {
+    if(!m_timer_work) return;
     m_timer.async_wait(boost::bind(&IPbusTarget::sync, this, boost::asio::placeholders::error));
     m_timer.expires_at(m_timer.expires_at() + m_tick);
 }
@@ -187,4 +188,9 @@ void IPbusTarget::start_io_thread()
 void IPbusTarget::stop_io_thread()
 {
     m_thread->~thread();
+}
+
+void IPbusTarget::stop_timer()
+{
+    m_timer_work = false;
 }

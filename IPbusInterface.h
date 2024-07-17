@@ -53,6 +53,7 @@ class IPbusTarget
 
     boost::asio::deadline_timer m_timer;
     boost::posix_time::seconds m_tick{1};
+    bool m_timer_work{true};
     void reset_timer();
 
     virtual void sync(const boost::system::error_code& error);
@@ -62,6 +63,8 @@ class IPbusTarget
 public:
 
     IPbusTarget(boost::asio::io_context & io_context, std::string address = "172.20.75.175", uint16_t lport=0, uint16_t rport=50001);
+
+    void stop_timer();
 
     bool checkStatus();
     bool reopen();
