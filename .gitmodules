@@ -1,3 +1,6 @@
 [submodule "IPbus"]
 	path = IPbus
 	url = https://github.com/VictorPierozak/IPbus.git
+[submodule "DimRpcParallel"]
+	path = DimRpcParallel
+	url = https://gitlab.cern.ch/alialfred/DimRpcParallel.git
