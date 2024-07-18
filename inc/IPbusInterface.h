@@ -8,6 +8,10 @@
 
 class IPbusTarget
 {
+    public:
+
+    enum class DebugMode{Full = 0, Vital = 1, Non};
+
     private:
 
     boost::asio::io_context& m_io_context;
@@ -58,7 +62,11 @@ class IPbusTarget
 
     char m_async_buffer[IO_BUFFER_SIZE];
 
+    DebugMode m_debug{DebugMode::Vital};
+
 public:
+
+    //enum class DebugMode{Full = 0, Vital = 1, Non};
 
     IPbusTarget(boost::asio::io_context & io_context, std::string address = "172.20.75.175", uint16_t lport=0, uint16_t rport=50001);
     ~IPbusTarget();
@@ -70,8 +78,11 @@ public:
 
     bool transcieve(IPbusControlPacket &p, bool shouldResponseBeProcessed = true);
 
-    std::chrono::seconds timer_tick() {return m_tick;}
-    std::chrono::seconds timer_tick(std::chrono::seconds tick) {m_tick = tick;}
+    std::chrono::seconds timer_tick() const {return m_tick;}
+    void timer_tick(std::chrono::seconds tick) {m_tick = tick;}
+
+    DebugMode debug_mode() const {return m_debug;}
+    void debug_mode(DebugMode mode) {m_debug = mode;}
 
     bool isIPbusOK() { return is_available;}
 };

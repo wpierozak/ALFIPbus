@@ -28,17 +28,17 @@ IPbusTarget::~IPbusTarget()
 
 bool IPbusTarget::open_socket()
 {
-    std::cerr << "Attempting to open socket..."<< std::endl;
+    if(m_debug == DebugMode::Vital || m_debug == DebugMode::Full) std::cerr << "Attempting to open socket..."<< std::endl;
     m_socket.open(boost::asio::ip::udp::v4());
 
     if(m_socket.is_open())
     {
-        std::cerr << "Socket successfully opened" << std::endl;
+        if(m_debug == DebugMode::Vital || m_debug == DebugMode::Full) std::cerr << "Socket successfully opened" << std::endl;
         return true;
     }
     else
     {
-        std::cerr << "Failed to open socket."  << std::endl;
+        if(m_debug == DebugMode::Vital || m_debug == DebugMode::Full) std::cerr << "Failed to open socket."  << std::endl;
         return false;
     }
 }
@@ -56,9 +56,9 @@ bool IPbusTarget::reopen()
 
 size_t IPbusTarget::sync_recv(char* dest_buffer, size_t max_size) {
     try {
-        std::cerr << "Synchronized receiving..." << std::endl;
+        if(m_debug == DebugMode::Full) std::cerr << "Synchronized receiving..." << std::endl;
         size_t bytes_transferred = m_socket.receive_from(boost::asio::buffer(m_buffer, IO_BUFFER_SIZE), m_remote_endpoint);
-        std::cout << "Message received: " << bytes_transferred << " bytes" << std::endl;
+        if(m_debug == DebugMode::Full) std::cerr << "Message received: " << bytes_transferred << " bytes" << std::endl;
         std::memcpy(dest_buffer, m_buffer, bytes_transferred);
         return bytes_transferred;
     } catch (const boost::system::system_error& e) {
@@ -79,15 +79,15 @@ bool IPbusTarget::checkStatus()
     std::lock_guard<std::mutex> m_lock(m_transcieve_mutex);
 
     try {
-        std::cerr << "Checking status of device at " << m_IPaddress << std::endl;
+        if(m_debug == DebugMode::Vital | m_debug == DebugMode::Full) std::cerr << "Checking status of device at " << m_IPaddress << std::endl;
         // Send a status packet to the remote endpoint
         m_socket.send_to(boost::asio::buffer(&m_status, sizeof(m_status)), m_remote_endpoint);
         sync_recv((char*) &m_status_respone, sizeof(m_status_respone));
-        std::cerr << "Status check successful: Device is available." << std::endl;
+        if(m_debug == DebugMode::Vital || m_debug == DebugMode::Full) std::cerr << "Status check successful: Device is available." << std::endl;
         is_available = true;
         return true;
     } catch (const std::exception& e) {
-        std::cerr << "Failed to check status: " << e.what() << std::endl;
+        if(m_debug == DebugMode::Vital | m_debug == DebugMode::Full) std::cerr << "Failed to check status: " << e.what() << std::endl;
         is_available = false;
         return false;
     }

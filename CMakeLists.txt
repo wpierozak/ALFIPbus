@@ -14,6 +14,8 @@ include_directories(${PROJECT_SOURCE_DIR}/inc)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
+set (CMAKE_CXX_FLAGS  "-lboost_system -lpthread")
+
 # Include GNUInstallDirs to use standard directory variables
 include(GNUInstallDirs)
 
@@ -25,5 +27,6 @@ add_executable(flp_test test/flp_test.cpp)
 
 # Link the test executable with the static library
 target_link_libraries(flp_test IPbusInterface)
+
 
 
