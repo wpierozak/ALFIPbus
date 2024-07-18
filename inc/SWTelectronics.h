@@ -3,35 +3,27 @@
 
 #include"IPbusInterface.h"
 #include"IPbusPacket_SWT.h"
+#include"dimrpcparallel.h"
 #include<string>
 #include<boost/asio.hpp>
 
-class SWTelectronics: public IPbusTarget
+class SWTelectronics: public IPbusTarget, DimRpcParallel
 {
 public:
-    SWTelectronics(boost::asio::io_context & io_context, std::string address = "172.20.75.175", uint16_t lport=0,
- uint16_t rport=50001): IPbusTarget(io_context, address, lport, rport)
+    SWTelectronics(std::string rpc, boost::asio::io_context & io_context, std::string address = "172.20.75.175", uint16_t rport=50001, uint16_t lport=0): 
+    IPbusTarget(io_context, address, lport, rport),
+    DimRpcParallel(rpc.c_str(), "C", "C", 0)
     {
 
     }
 
-    void process_request(const uint8_t* swt_sequence)
-    {
-        m_packet.add_transaction(swt_sequence);
-        if(transcieve(m_packet.packet))
-        {
-            m_packet.translate_response(0);
-            write_response(m_packet.swt_res[0]);
-        }
-    }
+    void rpcHandler();
+    void process_request(const char* swt_sequence);
 
-    void write_response(SWT word)
-    {
-
-    }
+    void write_response(SWT frame, SWT_IPBUS_READY rframe);
 
 private:
-    IPbusSWT_Packet m_packet;
+    std::string m_response;
 };
 
 #endif // SWTELECTRONICS_H
