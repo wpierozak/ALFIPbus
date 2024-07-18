@@ -33,7 +33,6 @@ IPbusTarget::IPbusTarget(boost::asio::io_context & io_context, std::string addre
     m_timer(m_io_context)
 {
     open_socket();
-    start_timer();
 
     intialize_mutex(m_link_mutex);
     intialize_mutex(m_timer_mutex);

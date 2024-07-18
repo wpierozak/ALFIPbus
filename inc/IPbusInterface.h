@@ -67,7 +67,6 @@ class IPbusTarget
     boost::asio::steady_timer m_timer;
     std::chrono::seconds m_tick{1};
 
-    void start_timer();
     void stop_timer();
     void reset_timer();
 
@@ -86,6 +85,8 @@ public:
 
     bool checkStatus();
     bool reopen();
+
+    void start_timer();
 
     bool transcieve(IPbusControlPacket &p, bool shouldResponseBeProcessed = true);
 
