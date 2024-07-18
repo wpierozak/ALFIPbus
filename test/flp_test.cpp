@@ -1,44 +1,54 @@
 #include <iostream>
 #include<chrono>
 #include<thread>
+#include<ctime>
 #include "IPbusInterface.h"
+
+#define SIZE 2
 
 int main() {
 try {
+        srand(time(NULL));
+
         boost::asio::io_context io_service;
         IPbusTarget target(io_service,"172.20.75.175", 0, 50001);
-        target.debug_mode(IPbusTarget::DebugMode::Full);
+        target.debug_mode(IPbusTarget::DebugMode::Vital);
         IPbusControlPacket packet;
 
-        uint32_t data[2] = {std::rand()%0xFFFF, std::rand()%0xFFFF};
+        uint32_t data[SIZE] = {0x0,0x0};
         uint32_t address = 0x1004;
 
-        packet.addTransaction(TransactionType::ipread, address, data, 2);
+        packet.addTransaction(TransactionType::ipread, address, data, SIZE);
         target.transcieve(packet);
 
-        std::cout << "\nRead...\n";
+        std::cout << "\n\n\tRead...\n\n";
         std::cout << std::hex << data[0] << ' ' << std::hex << data[1] << std::endl;        
 
         data[0] = std::rand()%0xFFFF; data[1] = std::rand()%0xFFFF;
-        std::cout<< "\nWrite...\n";
+        std::cout<< "\n\n\tWrite...\n\n";
         std::cout << std::hex << data[0] << ' ' << std::hex << data[1] << std::endl;
 
-        packet.addTransaction(TransactionType::ipwrite, address, data, 2);
+
+        packet.addTransaction(TransactionType::ipwrite, address, data, SIZE);
         target.transcieve(packet);
 
-        std::cout << "\nRead after write...\n";
+        std::cout << "\n\n\tRead after write...\n\n";
 
-        packet.addTransaction(TransactionType::ipread, address, data, 2);
+        packet.addTransaction(TransactionType::ipread, address, data, SIZE);
         target.transcieve(packet);
         std::cout << std::hex << data[0] << ' ' << std::hex << data[1] << std::endl;
         
-        for(int i = 0; i < 10; i++)
-        {
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-        }
+        std::this_thread::sleep_for(std::chrono::seconds(5));
 
-        target.stop_timer();
-        std::cout<< "\nOK\n";    
+        for(int i = 0; i < 2; i++)
+        {
+            std::this_thread::sleep_for(std::chrono::seconds(5));
+            packet.addTransaction(TransactionType::ipread, address, data, SIZE);
+            target.transcieve(packet);
+
+            std::cout << "\n\n\tRead...\n\n";
+            std::cout << std::hex << data[0] << ' ' << std::hex << data[1] << std::endl;        
+        } 
         
     } catch (const std::exception& e) {
         std::cerr << "Exception: " << e.what() << std::endl;
