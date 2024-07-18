@@ -13,9 +13,11 @@ try {
         boost::asio::io_context io_service;
         IPbusTarget target(io_service,"172.20.75.175", 0, 50001);
         target.debug_mode(IPbusTarget::DebugMode::Vital);
-        target.timer_tick(std::chrono::seconds(2));
+        target.timer_tick(std::chrono::seconds(1));
         target.start_timer();
         IPbusControlPacket packet;
+
+        std::this_thread::sleep_for(std::chrono::seconds(10));
 
         uint32_t data[SIZE] = {0x0,0x0};
         uint32_t address = 0x1004;
