@@ -42,7 +42,11 @@ class IPbusTarget
 
     // IPBUS transaction //
 
+    protected:
     IPbusControlPacket m_packet;
+
+    private:
+
     bool open_socket();
 
     // Sync communication
