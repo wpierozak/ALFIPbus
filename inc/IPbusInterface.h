@@ -48,8 +48,7 @@ class IPbusTarget
     // Sync communication
 
     size_t sync_recv(char* dest_buffer, size_t max_size);
-    char m_buffer[IO_BUFFER_SIZE];
-
+   
     // Periodic communication //
 
     void io_context_run();

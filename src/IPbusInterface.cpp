@@ -80,9 +80,8 @@ bool IPbusTarget::reopen()
 size_t IPbusTarget::sync_recv(char* dest_buffer, size_t max_size) {
     try {
         if(m_debug == DebugMode::Full) std::cerr << "Synchronized receiving..." << std::endl;
-        size_t bytes_transferred = m_socket.receive_from(boost::asio::buffer(m_buffer, IO_BUFFER_SIZE), m_remote_endpoint);
+        size_t bytes_transferred = m_socket.receive_from(boost::asio::buffer(dest_buffer, IO_BUFFER_SIZE), m_remote_endpoint);
         if(m_debug == DebugMode::Full) std::cerr << "Message received: " << bytes_transferred << " bytes" << std::endl;
-        std::memcpy(dest_buffer, m_buffer, bytes_transferred);
         return bytes_transferred;
     } catch (const boost::system::system_error& e) {
         std::cerr << "Receive error: " << e.what() << std::endl;
