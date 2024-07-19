@@ -2,7 +2,7 @@
 #define SWTELECTRONICS_H
 
 #include"IPbusInterface.h"
-#include"IPbusPacket_SWT.h"
+#include"SWT.h"
 #include"dimrpcparallel.h"
 #include<string>
 #include<boost/asio.hpp>
