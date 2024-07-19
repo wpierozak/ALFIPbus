@@ -19,7 +19,7 @@ void SWTelectronics::process_request(const char* swt_sequence)
 
     SWT frame = string_to_swt(message.c_str());
     SWT_IPBUS_READY rframe = swt_ready(frame);
-    m_packet.addTransaction((rframe.type == SWT_IPBUS_READY::Type::Read) ? TransactionType::ipread : TransactionType::ipwrite,
+    m_packet.addTransaction((rframe.type == SWT_IPBUS_READY::Type::Read) ? TransactionType::data_read : TransactionType::data_write,
                                     rframe.address, &rframe.data, 1);
 
     if(transcieve(m_packet))
