@@ -58,13 +58,13 @@ public:
         currentTransaction.address = request + requestSize++;
         currentTransaction.responseHeader = (TransactionHeader *)(response + responseSize++);
         switch (type) {
-            case                ipread:
+            case                read:
             case nonIncrementingRead:
             case   configurationRead:
                 currentTransaction.data = data;
                 responseSize += nWords;
                 break;
-            case                ipwrite:
+            case                write:
             case nonIncrementingWrite:
             case   configurationWrite:
                 currentTransaction.data = request + requestSize;
@@ -94,7 +94,7 @@ public:
  * @param address Address on the remote site where a word should be written to
  * @param value The word to be written
 */
-    void addWordToWrite(uint32_t address, uint32_t value) { addTransaction(ipwrite, address, &value, 1); }
+    void addWordToWrite(uint32_t address, uint32_t value) { addTransaction(write, address, &value, 1); }
 
     /// @brief Adds a transaction changing a n-bit block in a register
     /// @param address Address of the register
@@ -102,7 +102,7 @@ public:
     /// @param nbits Number of bits to be changed (`mask = (1 << nbits) - 1`)
     /// @param shift Shift relative to the LSB (`mask << shift`)
     void addNBitsToChange(uint32_t address, uint32_t data, uint8_t nbits, uint8_t shift = 0) {
-        if (nbits == 32) { addTransaction(ipwrite, address, &data, 1); return; }
+        if (nbits == 32) { addTransaction(write, address, &data, 1); return; }
         uint32_t mask = (1 << nbits) - 1; //e.g. 0x00000FFF for nbits==12
         addTransaction(RMWbits, address, masks( ~uint32_t(mask << shift), uint32_t((data & mask) << shift) ));
     }
@@ -121,7 +121,7 @@ public:
                 return false;
             }
             if (th->Words > 0) switch (th->TypeID) {
-                case                ipread:
+                case                read:
                 case nonIncrementingRead:
                 case   configurationRead: {
                     uint32_t wordsAhead = response + responseSize - (uint32_t *)th - 1;
@@ -148,7 +148,7 @@ public:
                     }
                     //emit successfulRead(1); !!!
                     /* fall through */ //[[fallthrough]];
-                case                ipwrite:
+                case                write:
                 case nonIncrementingWrite:
                 case   configurationWrite:
                     //emit successfulWrite(th->Words);
