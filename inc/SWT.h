@@ -45,8 +45,6 @@ struct SWT
 SWT string_to_swt(const char* str);
 SWT byte_to_swt(const uint8_t* bytes);
 void swt_to_byte(SWT& swt, uint8_t* bytes);
-SWT payload_from_string(const char* str);
-
 
 struct SWT_IPBUS_READY
 {

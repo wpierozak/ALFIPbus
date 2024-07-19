@@ -151,18 +151,3 @@ char hexToChar(uint8_t hex)
     default: throw std::runtime_error("Invalid number");
     }
 }
-
-
-SWT payload_from_string(const char* str)
-{
-    SWT frame;
-    half_word data; 
-    data.fields = { string_to_byte(str[6], str[7]), string_to_byte(str[4],str[5]) };
-    frame.data = data.data;
-
-    frame.submodule = string_to_byte(str[2], str[3]);
-    frame.module    = string_to_byte(str[0], str[0]) & 0x7F;
-    frame.mode      = string_to_byte(str[0], str[1]) >> 7;
-
-    return frame;
-}
