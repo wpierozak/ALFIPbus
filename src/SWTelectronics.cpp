@@ -1,4 +1,5 @@
 #include"SWTelectronics.h"
+#include"Utils.h"
 #include<string>
 void SWTelectronics::rpcHandler() 
 {
@@ -7,24 +8,42 @@ void SWTelectronics::rpcHandler()
 
 void SWTelectronics::process_request(const char* swt_sequence)
 {
-    std::string message = swt_sequence;
-    std::cerr << message << std::endl;
+    std::string swt_str = swt_sequence;
+    std::vector<std::string> lines = Utils::splitString(swt_str, "\n");
+    std::vector<std::pair<SWT, SWT_IPBUS_READY>> swt_frames;
 
-    message = message.substr(message.find("0x")+2);
-    int size = message.size();
-    for(int i = message.find(','); i < size; i++)
-        message.pop_back();
+    lines.erase(lines.begin());
+    lines.pop_back();
 
-    std::cout<< "swt message: " << message << std::endl;
+    for(auto frame : lines)
+    {
+        std::cerr << frame << std::endl;
 
-    SWT frame = string_to_swt(message.c_str());
-    TransactionType type =  (frame.getTransactionType() == SWT::TransactionType::READ) ? data_read : data_write;
-    
-    m_packet.addTransaction(type, frame.address, &frame.data, 1);
+        frame = frame.substr(frame.find("0x")+2);
+        int size = frame.size();
+        for(int i = frame.find(','); i < size; i++)
+            frame.pop_back();
+        
+        std::cerr << frame << std::endl;
+
+        SWT swt = string_to_swt(frame.c_str());
+        swt_frames.emplace_back(swt, swt_ready(swt));
+
+        m_packet.addTransaction(
+            (swt_frames.back().second.type == SWT_IPBUS_READY::Type::Read) ? TransactionType::data_read : TransactionType::data_write,
+             swt_frames.back().second.address, &swt_frames.back().second.data, 1);
+    }
 
     if(transcieve(m_packet))
     {
-        write_response(frame);
+        for(int i = 0; i < swt_frames.size(); i++)
+        {
+            write_response(swt_frames[i].first, swt_frames[i].second);
+            if( i != swt_frames.size() - 1)
+            {
+                m_response += "\n";
+            }
+        }
     }
     else
     {
