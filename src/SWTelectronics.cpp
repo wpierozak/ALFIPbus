@@ -9,22 +9,22 @@ void SWTelectronics::process_request(const char* swt_sequence)
 {
     std::string message = swt_sequence;
     std::cerr << message << std::endl;
+
     message = message.substr(message.find("0x")+2);
     int size = message.size();
     for(int i = message.find(','); i < size; i++)
         message.pop_back();
 
-    message = "300000000000" + message;
     std::cout<< "swt message: " << message << std::endl;
 
     SWT frame = string_to_swt(message.c_str());
-    SWT_IPBUS_READY rframe = swt_ready(frame);
-    m_packet.addTransaction((rframe.type == SWT_IPBUS_READY::Type::Read) ? TransactionType::data_read : TransactionType::data_write,
-                                    rframe.address, &rframe.data, 1);
+    TransactionType type =  (frame.getTransactionType() == SWT::TransactionType::READ) ? data_read : data_write;
+    
+    m_packet.addTransaction(type, frame.address, &frame.data, 1);
 
     if(transcieve(m_packet))
     {
-        write_response(frame, rframe);
+        write_response(frame);
     }
     else
     {
@@ -32,21 +32,21 @@ void SWTelectronics::process_request(const char* swt_sequence)
     }
 }
 
-void SWTelectronics::write_response(SWT frame, SWT_IPBUS_READY rframe)
+void SWTelectronics::write_response(SWT frame)
 {
-    frame.data = rframe.data;
+    m_response = "success 0\n0x";
+    half_word h; 
+    h.data = frame.mode;
 
-    uint8_t buffer[10];
-    swt_to_byte(frame, buffer);
+    std::string mode = half_word_to_string(h);
+    mode = mode.substr(1);
+    m_response += mode;
 
-    m_response = "success 0\n0x00000000000";
-
-    for(int i = 3; i >= 0; i--)
-    {
-        m_response += hexToChar(buffer[i] >> 4);
-        m_response += hexToChar(buffer[i] & 0x0F);
-    }
+    word w; 
+    w.data = frame.address;
+    m_response += word_to_string(w);
+    w.data = frame.data;
+    m_response += word_to_string(w);
     
-    //m_response += "\n";
     setData(m_response.c_str());
 }

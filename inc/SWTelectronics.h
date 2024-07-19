@@ -20,7 +20,7 @@ public:
     void rpcHandler();
     void process_request(const char* swt_sequence);
 
-    void write_response(SWT frame, SWT_IPBUS_READY rframe);
+    void write_response(SWT frame);
 
 private:
     std::string m_response;
