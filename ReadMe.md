@@ -1,4 +1,6 @@
-## Input message format (from FRED)
+## Message format
+
+### Input message format (from FRED)
 ```
 reset\n<SWT_PAYLOAD>,write\nread
 ```
