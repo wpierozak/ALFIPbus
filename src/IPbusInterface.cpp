@@ -39,8 +39,6 @@ IPbusTarget::IPbusTarget(boost::asio::io_context & io_context, std::string addre
     intialize_mutex(m_thread_state_mutex);
 
     checkStatus();
-
-    start_io_thread();
 }
 
 IPbusTarget::~IPbusTarget()
@@ -231,14 +229,17 @@ void IPbusTarget::shutdown_io()
 {
     stop_timer();
     m_socket.close();
-    m_io_context.stop();
-    pthread_join(m_thread, NULL);
+    if(m_is_running == true)
+    {
+        m_io_context.stop();
+        pthread_join(m_thread, NULL);
+    }
 }
 
 void IPbusTarget::start_timer()
 {
     pthread_mutex_lock(&m_timer_mutex);
-
+    start_io_thread();
     m_stop_timer = false;
     m_timer.expires_from_now(m_tick);
     m_timer.async_wait(boost::bind(&IPbusTarget::sync, this, boost::asio::placeholders::error));
