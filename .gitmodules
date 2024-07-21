@@ -1,0 +1,3 @@
+[submodule "IpbusSWT"]
+	path = IpbusSWT
+	url = https://github.com/VictorPierozak/IpbusSWT.git
