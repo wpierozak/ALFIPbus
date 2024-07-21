@@ -105,7 +105,7 @@ FRED expects **reception of the same number of lines (excluding `reset` line)** 
 Then the response to the request from example should be:
 
 ```
-0
+success 0
 000000010041004BADCAFEE"
 ```
 
@@ -125,23 +125,7 @@ read
 ```
 - Response
 ```
-0
+success 0
 0
 000000010041004BADCAFEE
-```
-
-### Input message format (from FRED)
-```
-
-```
-
-### Output message format (to FRED)
-
-#### Success
-```
-
-```
-#### Failute
-```
-failure
 ```
