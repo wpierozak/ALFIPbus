@@ -82,7 +82,7 @@ Communication between ALF and FRED is governed by a few rules. However, it is es
 ```
 00000001004100400000000@OUT
 ```
-@OUT instructs FRED to save the response to the preceding message in the output variable OUT. If only one output variable is defined, its value will be published as the service value. WARNING: FRED uses only the lower 16 bits. If you want to publish 32-bit data, you should use MAPI message handling.
+`@OUT` instructs FRED to save the response to the preceding message in the output variable `OUT`. If only one output variable is defined, its value will be published as the service value. WARNING: FRED uses only the lower 16 bits. If you want to publish 32-bit data, you should use MAPI message handling.
 
 FRED translate sequence to request.
 ```
