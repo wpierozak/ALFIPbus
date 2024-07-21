@@ -129,3 +129,6 @@ success 0
 0
 000000010041004BADCAFEE
 ```
+
+## Protocols translation
+SWT protocol provides only simple read/write operations, thus it is straightforward to map them to the IPbus trasactions. Each sequence of SWT command is put into one IPbus packet and each command is send as a single transcation. SWT read is translated to the IPbus read, SWT write is translated to the IPbus write. Address and data in both protocols are 32-bit long.
