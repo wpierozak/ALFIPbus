@@ -71,10 +71,11 @@ cmake3 --build .
 SWTelectronics is compatible with SWT frame designed for FIT ALICE detector.
 
 ```
-    0111    0000000001  11001100110011001100110011001100 00110011001100110011001100110011
-   SWT ID     CONTROL               ADDRESS                         DATA
+    0111    000000000       1       11001100110011001100110011001100 00110011001100110011001100110011
+   SWT ID     NOT USED  READ/WRITE             ADDRESS                         DATA
 
 ```
+Read is indicated by 0 bit value, otherwise write operation is performed.
 
 ## Message format
 
