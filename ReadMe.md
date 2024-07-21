@@ -66,7 +66,69 @@ cmake3 .
 cmake3 --build .
 ```
 
+## SWT Frame
+
+SWTelectronics is compatible with SWT frame designed for FIT ALICE detector.
+
+```
+    0111    0000000001  11001100110011001100110011001100 00110011001100110011001100110011
+   SWT ID     CONTROL               ADDRESS                         DATA
+
+```
+
 ## Message format
+
+Communication between ALF and FRED is governed by a few rules. However, it is essential to understand the message sent from FRED to ALF regarding the FRED sequence file.. Let's analyze an example of reading one register. The FRED configuration file may be written as follows:
+```
+00000001004100400000000@OUT
+```
+@OUT instructs FRED to save the response to the preceding message in the output variable OUT. If only one output variable is defined, its value will be published as the service value. WARNING: FRED uses only the lower 16 bits. If you want to publish 32-bit data, you should use MAPI message handling.
+
+FRED translate sequence to request.
+```
+reset
+00000001004100400000000,write
+read
+```
+
+`reset`,`write` and `read` are **CRU-related instructions**
+- `reset` is sent as the initial operation of every request 
+- `<DATA>,write` writes DATA to SWT registers on the CRU; FRED includes it in the request for each line of the sequence.
+- `read` reads the content of SWT registers; FRED includes it in the request for each line of the sequence followed by the output variable reference.
+
+FRED expects **reception of the same number of lines (excluding `reset` line)** formatted with regard to strict rules.
+- Successfull execution of whole sequence must be indicated by `success`
+- Failure execution must be indicated by `failure`
+- For each `write` instruction, `0` line must resend
+- For each `read` instruction, 76 bit hexadecimal value must be resend
+
+Then the response to the request from example should be:
+
+```
+0
+000000010041004BADCAFEE"
+```
+
+Another example.
+- Sequence file.
+```
+000000110041004BADCAFEE
+00000001004100400000000@OUT
+```
+- Request
+```
+reset
+000000110041004BADCAFEE,write
+00000001004100400000000,write
+read
+
+```
+- Response
+```
+0
+0
+000000010041004BADCAFEE
+```
 
 ### Input message format (from FRED)
 ```
