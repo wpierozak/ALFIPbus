@@ -1,6 +1,8 @@
 #include<cstdint>
 #include<string>
+#include<cstring>
 #include<stdexcept>
+#include"Utils.h"
 #include"SWT.h"
 
         /*      HEX     */
@@ -23,7 +25,7 @@ uint8_t charToHex(char ch) {
         case 'D': case 'd': return 13;
         case 'E': case 'e': return 14;
         case 'F': case 'f': return 15;
-        default: throw std::runtime_error("Invalid hexadecimal character: " + ch);
+        default: THROW_RUNTIME("Invalid hexadecimal character - " + ch);
     }
 }
 
@@ -56,6 +58,10 @@ std::string half_word_to_string(half_word h)
 SWT string_to_swt(const char* str)
 {
     SWT frame;
+    if(std::strlen(str) != 19) 
+    {
+        THROW_RUNTIME("SWT string is too short - received: " + std::to_string(strlen(str)) + " chars");
+    }
 
     frame.data = (static_cast<uint32_t>(string_to_byte(str[11], str[12])) << 24) 
                 + (static_cast<uint32_t>(string_to_byte(str[13], str[14])) << 16) 
@@ -93,6 +99,6 @@ char hexToChar(uint8_t hex)
     case 13:    return 'D';
     case 14:    return 'E';
     case 15:    return 'F';
-    default: throw std::runtime_error("Invalid number");
+    default: THROW_RUNTIME("hexToChar: Value should be within range (0-15)");
     }
 }

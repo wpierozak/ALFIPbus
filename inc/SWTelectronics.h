@@ -19,10 +19,15 @@ public:
 
     void rpcHandler();
     void process_request(const char* swt_sequence);
+    void write_frame(SWT frame);
 
-    void write_response(SWT frame);
+    void split_lines(const char* swt_sequence);
+    void parse_frames();
+    void execute();
 
 private:
+    std::vector<std::string> m_lines;
+    std::vector<SWT> m_frames;
     std::string m_response;
 };
 
