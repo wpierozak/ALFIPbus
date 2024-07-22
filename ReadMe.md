@@ -62,11 +62,59 @@ cmake3 --build .
 SWTelectronics is compatible with SWT frame designed for FIT ALICE detector.
 
 ```
-    0111    000000000       1       11001100110011001100110011001100 00110011001100110011001100110011
-   SWT ID     NOT USED  READ/WRITE             ADDRESS                         DATA
+    0111    0000000         00           1       11001100110011001100110011001100 00110011001100110011001100110011
+   SWT ID     NOT USED    MASKED     READ/WRITE             ADDRESS                         DATA
 
 ```
-Read is indicated by 0 bit value, otherwise write operation is performed.
+
+### IPbus operations in SWT
+
+
+MM R/W ADDRESS    DATA   ->  RESPONSE
+
+`2b  1b  32b       32b    ->  32b`
+
+#### READ non-inc (FIFO)
+
+MM R/W ADDRESS    DATA   ->  RESPONSE
+
+`00 0  ADDRESS   DONTCARE   ->  X`
+`00 0  ADDRESS   DONTCARE   ->  X`
+
+#### READ inc
+
+MM R/W ADDRESS    DATA   ->  RESPONSE
+
+`00 0  ADDRESS   DONTCARE   ->  X`
+`00 0  ADDRESS+1 DONTCARE   ->  X`
+
+#### WRITE non-inc (FIFO)
+
+MM R/W ADDRESS DATA   ->  RESPONSE
+
+`00 1  ADDRESS   DATA   ->  OK`
+`00 1  ADDRESS   DATA   ->  OK`
+
+#### WRITE inc
+
+MM R/W ADDRESS DATA   ->  RESPONSE
+
+`00 1  ADDRESS   DATA   ->  OK`
+`00 1  ADDRESS+1 DATA   ->  OK`
+
+#### RMW bits X <= (X & A) | B
+
+MM R/W ADDRESS DATA   ->  RESPONSE
+
+`01 0   ADDRESS A     ->  preX`
+`01 1   ADDRESS B	  ->  OK`
+
+
+#### RMW Sum  X <= (X + A)
+
+MM R/W ADDRESS DATA   ->  RESPONSE
+
+`10 0   ADDRESS A     ->  preX`
 
 ## Message format
 
