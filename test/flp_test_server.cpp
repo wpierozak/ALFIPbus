@@ -1,4 +1,4 @@
-#include"SWTelectronics.h"
+#include"SwtElectronics.h"
 #include<dim/dis.hxx>
 #include<chrono>
 #include<thread>
@@ -8,7 +8,7 @@ int main(int argc, const char** argv)
     
     boost::asio::io_context io_service;
 
-    SWTelectronics target(argv[2], io_service, "172.20.75.175", 50001);
+    SwtElectronics target(argv[2], io_service, "172.20.75.175", 50001);
     target.debug_mode(IPbusTarget::DebugMode::Full);
 
     DimServer::start(argv[1]);

@@ -1,26 +1,26 @@
-#include"SWTelectronics.h"
+#include"SwtElectronics.h"
 #include"utils.h"
 #include<string>
 
-void SWTelectronics::rpcHandler() 
+void SwtElectronics::rpcHandler() 
 {
-    process_request(getString());
+    processRequest(getString());
 }
 
-void SWTelectronics::process_request(const char* swt_sequence)
+void SwtElectronics::processRequest(const char* swtSequence)
 {
-    split_lines(swt_sequence);
-    parse_frames();
+    splitLines(swtSequence);
+    parseFrames();
     execute();
 }
 
-void SWTelectronics::split_lines(const char* swt_sequence)
+void SwtElectronics::splitLines(const char* swtSequence)
 {
-    std::string swt_str = swt_sequence;
-    m_lines = utils::splitString(swt_str, "\n");
+    std::string swtStr = swtSequence;
+    m_lines = utils::splitString(swtStr, "\n");
 }
 
-void SWTelectronics::parse_frames()
+void SwtElectronics::parseFrames()
 {
     m_frames.clear();
     m_lines.erase(m_lines.begin());
@@ -47,7 +47,7 @@ void SWTelectronics::parse_frames()
     }   
 }
 
-void SWTelectronics::execute()
+void SwtElectronics::execute()
 {
     if(transcieve(m_packet))
     {
@@ -56,7 +56,7 @@ void SWTelectronics::execute()
         {
             if(m_lines[i] == "read")
             {
-                write_frame(m_frames[i-1]);
+                writeFrame(m_frames[i-1]);
                 m_response += "\n";
                 continue;
             }
@@ -73,7 +73,7 @@ void SWTelectronics::execute()
     }
 }
 
-void SWTelectronics::write_frame(Swt frame)
+void SwtElectronics::writeFrame(Swt frame)
 {
     m_response += "0x";
     HalfWord h; 

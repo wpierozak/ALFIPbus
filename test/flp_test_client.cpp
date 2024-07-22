@@ -1,4 +1,4 @@
-#include"SWTelectronics.h"
+#include"SwtElectronics.h"
 #include<dim/dic.hxx>
 #include<chrono>
 #include<thread>
