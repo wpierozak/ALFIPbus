@@ -1,0 +1,7 @@
+bin/*
+!bin/.gitkeep
+
+lib/*
+!lib/.gitkeep
+
+Makefile

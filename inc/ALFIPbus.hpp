@@ -1,18 +1,19 @@
 #include"SWTelectronics.h"
 #include<list>
-class ALFIpbus
+class ALFIPbus
 {
     public:
-    ALFIpbus(std::string name);
+    ALFIPbus(std::string name);
     void init_link(std::string remote_address, int rport, int lport = 0);
-    void main_loop();
+   
+
+    void start_server();
     
     bool m_work;
 
     private:
 
-    void start_server();
-
+    void main_loop();
     std::string m_server_name;
     std::list<SWTelectronics> m_links;
 
