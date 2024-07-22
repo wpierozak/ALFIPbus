@@ -14,18 +14,22 @@ include_directories(${PROJECT_SOURCE_DIR}/inc)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-set (CMAKE_CXX_FLAGS  "-lboost_system -lpthread")
-
 # Include GNUInstallDirs to use standard directory variables
 include(GNUInstallDirs)
+
+# Find Boost libraries
+find_package(Boost REQUIRED COMPONENTS system)
 
 # Add the library
 add_library(IPbusInterface STATIC src/IPbusInterface.cpp)
 
+# Link Boost.System to the library
+target_link_libraries(IPbusInterface Boost::system)
+
 # Add the test executable
 add_executable(flp_test test/flp_test.cpp)
 
-# Link the test executable with the static library
-target_link_libraries(flp_test IPbusInterface)
+# Link the test executable with the static library and Boost.System library
+target_link_libraries(flp_test IPbusInterface Boost::system pthread dim)
 
-set (CMAKE_CXX_FLAGS  "-lboost_system -ldim -lpthread")
+
