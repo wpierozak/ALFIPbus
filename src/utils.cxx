@@ -1,9 +1,9 @@
-#include "Utils.h"
+#include "utils.h"
 
-namespace Utils
+namespace utils
 {
 
-void throw_runtime(std::string mess, std::string file, int line)
+void throwRuntime(std::string mess, std::string file, int line)
 {
     throw std::runtime_error("\nFILE: " + file + "\nLINE: " + std::to_string(line) + "\nMESSAGE: " + mess);
 }

@@ -1,5 +1,5 @@
 #include"SWTelectronics.h"
-#include"Utils.h"
+#include"utils.h"
 #include<string>
 
 void SWTelectronics::rpcHandler() 
@@ -17,7 +17,7 @@ void SWTelectronics::process_request(const char* swt_sequence)
 void SWTelectronics::split_lines(const char* swt_sequence)
 {
     std::string swt_str = swt_sequence;
-    m_lines = Utils::splitString(swt_str, "\n");
+    m_lines = utils::splitString(swt_str, "\n");
 }
 
 void SWTelectronics::parse_frames()

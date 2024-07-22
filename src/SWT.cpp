@@ -2,7 +2,7 @@
 #include<string>
 #include<cstring>
 #include<stdexcept>
-#include"Utils.h"
+#include"utils.h"
 #include"SWT.h"
 
         /*      HEX     */
