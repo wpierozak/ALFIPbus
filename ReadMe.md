@@ -48,21 +48,12 @@ To use the SWTelectronics class, follow these basic steps:
 
 ### Step-by-step
 
-If you already pulled repository and all submodules, the you need to:
+If you already pulled repository and all submodules, then you need to:
 
-1. Build DimRpcParallel library
 ```
-cmake3 DimRpcParallel
-cmake3 --build DimRpcParallel
-```
-2. Build IPbus library
-```
-cmake3 IPbus
-cmake3 --build IPbus
-```
-3. Build IpbusSWT
-```
-cmake3 .
+mkdir build
+cd build
+cmake3 ..
 cmake3 --build .
 ```
 
