@@ -107,7 +107,7 @@ Then the response to the request from example should be:
 
 ```
 success 0
-000000010041004BADCAFEE"
+000000010041004BADCAFEE
 ```
 
 Another example.
