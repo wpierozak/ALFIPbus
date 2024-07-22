@@ -2,7 +2,7 @@
 #define SWTELECTRONICS_H
 
 #include"IPbusInterface.h"
-#include"SWT.h"
+#include"Swt.h"
 #include"dimrpcparallel.h"
 #include<string>
 #include<boost/asio.hpp>
@@ -19,7 +19,7 @@ public:
 
     void rpcHandler();
     void process_request(const char* swt_sequence);
-    void write_frame(SWT frame);
+    void write_frame(Swt frame);
 
     void split_lines(const char* swt_sequence);
     void parse_frames();
@@ -27,7 +27,7 @@ public:
 
 private:
     std::vector<std::string> m_lines;
-    std::vector<SWT> m_frames;
+    std::vector<Swt> m_frames;
     std::string m_response;
 };
 

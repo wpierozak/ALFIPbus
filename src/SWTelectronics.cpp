@@ -36,8 +36,8 @@ void SWTelectronics::parse_frames()
 
         try
         {
-            m_frames.emplace_back(string_to_swt(frame.c_str()));
-            TransactionType type = (m_frames.back().getTransactionType() == SWT::TransactionType::READ) ? data_read : data_write;
+            m_frames.emplace_back(stringToSwt(frame.c_str()));
+            TransactionType type = (m_frames.back().getTransactionType() == Swt::TransactionType::Read) ? data_read : data_write;
             m_packet.addTransaction(type, m_frames.back().address, &m_frames.back().data, 1);
         }
         catch(const std::exception& e)
@@ -73,19 +73,19 @@ void SWTelectronics::execute()
     }
 }
 
-void SWTelectronics::write_frame(SWT frame)
+void SWTelectronics::write_frame(Swt frame)
 {
     m_response += "0x";
-    half_word h; 
+    HalfWord h; 
     h.data = frame.mode;
 
-    std::string mode = half_word_to_string(h);
+    std::string mode = halfWordToString(h);
     mode = mode.substr(1);
     m_response += mode;
 
-    word w; 
+    Word w; 
     w.data = frame.address;
-    m_response += word_to_string(w);
+    m_response += wordToString(w);
     w.data = frame.data;
-    m_response += word_to_string(w);
+    m_response += wordToString(w);
 }
