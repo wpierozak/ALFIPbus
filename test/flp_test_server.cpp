@@ -14,7 +14,7 @@ int main(int argc, const char** argv)
     DimServer::start(argv[1]);
     for(int i = 0; i < std::stoi(argv[3]); i++)
     {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::seconds(1000));
     }
 
     return 0;

@@ -11,27 +11,27 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include_directories(${PROJECT_SOURCE_DIR}/inc ${PROJECT_SOURCE_DIR}/IPbus/inc ${PROJECT_SOURCE_DIR}/DimRpcParallel/include/DimRpcParallel)
 
 # Set the output directories for binaries and libraries
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../lib)
 
 # Include GNUInstallDirs to use standard directory variables
 include(GNUInstallDirs)
 
-# Add the library
-add_library(DimRpcParallel SHARED IMPORTED)
-set_property(TARGET DimRpcParallel PROPERTY IMPORTED_LOCATION "DimRpcParallel/lib/libDimRpcParallel.so")
+# Find Boost libraries
+find_package(Boost REQUIRED COMPONENTS system)
 
-add_library(ipbus_swt STATIC src/SWT.cpp src/SWTelectronics.cpp)
+# Add subdirectories
+add_subdirectory(IPbus)
+add_subdirectory(DimRpcParallel)
 
-add_library(ipbus STATIC IMPORTED)
-set_property(TARGET ipbus PROPERTY IMPORTED_LOCATION "../IPbus/lib/libIPbusInterface.a")
+# Add the ipbus_swt library
+add_library(ipbus_swt STATIC src/SWT.cpp src/SWTelectronics.cpp src/Utils.cpp)
 
-# Add the test executable
-
+# Add the test executables
 add_executable(flp_test_server test/flp_test_server.cpp)
 add_executable(flp_test_client test/flp_test_client.cpp)
 
-# Link the test executable with the static library
-target_link_libraries(flp_test_server ipbus ipbus_swt DimRpcParallel)
-
-set (CMAKE_CXX_FLAGS  "-lboost_system -ldim -lpthread")
+# Link the test executables with the libraries
+target_link_libraries(flp_test_server IPbusInterface ipbus_swt DimRpcParallel Boost::system pthread dim)
+target_link_libraries(flp_test_client IPbusInterface ipbus_swt DimRpcParallel Boost::system pthread dim)
+target_link_libraries(ipbus_swt IPbusInterface DimRpcParallel Boost::system dim)
