@@ -22,7 +22,9 @@ IPbus is a packet-based protocol. An IPbus packet stacks multiple transactions, 
 
 If you already pulled repository, then you need to:
 ```
-cmake3 .
+mkdir build
+cd build
+cmake3 ..
 cmake3 --build .
 ```
 
