@@ -28,5 +28,4 @@ add_executable(flp_test test/flp_test.cpp)
 # Link the test executable with the static library
 target_link_libraries(flp_test IPbusInterface)
 
-
-
+set (CMAKE_CXX_FLAGS  "-lboost_system -ldim -lpthread")
