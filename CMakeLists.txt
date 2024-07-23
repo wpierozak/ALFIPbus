@@ -25,7 +25,7 @@ add_subdirectory(IPbus)
 add_subdirectory(DimRpcParallel)
 
 # Add the ipbus_swt library
-add_library(ipbus_swt STATIC src/Swt.cxx src/SwtElectronics.cxx src/utils.cxx)
+add_library(ipbus_swt STATIC src/Swt.cxx src/SwtLink.cxx src/utils.cxx)
 
 # Add the test executables
 add_executable(flp_test_server test/flp_test_server.cpp)

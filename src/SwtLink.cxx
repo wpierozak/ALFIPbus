@@ -1,7 +1,7 @@
 #include <string>
 #include <boost/exception/diagnostic_information.hpp>
 
-#include "SwtElectronics.h"
+#include "SwtLink.h"
 #include "utils.h"
 
 namespace fit_swt
