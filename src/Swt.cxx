@@ -2,6 +2,8 @@
 #include <string>
 #include <cstring>
 #include <stdexcept>
+#include <boost/throw_exception.hpp>
+
 #include "utils.h"
 #include "Swt.h"
 
@@ -52,7 +54,7 @@ uint8_t charToHex(char ch)
     case 'f':
       return 15;
     default:
-      THROW_RUNTIME("Invalid hexadecimal character - " + ch);
+       BOOST_THROW_EXCEPTION(std::runtime_error("Invalid hexadecimal character - " + ch));
   }
 }
 
@@ -89,10 +91,12 @@ std::string halfWordToString(HalfWord h)
 
 Swt stringToSwt(const char* str)
 {
-  Swt frame;
-  if (std::strlen(str) != 19) {
-    THROW_RUNTIME("SWT string is too short - received: " + std::to_string(strlen(str)) + " chars");
+  if (std::strlen(str) != 19) 
+  {
+    BOOST_THROW_EXCEPTION(std::runtime_error("SWT string is too short - received: " + std::to_string(strlen(str)) + " chars"));
   }
+
+  Swt frame;
 
   frame.data = (static_cast<uint32_t>(stringToByte(str[11], str[12])) << 24) + (static_cast<uint32_t>(stringToByte(str[13], str[14])) << 16) + (static_cast<uint32_t>(stringToByte(str[15], str[16])) << 8) + static_cast<uint32_t>(stringToByte(str[17], str[18]));
 
@@ -139,7 +143,7 @@ char hexToChar(uint8_t hex)
     case 15:
       return 'F';
     default:
-      THROW_RUNTIME("hexToChar: Value should be within range (0-15)");
+      BOOST_THROW_EXCEPTION(std::runtime_error("hexToChar: Value should be within range (0-15)"));
   }
 }
 

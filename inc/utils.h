@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SWT_UTILS_H
+#define SWT_UTILS_H
 
 #include <string>
 #include <vector>
@@ -9,9 +10,9 @@ namespace fit_swt
 
 namespace utils
 {
-void throwRuntime(std::string mess, std::string file, int line);
-std::vector<std::string> splitString(const std::string& text, std::string by);
+    std::vector<std::string> splitString(const std::string& text, std::string by);
 } // namespace utils
 
 }
-#define THROW_RUNTIME(mess) utils::throwRuntime(mess, __FILE__, __LINE__)
+
+#endif
