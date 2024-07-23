@@ -15,11 +15,6 @@ enum errorType { networkError = 0,
                  IPbusError = 1,
                  logicError = 2 };
 static const char* errorTypeName[3] = { "Network error", "IPbus error", "Logic error" };
-const uint16_t maxPacket = 368; // 368 words, limit from ethernet MTU of 1500 bytes
-enum errorType { networkError = 0,
-                 IPbusError = 1,
-                 logicError = 2 };
-static const char* errorTypeName[3] = { "Network error", "IPbus error", "Logic error" };
 
 class IPbusControlPacket
 {
@@ -43,13 +38,7 @@ class IPbusControlPacket
     request[0] = PacketHeader(control, 0);
   }
   ~IPbusControlPacket() {}
-  IPbusControlPacket()
-  {
-    request[0] = PacketHeader(control, 0);
-  }
-  ~IPbusControlPacket() {}
 
-  void debugPrint(std::string st);
   void debugPrint(std::string st);
 
   uint32_t* masks(uint32_t mask0, uint32_t mask1);
@@ -65,7 +54,6 @@ class IPbusControlPacket
   void reset();
 };
 
-} // namespace ipbus
 } // namespace ipbus
 
 #endif // IPBUSCONTROLPACKET_H
