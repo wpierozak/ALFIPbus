@@ -32,6 +32,6 @@ class SwtElectronics : public ipbus::IPbusTarget, DimRpcParallel
   std::string m_response;
 };
 
-}
+} // namespace fit_swt
 
 #endif // SWTELECTRONICS_H

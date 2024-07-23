@@ -10,9 +10,9 @@ namespace fit_swt
 
 namespace utils
 {
-    std::vector<std::string> splitString(const std::string& text, std::string by);
+std::vector<std::string> splitString(const std::string& text, std::string by);
 } // namespace utils
 
-}
+} // namespace fit_swt
 
 #endif

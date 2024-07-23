@@ -54,7 +54,7 @@ uint8_t charToHex(char ch)
     case 'f':
       return 15;
     default:
-       BOOST_THROW_EXCEPTION(std::runtime_error("Invalid hexadecimal character - " + ch));
+      BOOST_THROW_EXCEPTION(std::runtime_error("Invalid hexadecimal character - " + ch));
   }
 }
 
@@ -91,8 +91,7 @@ std::string halfWordToString(HalfWord h)
 
 Swt stringToSwt(const char* str)
 {
-  if (std::strlen(str) != 19) 
-  {
+  if (std::strlen(str) != 19) {
     BOOST_THROW_EXCEPTION(std::runtime_error("SWT string is too short - received: " + std::to_string(strlen(str)) + " chars"));
   }
 
@@ -147,4 +146,4 @@ char hexToChar(uint8_t hex)
   }
 }
 
-}
+} // namespace fit_swt

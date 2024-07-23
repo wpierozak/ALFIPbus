@@ -30,8 +30,7 @@ void SwtElectronics::parseFrames()
   m_frames.clear();
   m_lines.erase(m_lines.begin());
 
-  for (auto frame : m_lines) 
-  {
+  for (auto frame : m_lines) {
     if (frame.find("write") == std::string::npos)
       continue;
 
@@ -40,14 +39,11 @@ void SwtElectronics::parseFrames()
     for (int i = frame.find(','); i < size; i++)
       frame.pop_back();
 
-    try 
-    {
+    try {
       m_frames.emplace_back(stringToSwt(frame.c_str()));
       ipbus::TransactionType type = (m_frames.back().getTransactionType() == Swt::TransactionType::Read) ? ipbus::data_read : ipbus::data_write;
       m_packet.addTransaction(type, m_frames.back().address, &m_frames.back().data, 1);
-    } 
-    catch (const std::exception& e) 
-    {
+    } catch (const std::exception& e) {
       std::cerr << boost::diagnostic_information(e) << '\n';
     }
   }
@@ -89,4 +85,4 @@ void SwtElectronics::writeFrame(Swt frame)
   m_response += wordToString(w);
 }
 
-}
+} // namespace fit_swt

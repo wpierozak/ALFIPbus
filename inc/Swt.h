@@ -53,6 +53,6 @@ struct Swt {
 
 Swt stringToSwt(const char* str);
 
-}
+} // namespace fit_swt
 
 #endif
