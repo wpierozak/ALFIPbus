@@ -89,6 +89,23 @@ std::string halfWordToString(HalfWord h)
 
 /*      SWT     */
 
+Swt::TransactionType Swt::getTransactionType() const
+{
+  switch (mode & 0x07) {
+    case 0:
+      return TransactionType::Read;
+    case 1:
+      return TransactionType::Write;
+    case 2:
+    case 3:
+      return TransactionType::RMWbits;
+    case 4:
+      return TransactionType::RMWsum;
+    default:
+      return TransactionType::Read;
+  }
+}
+
 Swt stringToSwt(const char* str)
 {
   if (std::strlen(str) != 19) {

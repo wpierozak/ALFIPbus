@@ -37,18 +37,10 @@ struct Swt {
   uint16_t mode;
 
   enum class TransactionType { Read,
-                               Write };
-  TransactionType getTransactionType()
-  {
-    switch (mode & 0x03) {
-      case 0:
-        return TransactionType::Read;
-      case 1:
-        return TransactionType::Write;
-      default:
-        return TransactionType::Read;
-    }
-  }
+                               Write,
+                               RMWbits,
+                               RMWsum };
+  TransactionType getTransactionType() const;
 };
 
 Swt stringToSwt(const char* str);

@@ -14,9 +14,15 @@ void SwtLink::rpcHandler()
 
 void SwtLink::processRequest(const char* swtSequence)
 {
+  std::cerr << "Spliiting lines\n";
   splitLines(swtSequence);
+  std::cerr << "Parsing...\n";
   parseFrames();
-  execute();
+  std::cerr << "Parsing...\n";
+  if(interpretFrames())
+  {
+    execute();
+  }
 }
 
 void SwtLink::splitLines(const char* swtSequence)
@@ -41,12 +47,54 @@ void SwtLink::parseFrames()
 
     try {
       m_frames.emplace_back(stringToSwt(frame.c_str()));
-      ipbus::TransactionType type = (m_frames.back().getTransactionType() == Swt::TransactionType::Read) ? ipbus::data_read : ipbus::data_write;
-      m_packet.addTransaction(type, m_frames.back().address, &m_frames.back().data, 1);
     } catch (const std::exception& e) {
       std::cerr << boost::diagnostic_information(e) << '\n';
     }
+
   }
+}
+
+
+bool SwtLink::interpretFrames()
+{
+  for(int i = 0; i < m_frames.size(); i++)
+  {
+      switch (m_frames[i].getTransactionType())
+      {
+      case Swt::TransactionType::Read:
+        m_packet.addTransaction(ipbus::data_read, m_frames[i].address, &m_frames[i].data, 1);
+        break;
+      case Swt::TransactionType::Write:
+        m_packet.addTransaction(ipbus::data_write,  m_frames[i].address, &m_frames[i].data, 1);
+        break;
+      
+      case Swt::TransactionType::RMWbits:
+        if( i + 1 >= m_frames.size())
+        {
+          return false;
+        }
+        if((m_frames[i+1].mode & 0x07) != 3)
+        {
+          return false;
+        }
+        if(m_rmwbitsBuffers.find(m_frames[i+1].address) != m_rmwbitsBuffers.end())
+        {
+          return false;
+        }
+        m_rmwbitsBuffers.emplace(m_frames[i].address, std::array<uint32_t,2>({m_frames[i].data, m_frames[i+1].data}));
+        m_packet.addTransaction(ipbus::RMWbits, m_frames[i].address, m_rmwbitsBuffers[m_frames[i].address].data());
+        break;
+      
+      case Swt::TransactionType::RMWsum:
+
+        break;
+
+      default:
+        break;
+      }
+    }
+
+    return true;
 }
 
 void SwtLink::execute()
