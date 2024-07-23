@@ -22,12 +22,14 @@ class SwtLink : public ipbus::IPbusTarget, DimRpcParallel
   void rpcHandler();
   void processRequest(const char* swtSequence);
   void writeFrame(Swt frame);
+  void sendFailure();
 
   void splitLines(const char* swtSequence);
-  void parseFrames();
+  bool parseFrames();
   bool interpretFrames();
 
   void execute();
+  void createResponse();
 
  private:
   
