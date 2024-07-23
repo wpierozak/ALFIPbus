@@ -7,25 +7,25 @@
 namespace fit_swt
 {
 
-void SwtElectronics::rpcHandler()
+void SwtLink::rpcHandler()
 {
   processRequest(getString());
 }
 
-void SwtElectronics::processRequest(const char* swtSequence)
+void SwtLink::processRequest(const char* swtSequence)
 {
   splitLines(swtSequence);
   parseFrames();
   execute();
 }
 
-void SwtElectronics::splitLines(const char* swtSequence)
+void SwtLink::splitLines(const char* swtSequence)
 {
   std::string swtStr = swtSequence;
   m_lines = utils::splitString(swtStr, "\n");
 }
 
-void SwtElectronics::parseFrames()
+void SwtLink::parseFrames()
 {
   m_frames.clear();
   m_lines.erase(m_lines.begin());
@@ -49,7 +49,7 @@ void SwtElectronics::parseFrames()
   }
 }
 
-void SwtElectronics::execute()
+void SwtLink::execute()
 {
   if (transcieve(m_packet)) {
     m_response = "success ";
@@ -68,7 +68,7 @@ void SwtElectronics::execute()
   }
 }
 
-void SwtElectronics::writeFrame(Swt frame)
+void SwtLink::writeFrame(Swt frame)
 {
   m_response += "0x";
   HalfWord h;
