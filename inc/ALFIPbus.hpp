@@ -1,4 +1,4 @@
-#include"SWTelectronics.h"
+#include"SwtLink.h"
 #include<list>
 class ALFIPbus
 {
@@ -15,7 +15,7 @@ class ALFIPbus
 
     void main_loop();
     std::string m_server_name;
-    std::list<SWTelectronics> m_links;
+    std::list<fit_swt::SwtLink> m_links;
 
     boost::asio::io_context m_io_context;
 };
