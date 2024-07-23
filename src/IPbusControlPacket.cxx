@@ -75,64 +75,81 @@ void IPbusControlPacket::addTransaction(TransactionType type, uint32_t address, 
 
 bool IPbusControlPacket::processResponse() 
 { 
-    for (uint16_t i=0; i<transactionsList.size(); ++i) {
-        TransactionHeader *th = transactionsList.at(i).responseHeader;
-        if (th->ProtocolVersion != 2 || th->TransactionID != i || th->TypeID != transactionsList.at(i).requestHeader->TypeID) 
-        {
-            std::string message = "unexpected transaction header: " + std::to_string(*th) + ", expected: " + std::to_string(*transactionsList.at(i).requestHeader & 0xFFFFFFF0);
-            debugPrint(message);
-            return false;
-        }
-        if (th->Words > 0) switch (th->TypeID) {
-            case                data_read:
-            case nonIncrementingRead:
-            case   configurationRead: 
-            {
-                uint32_t wordsAhead = response + responseSize - (uint32_t *)th - 1;
-                if (th->Words > wordsAhead) 
-                { //response too short to contain nWords values
-                    if (m_dataOut.at(i) != nullptr) 
-                    {
-                        memcpy(m_dataOut.at(i), (uint32_t *)th + 1, wordsAhead * wordSize);
-                    }
-                    //emit successfulRead(wordsAhead); !!! 
-                    if (th->InfoCode == 0) 
-                    {
-                        std::string message = "read transaction from " + std::to_string(*transactionsList.at(i).address) + " truncated " + std::to_string(wordsAhead) + "words received: " + std::to_string(th->Words);
-                        debugPrint(message);
-                    }
-                    return false;
-                } 
-                else 
-                {
-                    if (m_dataOut.at(i) != nullptr)
-                    {
-                        memcpy(m_dataOut.at(i), (uint32_t *)th + 1, th->Words * wordSize);
-                    }
-                    //emit successfulRead(th->Words); !!!
-                }
-                break;
-
-            }
-
-        case RMWbits:
-        case RMWsum:
-          if (th->Words != 1) {
-            debugPrint("wrong RMW transaction");
-            return false;
-          }
-          // emit successfulRead(1); !!!
-
-        case data_write:
-        case nonIncrementingWrite:
-        case configurationWrite:
-          // emit successfulWrite(th->Words);
-          break;
-        default:
-          debugPrint("unknown transaction type");
+  for (uint16_t i=0; i<transactionsList.size(); ++i) 
+  {
+      TransactionHeader *th = transactionsList.at(i).responseHeader;
+      if (th->ProtocolVersion != 2 || th->TransactionID != i || th->TypeID != transactionsList.at(i).requestHeader->TypeID) 
+      {
+          std::string message = "unexpected transaction header: " + std::to_string(*th) + ", expected: " + std::to_string(*transactionsList.at(i).requestHeader & 0xFFFFFFF0);
+          debugPrint(message);
           return false;
       }
+      if (th->Words > 0)
+      { 
+        switch (th->TypeID) 
+        {
+          case data_read:
+          case nonIncrementingRead:
+          case configurationRead: 
+          {
+            uint32_t wordsAhead = response + responseSize - (uint32_t *)th - 1;
+            if (th->Words > wordsAhead) 
+            { 
+                if (m_dataOut.at(i) != nullptr) 
+                {
+                  memcpy(m_dataOut.at(i), (uint32_t *)th + 1, wordsAhead * wordSize);
+                }
+                  //emit successfulRead(wordsAhead); !!! 
+                if (th->InfoCode == 0) 
+                {
+                  std::string message = "read transaction from " + std::to_string(*transactionsList.at(i).address) + " truncated " + std::to_string(wordsAhead) + "words received: " + std::to_string(th->Words);
+                  debugPrint(message);
+                }
+                return false;
+            } 
+            else 
+            {
+                if (m_dataOut.at(i) != nullptr)
+                {
+                  memcpy(m_dataOut.at(i), (uint32_t *)th + 1, th->Words * wordSize);
+                }
+                    //emit successfulRead(th->Words); !!!
+            }
+          }
+          break;
 
+          case RMWbits:
+          case RMWsum:
+          {
+            if (th->Words != 1) 
+            {
+              debugPrint("wrong RMW transaction");
+              return false;
+            }
+            memcpy(m_dataOut.at(i), (uint32_t *)th + 1, wordSize);
+          }
+          break;
+
+        case data_write:
+        {
+          if (th->Words != 1) 
+          {
+            debugPrint("wrong write transaction");
+            return false;
+          }
+          memcpy(m_dataOut.at(i), (uint32_t *)th + 1, wordSize);
+        }
+          break;
+
+        case nonIncrementingWrite:
+        case configurationWrite:
+          break;
+
+        default:
+          debugPrint("Unknown transaction type");
+          return false;
+      }
+    }
     if (th->InfoCode != 0) {
       std::string message = th->infoCodeString() + ", address: " + std::to_string(*transactionsList.at(i).address + th->Words);
       debugPrint(message);
