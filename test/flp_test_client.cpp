@@ -3,6 +3,8 @@
 #include <chrono>
 #include <thread>
 
+using namespace fit_swt;
+
 int main(int argc, const char** argv)
 {
   char bad[] = "BAD";

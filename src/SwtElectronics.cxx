@@ -2,6 +2,9 @@
 #include "utils.h"
 #include <string>
 
+namespace fit_swt
+{
+
 void SwtElectronics::rpcHandler()
 {
   processRequest(getString());
@@ -36,7 +39,7 @@ void SwtElectronics::parseFrames()
 
     try {
       m_frames.emplace_back(stringToSwt(frame.c_str()));
-      TransactionType type = (m_frames.back().getTransactionType() == Swt::TransactionType::Read) ? data_read : data_write;
+      ipbus::TransactionType type = (m_frames.back().getTransactionType() == Swt::TransactionType::Read) ? ipbus::data_read : ipbus::data_write;
       m_packet.addTransaction(type, m_frames.back().address, &m_frames.back().data, 1);
     } catch (const std::exception& e) {
       std::cerr << e.what() << '\n';
@@ -78,4 +81,6 @@ void SwtElectronics::writeFrame(Swt frame)
   m_response += wordToString(w);
   w.data = frame.data;
   m_response += wordToString(w);
+}
+
 }

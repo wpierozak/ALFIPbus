@@ -1,6 +1,11 @@
-#pragma once
+#ifndef SWT_H
+#define SWT_H
+
 #include <cstdint>
 #include <string>
+
+namespace fit_swt
+{
 
 union HalfWord {
   struct fields {
@@ -47,3 +52,7 @@ struct Swt {
 };
 
 Swt stringToSwt(const char* str);
+
+}
+
+#endif

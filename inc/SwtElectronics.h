@@ -7,7 +7,10 @@
 #include <string>
 #include <boost/asio.hpp>
 
-class SwtElectronics : public IPbusTarget, DimRpcParallel
+namespace fit_swt
+{
+
+class SwtElectronics : public ipbus::IPbusTarget, DimRpcParallel
 {
  public:
   SwtElectronics(std::string rpc, boost::asio::io_context& ioContext, std::string address = "172.20.75.175", uint16_t rport = 50001, uint16_t lport = 0) : IPbusTarget(ioContext, address, lport, rport),
@@ -28,5 +31,7 @@ class SwtElectronics : public IPbusTarget, DimRpcParallel
   std::vector<Swt> m_frames;
   std::string m_response;
 };
+
+}
 
 #endif // SWTELECTRONICS_H

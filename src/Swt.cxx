@@ -5,6 +5,9 @@
 #include "utils.h"
 #include "Swt.h"
 
+namespace fit_swt
+{
+
 /*      HEX     */
 
 uint8_t charToHex(char ch)
@@ -138,4 +141,6 @@ char hexToChar(uint8_t hex)
     default:
       THROW_RUNTIME("hexToChar: Value should be within range (0-15)");
   }
+}
+
 }

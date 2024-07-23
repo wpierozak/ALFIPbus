@@ -1,5 +1,7 @@
 #include "utils.h"
 
+namespace fit_swt
+{
 namespace utils
 {
 
@@ -28,3 +30,4 @@ std::vector<std::string> splitString(const std::string& text, std::string by)
   return result;
 }
 } // namespace utils
+} // namespace fit_swt
