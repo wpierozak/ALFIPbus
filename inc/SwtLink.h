@@ -33,7 +33,6 @@ class SwtLink : public ipbus::IPbusTarget, DimRpcParallel
 
  private:
   
-  std::map<uint32_t, std::array<uint32_t, 2>> m_rmwbitsBuffers;
   std::vector<std::string> m_lines;
   std::vector<Swt> m_frames;
   std::string m_response;

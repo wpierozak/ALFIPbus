@@ -71,16 +71,18 @@ bool SwtLink::parseFrames()
 
 bool SwtLink::interpretFrames()
 {
+  uint32_t buffer[2];
+
   for(int i = 0; i < m_frames.size(); i++)
   {
       switch (m_frames[i].getTransactionType())
       {
       case Swt::TransactionType::Read:
-        m_packet.addTransaction(ipbus::data_read, m_frames[i].address, &m_frames[i].data, 1);
+        m_packet.addTransaction(ipbus::data_read, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
         break;
 
       case Swt::TransactionType::Write:
-        m_packet.addTransaction(ipbus::data_write,  m_frames[i].address, &m_frames[i].data, 1);
+        m_packet.addTransaction(ipbus::data_write,  m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
         break;
       
       case Swt::TransactionType::RMWbits:
@@ -94,17 +96,13 @@ bool SwtLink::interpretFrames()
           std::cerr << "RMWbits failed: second frame have been not received" << std::endl;
           return false;
         }
-        if(m_rmwbitsBuffers.find(m_frames[i+1].address) != m_rmwbitsBuffers.end())
-        {
-          std::cerr << "RMWbits failed: only one RMWbits operation per register can be placed within one sequence" << std::endl;
-          return false;
-        }
-        m_rmwbitsBuffers.emplace(m_frames[i].address, std::array<uint32_t,2>({m_frames[i].data, m_frames[i+1].data}));
-        m_packet.addTransaction(ipbus::RMWbits, m_frames[i].address, m_rmwbitsBuffers[m_frames[i].address].data(), 2);
+        buffer[0] = m_frames[i].data;
+        buffer[1] = m_frames[i+1].data;
+        m_packet.addTransaction(ipbus::RMWbits, m_frames[i].address, buffer, &m_frames[i].data, 2);
         break;
       
       case Swt::TransactionType::RMWsum:
-        m_packet.addTransaction(ipbus::RMWsum, m_frames[i].address, &m_frames[i].data);
+        m_packet.addTransaction(ipbus::RMWsum, m_frames[i].address, &m_frames[i].data, &m_frames[i].data);
         break;
 
       default:
@@ -123,8 +121,6 @@ void SwtLink::execute()
     sendFailure();
   }
 }
-
-
 
 void SwtLink::createResponse()
 {
