@@ -77,7 +77,6 @@ void SwtLink::writeFrame(Swt frame)
   std::string mode = halfWordToString(h);
   mode = mode.substr(1);
   m_response += mode;
-
   Word w;
   w.data = frame.address;
   m_response += wordToString(w);
