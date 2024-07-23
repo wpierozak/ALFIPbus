@@ -19,7 +19,7 @@ include(GNUInstallDirs)
 find_package(Boost REQUIRED COMPONENTS system)
 
 # Add the library
-add_library(IPbusInterface STATIC src/IPbusInterface.cpp src/IPbusControlPacket.cpp)
+add_library(IPbusInterface STATIC src/IPbusInterface.cxx src/IPbusControlPacket.cxx)
 
 # Link Boost.System to the library
 target_include_directories(IPbusInterface PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc)
