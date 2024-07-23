@@ -7,7 +7,7 @@
 #include<string>
 #include <climits>
 
-namespace IPbus
+namespace ipbus
 {
 
 template <typename T>

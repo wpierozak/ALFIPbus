@@ -2,7 +2,7 @@
 #include<iostream>
 #include"IPbusInterface.h"
 
-namespace IPbus
+namespace ipbus
 {
 
 void* IPbusTarget::ioThreadFunction(void* object)

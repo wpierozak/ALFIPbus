@@ -5,7 +5,7 @@
 #include<vector>
 #include<iostream>
 
-namespace IPbus
+namespace ipbus
 {
 
 const uint16_t maxPacket = 368; //368 words, limit from ethernet MTU of 1500 bytes

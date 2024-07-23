@@ -1,6 +1,6 @@
 #include"IPbusControlPacket.h"
 
-namespace IPbus
+namespace ipbus
 {
 
 void IPbusControlPacket::debugPrint(std::string st) 

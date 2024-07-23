@@ -6,7 +6,7 @@
 
 #define SIZE 2
 
-using namespace IPbus;
+using namespace ipbus;
 
 int main() {
 try {
