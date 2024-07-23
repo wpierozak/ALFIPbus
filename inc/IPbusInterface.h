@@ -1,115 +1,115 @@
 #ifndef IPbusInterface_H
 #define IPbusInterface_H
 
-#include<mutex>
-#include<boost/asio.hpp>
-#include<memory>
-#include<pthread.h>
+#include <mutex>
+#include <boost/asio.hpp>
+#include <memory>
+#include <pthread.h>
 
-#include"IPbusControlPacket.h"
+#include "IPbusControlPacket.h"
 
 /* Sync and async buffer size */
 #define IO_BUFFER_SIZE 1024
 
 /* Should be used instead of simple "return" in every method that locks m_link_mutex */
-#define RETURN_AND_RELEASE(mutex, statement) pthread_mutex_unlock(&mutex); return statement;
+#define RETURN_AND_RELEASE(mutex, statement) \
+  pthread_mutex_unlock(&mutex);              \
+  return statement;
 
 namespace ipbus
 {
 
 class IPbusTarget
 {
-    public:
+ public:
+  enum class DebugMode { Full = 0,
+                         Vital = 1,
+                         Non };
 
-    enum class DebugMode{Full = 0, Vital = 1, Non};
+ private:
+  // BOOST ASIO //
 
-    private:
+  boost::asio::io_context& m_ioContext;
 
-    // BOOST ASIO //
+  uint16_t m_localPort;
+  uint16_t m_remotePort;
 
-    boost::asio::io_context& m_ioContext;
+  std::string m_ipAddress;
 
-    uint16_t m_localPort;
-    uint16_t m_remotePort;
+  boost::asio::ip::udp::endpoint m_localEndpoint;
+  boost::asio::ip::udp::endpoint m_remoteEndpoint;
 
-    std::string m_ipAddress;
+  boost::asio::ip::udp::socket m_socket;
 
-    boost::asio::ip::udp::endpoint m_localEndpoint;
-    boost::asio::ip::udp::endpoint m_remoteEndpoint;
+  // IPBUS status //
 
-    boost::asio::ip::udp::socket m_socket;
+  const StatusPacket m_status;
+  StatusPacket m_statusRespone;
+  bool m_isAvailable{ false };
 
-    // IPBUS status //
+  // IPBUS transaction //
 
-    const StatusPacket m_status;
-    StatusPacket m_statusRespone;
-    bool m_isAvailable{false};
+ protected:
+  IPbusControlPacket m_packet;
 
-    // IPBUS transaction //
+ private:
+  bool openSocket();
 
-    protected:
-    IPbusControlPacket m_packet;
+  // Sync communication
 
-    private:
+  size_t sync_recv(char* dest_buffer, size_t max_size);
 
-    bool openSocket();
+  // Periodic communication //
 
-    // Sync communication
+  void ioContextRun();
 
-    size_t sync_recv(char* dest_buffer, size_t max_size);
-   
-    // Periodic communication //
+  pthread_t m_thread;
+  bool m_isRunning{ false };
+  void startIoThread();
+  void shutdownIo();
 
-    void ioContextRun();
+  pthread_mutex_t m_linkMutex;
+  pthread_mutex_t m_timerMutex;
+  pthread_mutex_t m_threadStateMutex;
+  void intializeMutex(pthread_mutex_t& mutex);
 
-    pthread_t m_thread;
-    bool m_isRunning{false};
-    void startIoThread();
-    void shutdownIo();
+  bool m_stopTimer{ false };
+  boost::asio::steady_timer m_timer;
+  std::chrono::seconds m_tick{ 1 };
 
-    pthread_mutex_t m_linkMutex;
-    pthread_mutex_t m_timerMutex;
-    pthread_mutex_t m_threadStateMutex;
-    void intializeMutex(pthread_mutex_t& mutex);
+  void stopTimer();
+  void resetTimer();
 
-    bool m_stopTimer{false};
-    boost::asio::steady_timer m_timer;
-    std::chrono::seconds m_tick{1};
+  virtual void sync(const boost::system::error_code& error);
 
-    void stopTimer();
-    void resetTimer();
+  char m_asyncBuffer[IO_BUFFER_SIZE];
 
-    virtual void sync(const boost::system::error_code& error);
+  DebugMode m_debug{ DebugMode::Vital };
 
-    char m_asyncBuffer[IO_BUFFER_SIZE];
+ public:
+  // enum class DebugMode{Full = 0, Vital = 1, Non};
 
-    DebugMode m_debug{DebugMode::Vital};
+  IPbusTarget(boost::asio::io_context& io_context, std::string address = "172.20.75.175", uint16_t lport = 0, uint16_t rport = 50001);
+  ~IPbusTarget();
 
-public:
+  bool checkStatus();
+  bool reopen();
 
-    //enum class DebugMode{Full = 0, Vital = 1, Non};
+  void startTimer();
 
-    IPbusTarget(boost::asio::io_context & io_context, std::string address = "172.20.75.175", uint16_t lport=0, uint16_t rport=50001);
-    ~IPbusTarget();
+  bool transcieve(IPbusControlPacket& p, bool shouldResponseBeProcessed = true);
 
-    bool checkStatus();
-    bool reopen();
+  std::chrono::seconds timerTick() const { return m_tick; }
+  void timerTick(std::chrono::seconds tick) { m_tick = tick; }
 
-    void startTimer();
+  DebugMode debugMode() const { return m_debug; }
+  void debugMode(DebugMode mode) { m_debug = mode; }
 
-    bool transcieve(IPbusControlPacket &p, bool shouldResponseBeProcessed = true);
+  bool isIPbusOK() { return m_isAvailable; }
 
-    std::chrono::seconds timerTick() const {return m_tick;}
-    void timerTick(std::chrono::seconds tick) {m_tick = tick;}
-
-    DebugMode debugMode() const {return m_debug;}
-    void debugMode(DebugMode mode) {m_debug = mode;}
-
-    bool isIPbusOK() { return m_isAvailable;}
-
-    static void* ioThreadFunction(void* object);
+  static void* ioThreadFunction(void* object);
 };
 
-}
+} // namespace ipbus
 
 #endif
