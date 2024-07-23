@@ -47,47 +47,18 @@ class IPbusTarget
   StatusPacket m_statusRespone;
   bool m_isAvailable{ false };
 
-  // IPBUS transaction //
-
- protected:
-  IPbusControlPacket m_packet;
-
- private:
   bool openSocket();
 
   // Sync communication
 
   size_t sync_recv(char* dest_buffer, size_t max_size);
 
-  // Periodic communication //
-
-  void ioContextRun();
-
-  pthread_t m_thread;
-  bool m_isRunning{ false };
-  void startIoThread();
-  void shutdownIo();
-
   pthread_mutex_t m_linkMutex;
-  pthread_mutex_t m_timerMutex;
-  pthread_mutex_t m_threadStateMutex;
   void intializeMutex(pthread_mutex_t& mutex);
-
-  bool m_stopTimer{ false };
-  boost::asio::steady_timer m_timer;
-  std::chrono::seconds m_tick{ 1 };
-
-  void stopTimer();
-  void resetTimer();
-
-  virtual void sync(const boost::system::error_code& error);
-
-  char m_asyncBuffer[IO_BUFFER_SIZE];
 
   DebugMode m_debug{ DebugMode::Vital };
 
  public:
-  // enum class DebugMode{Full = 0, Vital = 1, Non};
 
   IPbusTarget(boost::asio::io_context& io_context, std::string address = "172.20.75.175", uint16_t lport = 0, uint16_t rport = 50001);
   ~IPbusTarget();
@@ -99,15 +70,10 @@ class IPbusTarget
 
   bool transcieve(IPbusControlPacket& p, bool shouldResponseBeProcessed = true);
 
-  std::chrono::seconds timerTick() const { return m_tick; }
-  void timerTick(std::chrono::seconds tick) { m_tick = tick; }
-
   DebugMode debugMode() const { return m_debug; }
   void debugMode(DebugMode mode) { m_debug = mode; }
 
   bool isIPbusOK() { return m_isAvailable; }
-
-  static void* ioThreadFunction(void* object);
 };
 
 } // namespace ipbus

@@ -5,47 +5,24 @@
 namespace ipbus
 {
 
-void* IPbusTarget::ioThreadFunction(void* object)
-{
-  IPbusTarget* interface = (IPbusTarget*)object;
-
-  pthread_mutex_lock(&interface->m_threadStateMutex);
-  interface->m_isRunning = true;
-  pthread_mutex_unlock(&interface->m_threadStateMutex);
-
-  if (interface->debugMode() == DebugMode::Full)
-    std::cerr << "IO thread function - running" << std::endl;
-  interface->ioContextRun();
-
-  pthread_mutex_lock(&interface->m_threadStateMutex);
-  interface->m_isRunning = false;
-  pthread_mutex_unlock(&interface->m_threadStateMutex);
-
-  return NULL;
-}
-
 IPbusTarget::IPbusTarget(boost::asio::io_context& io_context, std::string address, uint16_t lport, uint16_t rport) : m_ioContext(io_context),
                                                                                                                      m_localPort(lport),
                                                                                                                      m_remotePort(rport),
                                                                                                                      m_ipAddress(address),
                                                                                                                      m_localEndpoint(boost::asio::ip::udp::v4(), m_localPort),
                                                                                                                      m_remoteEndpoint(boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(m_ipAddress), m_remotePort)),
-                                                                                                                     m_socket(io_context),
+                                                                                                                     m_socket(io_context)
 
-                                                                                                                     m_timer(m_ioContext)
+                                                                                                                     
 {
   openSocket();
 
   intializeMutex(m_linkMutex);
-  intializeMutex(m_timerMutex);
-  intializeMutex(m_threadStateMutex);
-
   checkStatus();
 }
 
 IPbusTarget::~IPbusTarget()
 {
-  shutdownIo();
 }
 
 bool IPbusTarget::openSocket()
@@ -183,66 +160,9 @@ bool IPbusTarget::transcieve(IPbusControlPacket& p, bool shouldResponseBeProcess
   RETURN_AND_RELEASE(m_linkMutex, false);
 }
 
-void IPbusTarget::resetTimer()
-{
-  pthread_mutex_lock(&m_timerMutex);
-  if (m_stopTimer) {
-    m_timer.cancel();
-    RETURN_AND_RELEASE(m_timerMutex, )
-  }
-  m_timer.expires_from_now(m_tick);
-  m_timer.async_wait(boost::bind(&IPbusTarget::sync, this, boost::asio::placeholders::error));
-
-  RETURN_AND_RELEASE(m_timerMutex, )
-}
-
-void IPbusTarget::sync(const boost::system::error_code& error)
-{
-  checkStatus();
-  resetTimer();
-}
-
-void IPbusTarget::ioContextRun()
-{
-  m_ioContext.run();
-}
-
 void IPbusTarget::intializeMutex(pthread_mutex_t& mutex)
 {
   pthread_mutex_init(&mutex, NULL);
-}
-
-void IPbusTarget::startIoThread()
-{
-  pthread_create(&m_thread, NULL, IPbusTarget::ioThreadFunction, (void*)this);
-}
-
-void IPbusTarget::shutdownIo()
-{
-  stopTimer();
-  m_socket.close();
-  if (m_isRunning == true) {
-    m_ioContext.stop();
-    pthread_join(m_thread, NULL);
-  }
-}
-
-void IPbusTarget::startTimer()
-{
-  pthread_mutex_lock(&m_timerMutex);
-  startIoThread();
-  m_stopTimer = false;
-  m_timer.expires_from_now(m_tick);
-  m_timer.async_wait(boost::bind(&IPbusTarget::sync, this, boost::asio::placeholders::error));
-
-  pthread_mutex_unlock(&m_timerMutex);
-}
-
-void IPbusTarget::stopTimer()
-{
-  pthread_mutex_lock(&m_timerMutex);
-  m_stopTimer = true;
-  pthread_mutex_unlock(&m_timerMutex);
 }
 
 } // namespace ipbus

@@ -15,7 +15,7 @@ try {
         boost::asio::io_context io_service;
         IPbusTarget target(io_service,"172.20.75.175", 0, 50001);
         target.debugMode(IPbusTarget::DebugMode::Full);
-        target.timerTick(std::chrono::seconds(1));
+        //target.timerTick(std::chrono::seconds(1));
         
         IPbusControlPacket packet;
 
@@ -41,7 +41,7 @@ try {
         packet.addTransaction(TransactionType::data_read, address, data, data, SIZE);
         target.transcieve(packet);
         std::cout << std::hex << data[0] << ' ' << std::hex << data[1] << std::endl;
-        target.startTimer();
+       // target.startTimer();
         std::this_thread::sleep_for(std::chrono::seconds(5));
 
         for(int i = 0; i < 2; i++)
