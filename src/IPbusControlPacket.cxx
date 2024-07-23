@@ -5,10 +5,11 @@ namespace ipbus
 
 void IPbusControlPacket::debugPrint(std::string st)
 {
-  std::cerr << "request:\n";
+  std::cerr << st << std::endl;
+  std::cerr << "Request:\n";
   for (uint16_t i = 0; i < requestSize; ++i)
     std::cerr << std::hex << request[i] << std::endl;
-  std::cerr << "\t\tresponse:" << std::endl;
+  std::cerr << "\t\tResponse:" << std::endl;
   for (uint16_t i = 0; i < responseSize; ++i)
     std::cerr << "\t\t" << std::hex << response[i] << std::endl;
 }
@@ -131,16 +132,6 @@ bool IPbusControlPacket::processResponse()
           break;
 
         case data_write:
-        {
-          if (th->Words != 1) 
-          {
-            debugPrint("wrong write transaction");
-            return false;
-          }
-          memcpy(m_dataOut.at(i), (uint32_t *)th + 1, wordSize);
-        }
-          break;
-
         case nonIncrementingWrite:
         case configurationWrite:
           break;

@@ -16,7 +16,6 @@ IPbusTarget::IPbusTarget(boost::asio::io_context& io_context, std::string addres
                                                                                                                      
 {
   openSocket();
-
   intializeMutex(m_linkMutex);
   checkStatus();
 }

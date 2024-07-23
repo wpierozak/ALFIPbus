@@ -66,8 +66,6 @@ class IPbusTarget
   bool checkStatus();
   bool reopen();
 
-  void startTimer();
-
   bool transcieve(IPbusControlPacket& p, bool shouldResponseBeProcessed = true);
 
   DebugMode debugMode() const { return m_debug; }
