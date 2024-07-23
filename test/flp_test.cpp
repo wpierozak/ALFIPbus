@@ -6,14 +6,16 @@
 
 #define SIZE 2
 
+using namespace IPbus;
+
 int main() {
 try {
         srand(time(NULL));
 
         boost::asio::io_context io_service;
         IPbusTarget target(io_service,"172.20.75.175", 0, 50001);
-        target.debug_mode(IPbusTarget::DebugMode::Full);
-        target.timer_tick(std::chrono::seconds(1));
+        target.debugMode(IPbusTarget::DebugMode::Full);
+        target.timerTick(std::chrono::seconds(1));
         
         IPbusControlPacket packet;
 
@@ -39,7 +41,7 @@ try {
         packet.addTransaction(TransactionType::data_read, address, data, SIZE);
         target.transcieve(packet);
         std::cout << std::hex << data[0] << ' ' << std::hex << data[1] << std::endl;
-        target.start_timer();
+        target.startTimer();
         std::this_thread::sleep_for(std::chrono::seconds(5));
 
         for(int i = 0; i < 2; i++)

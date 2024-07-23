@@ -1,17 +1,3 @@
-/**
- * @file IPbusHeaders.h
- *
- * Representation of the packet and transaction headers. Compare with the [IPbus specification](https://ipbus.web.cern.ch/doc/user/html/_downloads/d251e03ea4badd71f62cffb24f110cfa/ipbus_protocol_v2_0.pdf).
- *
- * # Terminology
- * ## IPbus transaction
- * In the IPbus specification - An individual IPbus request or response
- *
- * Here - stores an individual IPbus request and its response (after it comes)
- *
- * ## IPbus packet
- * An IPbus packet header (32b) + one or more individual IPbus transactions, which together form the payload of the transport protocol
-*/
 
 #ifndef IPBUSHEADERS_H
 #define IPBUSHEADERS_H
@@ -20,6 +6,9 @@
 #include<cstring>
 #include<string>
 #include <climits>
+
+namespace IPbus
+{
 
 template <typename T>
 T swap_endian(T u)
@@ -159,5 +148,6 @@ struct StatusPacket {
     uint32_t controlHistory[8] = {0,0,0,0, 0,0,0,0};
 };
 
+}
 
 #endif // IPBUSHEADERS_H
