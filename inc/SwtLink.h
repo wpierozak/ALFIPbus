@@ -32,7 +32,7 @@ class SwtLink : public ipbus::IPbusTarget, DimRpcParallel
   void createResponse();
 
  private:
-  
+  ipbus::IPbusControlPacket m_packet;
   std::vector<std::string> m_lines;
   std::vector<Swt> m_frames;
   std::string m_response;
