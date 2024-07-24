@@ -17,8 +17,8 @@ int main() {
         uint32_t data[SIZE] = {0x0,0x0};
         uint32_t address = 0x1004;
 
-        packet.addTransaction(TransactionType::data_read, address, data, SIZE);
-        target.transcieve(packet);
+        packet.addTransaction(TransactionType::DataRead, address, data, SIZE);
+        target.transceive(packet);
 
         std::cout << "\nRead...\n";
         std::cout << std::hex << data[0] << ' ' << std::hex << data[1] << std::endl;

@@ -51,7 +51,7 @@ class IPbusTarget
 
   // Sync communication
 
-  size_t sync_recv(char* dest_buffer, size_t max_size);
+  size_t receive(char* destBuffer, size_t maxSize);
 
   pthread_mutex_t m_linkMutex;
   void intializeMutex(pthread_mutex_t& mutex);
@@ -60,13 +60,13 @@ class IPbusTarget
 
  public:
 
-  IPbusTarget(boost::asio::io_context& io_context, std::string address = "172.20.75.175", uint16_t lport = 0, uint16_t rport = 50001);
-  ~IPbusTarget();
+  IPbusTarget(boost::asio::io_context& ioContext, std::string address = "172.20.75.175", uint16_t lport = 0, uint16_t rport = 50001);
+  virtual ~IPbusTarget() {}
 
   bool checkStatus();
   bool reopen();
 
-  bool transcieve(IPbusControlPacket& p, bool shouldResponseBeProcessed = true);
+  bool transceive(IPbusControlPacket& p, bool shouldResponseBeProcessed = true);
 
   DebugMode debugMode() const { return m_debug; }
   void debugMode(DebugMode mode) { m_debug = mode; }
