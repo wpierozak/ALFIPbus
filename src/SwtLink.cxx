@@ -16,7 +16,7 @@ void SwtLink::processRequest(const char* swtSequence)
 {
   splitLines(swtSequence);
 
-  if (parseFrames() == false) {
+  if (!parseFrames()) {
     sendFailure();
     return;
   }
@@ -38,20 +38,22 @@ void SwtLink::splitLines(const char* swtSequence)
 bool SwtLink::parseFrames()
 {
   m_frames.clear();
+  if (m_lines[0] != "reset") {
+    return false;
+  }
   m_lines.erase(m_lines.begin());
 
-  for (auto frame : m_lines) {
-    if (frame.find("write") == std::string::npos) {
+  for (auto line : m_lines) {
+    if (line.find("write") == std::string::npos) {
       m_frames.push_back({ 0, 0, 0 });
       continue;
     }
 
-    frame = frame.substr(frame.find("0x") + 2);
-    int size = frame.size();
-    frame = frame.substr(0, frame.find(','));
+    line = line.substr(line.find("0x") + 2);
+    line = line.substr(0, line.find(','));
 
     try {
-      m_frames.emplace_back(stringToSwt(frame.c_str()));
+      m_frames.emplace_back(stringToSwt(line.c_str()));
     } catch (const std::exception& e) {
       std::cerr << boost::diagnostic_information(e) << '\n';
       return false;
@@ -83,12 +85,12 @@ bool SwtLink::interpretFrames()
       case Swt::TransactionType::RMWbits:
         std::cerr << "RMWbits operation...\n";
         if (i + 1 >= m_frames.size()) {
-          std::cerr << "RMWbits failed: second frame have been not received" << std::endl;
+          std::cerr << "RMWbits failed: second frame has been not received" << std::endl;
           return false;
         }
         if (m_frames[i + 1].data == 0 && m_frames[i + 1].address == 0 && m_frames[i + 1].mode == 0) {
           if (i + 2 >= m_frames.size()) {
-            std::cerr << "RMWbits failed: second frame have been not received" << std::endl;
+            std::cerr << "RMWbits failed: second frame has been not received" << std::endl;
             return false;
           }
           if ((m_frames[i + 2].mode) != 3) {
