@@ -91,7 +91,7 @@ std::string halfWordToString(HalfWord h)
 
 Swt::TransactionType Swt::getTransactionType() const
 {
-  switch (mode & 0x07) {
+  switch (mode) {
     case 0:
       return TransactionType::Read;
     case 1:
@@ -102,7 +102,7 @@ Swt::TransactionType Swt::getTransactionType() const
     case 4:
       return TransactionType::RMWsum;
     default:
-      return TransactionType::Read;
+       BOOST_THROW_EXCEPTION(std::runtime_error("Unknown transaction type " + std::to_string(mode)));
   }
 }
 
@@ -118,7 +118,7 @@ Swt stringToSwt(const char* str)
 
   frame.address = (static_cast<uint32_t>(stringToByte(str[3], str[4])) << 24) + (static_cast<uint32_t>(stringToByte(str[5], str[6])) << 16) + (static_cast<uint32_t>(stringToByte(str[7], str[8])) << 8) + static_cast<uint32_t>(stringToByte(str[9], str[10]));
 
-  frame.mode = (static_cast<uint32_t>(charToHex(str[0])) << 8) + static_cast<uint16_t>(stringToByte(str[1], str[2]));
+  frame.mode = static_cast<uint16_t>(stringToByte(str[1], str[2])) & static_cast<uint16_t>(0x07);
 
   return frame;
 }
