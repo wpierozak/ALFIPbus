@@ -74,12 +74,12 @@ bool SwtLink::interpretFrames()
     switch (m_frames[i].getTransactionType()) {
       case Swt::TransactionType::Read:
         std::cerr << "Read operation...\n";
-        m_packet.addTransaction(ipbus::data_read, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
+        m_packet.addTransaction(ipbus::DataRead, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
         break;
 
       case Swt::TransactionType::Write:
         std::cerr << "Write operation...\n";
-        m_packet.addTransaction(ipbus::data_write, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
+        m_packet.addTransaction(ipbus::DataWrite, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
         break;
 
       case Swt::TransactionType::RMWbits:
@@ -128,7 +128,7 @@ bool SwtLink::interpretFrames()
 
 void SwtLink::execute()
 {
-  if (transcieve(m_packet)) {
+  if (transceive(m_packet)) {
     createResponse();
   } else {
     sendFailure();
