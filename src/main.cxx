@@ -18,8 +18,6 @@ int main(int argc, const char** argv)
 {
   AlfConfig cfg(argc, argv);
 
-  BOOST_LOG_TRIVIAL(info) << "Starting Alf";
-
   AlfIPbus alf(cfg);
   alf.initLinks();
   alf.startServer();
