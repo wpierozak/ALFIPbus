@@ -1,12 +1,8 @@
-// #include "AlfIPbus.h"
-// #include <chrono>
-// #include <thread>
-// #include <ctime>
-
 #define BOOST_LOG_DYN_LINK 1
 
-#include "../inc/AlfConfig.h"
-#include "../inc/AlfIPbus.h"
+#include "AlfConfig.h"
+#include "AlfIPbus.h"
+#include "logging.h"
 
 #include <boost/log/trivial.hpp>
 
@@ -17,6 +13,8 @@
 int main(int argc, const char** argv)
 {
   AlfConfig cfg(argc, argv);
+
+  logging::init(cfg.logFilename);
 
   AlfIPbus alf(cfg);
   alf.initLinks();

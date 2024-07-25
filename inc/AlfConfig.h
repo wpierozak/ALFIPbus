@@ -11,8 +11,7 @@ namespace po = boost::program_options;
 
 #include <boost/log/trivial.hpp>
 
-struct AlfConfig
-{
+struct AlfConfig {
   struct Link {
     std::string address;
     unsigned rport;
@@ -28,25 +27,29 @@ struct AlfConfig
       }
     }
 
-    operator std::string() {
+    operator std::string()
+    {
       return "addr: " + address + ", rport: " + std::to_string(rport);
     }
   };
 
   std::string name;
+  std::string logFilename;
   std::vector<Link> links;
 
-  AlfConfig(int argc, const char** argv) {
+  AlfConfig(int argc, const char** argv)
+  {
     std::vector<std::string> linkArgs;
 
     // Declare the supported options.
     po::options_description desc("Allowed options");
-    desc.add_options()
-      ("help,h", "see available options")
-      ("name,n", po::value<std::string>(&name), "set server name")
-      ("link,l", po::value<std::vector<std::string>>(&linkArgs),
-       "set the IP address and port for consecutive links (can be used multiple times)."
-       "\nFormat: [IP address]:[Port number]");
+    desc.add_options()("help,h", "see available options")
+    ("name,n", po::value<std::string>(&name), "set server name")
+    ("link,l", po::value<std::vector<std::string>>(&linkArgs),
+     "set the IP address and port for consecutive links (can be used multiple times).\n"
+     "Format: [IP address]:[Port number]")
+    ("log_file,f", po::value<std::string>(&logFilename)->default_value(""),
+                                            "specify file path for the logs. If unspecified, logs get printed to stdout");
 
     // Parse the provided arguments
     po::variables_map vm;
@@ -59,12 +62,12 @@ struct AlfConfig
       exit(0);
     }
 
-    if(!vm.count("name")) {
+    if (!vm.count("name")) {
       std::cerr << "Error: No name provided\n";
       exit(1);
     }
 
-    if(!vm.count("link")) {
+    if (!vm.count("link")) {
       std::cerr << "Error: No link address provided\n";
       exit(1);
     }
@@ -75,9 +78,10 @@ struct AlfConfig
     std::cout << static_cast<std::string>(*this) << "\n";
   }
 
-  operator std::string() {
+  operator std::string()
+  {
     std::string result = "ALF IPbus\nNAME: " + name + "\n";
-    for(size_t i = 0; i < links.size(); i++)
+    for (size_t i = 0; i < links.size(); i++)
       result += "LINK_" + std::to_string(i) + ": " + static_cast<std::string>(links[i]) + "\n";
     return result;
   }
