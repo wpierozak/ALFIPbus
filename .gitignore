@@ -4,4 +4,6 @@ bin/*
 lib/*
 !lib/.gitkeep
 
+build/
+
 Makefile

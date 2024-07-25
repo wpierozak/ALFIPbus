@@ -1,21 +1,24 @@
 #include "AlfIPbus.h"
 
-AlfIPbus::AlfIPbus(std::string name)
-  : m_serverName(name), m_work(true)
+AlfIPbus::AlfIPbus(const AlfConfig& cfg)
+  : m_cfg(cfg), m_work(true)
 {
+  BOOST_LOG_TRIVIAL(info) << "Created ALF IPbus named " << m_cfg.name;
 }
 
-void AlfIPbus::initLink(std::string remoteAddress, int rport, int lport)
+void AlfIPbus::initLinks()
 {
-  std::string serial = m_serverName + "/SERIAL_0/LINK_";
-  std::string swtSeq = "/SWT_SEQUENCE";
-  int number = m_links.size();
-  m_links.emplace_back(serial + std::to_string(number) + swtSeq, m_ioContext, remoteAddress, rport, lport);
+  for (size_t i = 0; i < m_cfg.links.size(); i++) {
+    std::string serviceName = m_cfg.name + "/SERIAL_0/LINK_" + std::to_string(i) + "/SWT_SEQUENCE";
+    BOOST_LOG_TRIVIAL(debug) << "Creating service " + serviceName;
+    m_swtLinks.emplace_back(serviceName, m_ioContext, m_cfg.links[i].address, m_cfg.links[i].rport, 0);
+    BOOST_LOG_TRIVIAL(info) << "Created service " + serviceName;
+  }
 }
 
 void AlfIPbus::startServer()
 {
-  DimServer::start(m_serverName.c_str());
+  DimServer::start(m_cfg.name.c_str());
   mainLoop();
 }
 

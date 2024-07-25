@@ -1,11 +1,12 @@
-#include "SwtLink.h"
+#include "AlfConfig.h"
+#include "../IpbusSWT/inc/SwtLink.h"
 #include <list>
 
 class AlfIPbus
 {
  public:
-  AlfIPbus(std::string name);
-  void initLink(std::string remoteAddress, int rport, int lport = 0);
+  AlfIPbus(const AlfConfig& cfg);
+  void initLinks();
 
   void startServer();
 
@@ -13,8 +14,8 @@ class AlfIPbus
 
  private:
   void mainLoop();
-  std::string m_serverName;
-  std::list<fit_swt::SwtLink> m_links;
+  AlfConfig m_cfg;
+  std::list<fit_swt::SwtLink> m_swtLinks;
 
   boost::asio::io_context m_ioContext;
 };
