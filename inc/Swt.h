@@ -23,13 +23,8 @@ union Word {
   uint32_t data;
 };
 
-uint8_t charToHex(char ch);
-uint8_t stringToByte(char c1, char c2);
-char hexToChar(uint8_t hex);
 std::string wordToString(Word w);
 std::string halfWordToString(HalfWord);
-
-/*      SWT     */
 
 struct Swt {
   uint32_t data;
@@ -37,18 +32,10 @@ struct Swt {
   uint16_t mode;
 
   enum class TransactionType { Read,
-                               Write };
-  TransactionType getTransactionType()
-  {
-    switch (mode & 0x03) {
-      case 0:
-        return TransactionType::Read;
-      case 1:
-        return TransactionType::Write;
-      default:
-        return TransactionType::Read;
-    }
-  }
+                               Write,
+                               RMWbits,
+                               RMWsum };
+  TransactionType getTransactionType() const;
 };
 
 Swt stringToSwt(const char* str);

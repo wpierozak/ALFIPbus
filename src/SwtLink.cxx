@@ -15,8 +15,18 @@ void SwtLink::rpcHandler()
 void SwtLink::processRequest(const char* swtSequence)
 {
   splitLines(swtSequence);
-  parseFrames();
-  execute();
+
+  if (!parseFrames()) {
+    sendFailure();
+    return;
+  }
+
+  if (interpretFrames()) {
+    execute();
+  } else {
+    std::cerr << "Sequence failed!" << std::endl;
+    sendFailure();
+  }
 }
 
 void SwtLink::splitLines(const char* swtSequence)
@@ -25,47 +35,121 @@ void SwtLink::splitLines(const char* swtSequence)
   m_lines = utils::splitString(swtStr, "\n");
 }
 
-void SwtLink::parseFrames()
+bool SwtLink::parseFrames()
 {
   m_frames.clear();
+  if (m_lines[0] != "reset") {
+    return false;
+  }
   m_lines.erase(m_lines.begin());
 
-  for (auto frame : m_lines) {
-    if (frame.find("write") == std::string::npos)
+  for (auto line : m_lines) {
+    if (line.find("write") == std::string::npos) {
+      m_frames.push_back({ 0, 0, 0 });
       continue;
+    }
 
-    frame = frame.substr(frame.find("0x") + 2);
-    int size = frame.size();
-    for (int i = frame.find(','); i < size; i++)
-      frame.pop_back();
+    line = line.substr(line.find("0x") + 2);
+    line = line.substr(0, line.find(','));
 
     try {
-      m_frames.emplace_back(stringToSwt(frame.c_str()));
-      ipbus::TransactionType type = (m_frames.back().getTransactionType() == Swt::TransactionType::Read) ? ipbus::data_read : ipbus::data_write;
-      m_packet.addTransaction(type, m_frames.back().address, &m_frames.back().data, 1);
+      m_frames.emplace_back(stringToSwt(line.c_str()));
     } catch (const std::exception& e) {
       std::cerr << boost::diagnostic_information(e) << '\n';
+      return false;
     }
   }
+
+  return true;
+}
+
+bool SwtLink::interpretFrames()
+{
+  uint32_t buffer[2];
+
+  for (int i = 0; i < m_frames.size(); i++) {
+    if (m_frames[i].data == 0 && m_frames[i].address == 0 && m_frames[i].mode == 0) {
+      continue;
+    }
+    switch (m_frames[i].getTransactionType()) {
+      case Swt::TransactionType::Read:
+        std::cerr << "Read operation...\n";
+        m_packet.addTransaction(ipbus::data_read, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
+        break;
+
+      case Swt::TransactionType::Write:
+        std::cerr << "Write operation...\n";
+        m_packet.addTransaction(ipbus::data_write, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
+        break;
+
+      case Swt::TransactionType::RMWbits:
+        std::cerr << "RMWbits operation...\n";
+        if (i + 1 >= m_frames.size()) {
+          std::cerr << "RMWbits failed: second frame has been not received" << std::endl;
+          return false;
+        }
+        if (m_frames[i + 1].data == 0 && m_frames[i + 1].address == 0 && m_frames[i + 1].mode == 0) {
+          if (i + 2 >= m_frames.size()) {
+            std::cerr << "RMWbits failed: second frame has been not received" << std::endl;
+            return false;
+          }
+          if ((m_frames[i + 2].mode) != 3) {
+            std::cerr << "RMWbits failed: invalid second frame - mode: " << m_frames[i + 2].mode << std::endl;
+            return false;
+          }
+          buffer[0] = m_frames[i].data;
+          buffer[1] = m_frames[i + 2].data;
+          m_packet.addTransaction(ipbus::RMWbits, m_frames[i].address, buffer, &m_frames[i].data);
+          i += 2;
+        } else {
+          if ((m_frames[i + 1].mode) != 3) {
+            std::cerr << "RMWbits failed: invalid second frame - mode: " << m_frames[i + 1].mode << std::endl;
+            return false;
+          }
+          buffer[0] = m_frames[i].data;
+          buffer[1] = m_frames[i + 1].data;
+          m_packet.addTransaction(ipbus::RMWbits, m_frames[i].address, buffer, &m_frames[i].data);
+          i += 1;
+        }
+
+        break;
+
+      case Swt::TransactionType::RMWsum:
+        m_packet.addTransaction(ipbus::RMWsum, m_frames[i].address, &m_frames[i].data, &m_frames[i].data);
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  return true;
 }
 
 void SwtLink::execute()
 {
   if (transcieve(m_packet)) {
-    m_response = "success ";
-    for (int i = 0; i < m_lines.size(); i++) {
-      if (m_lines[i] == "read") {
-        writeFrame(m_frames[i - 1]);
-        m_response += "\n";
-        continue;
-      } else if (m_lines[i].find("write") != std::string::npos) {
-        m_response += "0\n";
-      }
-    }
-    setData(m_response.c_str());
+    createResponse();
   } else {
-    setData("failure");
+    sendFailure();
   }
+}
+
+void SwtLink::createResponse()
+{
+  m_response = "success ";
+
+  for (int i = 0; i < m_lines.size(); i++) {
+    if (m_lines[i] == "read") {
+      writeFrame(m_frames[i - 1]);
+      m_response += "\n";
+      continue;
+    } else if (m_lines[i].find("write") != std::string::npos) {
+      m_response += "0\n";
+    }
+  }
+
+  setData(m_response.c_str());
 }
 
 void SwtLink::writeFrame(Swt frame)
@@ -77,11 +161,17 @@ void SwtLink::writeFrame(Swt frame)
   std::string mode = halfWordToString(h);
   mode = mode.substr(1);
   m_response += mode;
+
   Word w;
   w.data = frame.address;
   m_response += wordToString(w);
   w.data = frame.data;
   m_response += wordToString(w);
+}
+
+void SwtLink::sendFailure()
+{
+  setData("failure");
 }
 
 } // namespace fit_swt
