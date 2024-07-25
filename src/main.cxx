@@ -6,6 +6,7 @@
 #define BOOST_LOG_DYN_LINK 1
 
 #include "../inc/AlfConfig.h"
+#include "../inc/AlfIPbus.h"
 
 #include <boost/log/trivial.hpp>
 
@@ -15,12 +16,12 @@
 
 int main(int argc, const char** argv)
 {
-  AlfConfig(argc, argv);
+  AlfConfig cfg(argc, argv);
 
   BOOST_LOG_TRIVIAL(info) << "Starting Alf";
 
-  // AlfIPbus alf(argv[1]);
-  // alf.initLink(argv[2], std::stoi(argv[3]));
-  // alf.startServer();
+  AlfIPbus alf(cfg);
+  alf.initLinks();
+  alf.startServer();
   return 0;
 }
