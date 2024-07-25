@@ -12,9 +12,9 @@
 
 int main(int argc, const char** argv)
 {
-  logging::init();
-
   AlfConfig cfg(argc, argv);
+
+  logging::init(cfg.logFilename);
 
   AlfIPbus alf(cfg);
   alf.initLinks();
