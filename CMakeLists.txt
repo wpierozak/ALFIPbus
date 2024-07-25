@@ -18,7 +18,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 include(GNUInstallDirs)
 
 # Find Boost libraries
-find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS system log)
 
 # Add subdirectories
 add_subdirectory(IPbus)
@@ -38,4 +38,4 @@ target_include_directories(flp_test_client PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/in
 # Link the test executables with the libraries
 target_link_libraries(flp_test_server IPbusInterface ipbus_swt DimRpcParallel Boost::system pthread dim)
 target_link_libraries(flp_test_client IPbusInterface ipbus_swt DimRpcParallel Boost::system pthread dim)
-target_link_libraries(ipbus_swt IPbusInterface DimRpcParallel pthread Boost::system dim)
+target_link_libraries(ipbus_swt IPbusInterface DimRpcParallel pthread Boost::system Boost::log dim)
