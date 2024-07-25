@@ -21,11 +21,6 @@ namespace ipbus
 
 class IPbusTarget
 {
- public:
-  enum class DebugMode { Full = 0,
-                         Vital = 1,
-                         Non };
-
  private:
   // BOOST ASIO //
 
@@ -56,10 +51,7 @@ class IPbusTarget
   pthread_mutex_t m_linkMutex;
   void intializeMutex(pthread_mutex_t& mutex);
 
-  DebugMode m_debug{ DebugMode::Vital };
-
  public:
-
   IPbusTarget(boost::asio::io_context& ioContext, std::string address = "172.20.75.175", uint16_t lport = 0, uint16_t rport = 50001);
   virtual ~IPbusTarget() {}
 
@@ -67,9 +59,6 @@ class IPbusTarget
   bool reopen();
 
   bool transceive(IPbusControlPacket& p, bool shouldResponseBeProcessed = true);
-
-  DebugMode debugMode() const { return m_debug; }
-  void debugMode(DebugMode mode) { m_debug = mode; }
 
   bool isIPbusOK() { return m_isAvailable; }
 };
