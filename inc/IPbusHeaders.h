@@ -11,7 +11,7 @@ namespace ipbus
 {
 
 template <typename T>
-T swap_endian(T u)
+T reverseBytes(T u)
 {
   static_assert(CHAR_BIT == 8, "CHAR_BIT != 8");
 
@@ -42,9 +42,9 @@ const uint8_t wordSize = sizeof(uint32_t); // 4 bytes
  * - 0x2; Direction: Request; Resend request packet
  * - 0x3-0xf - reserved
  */
-enum PacketType { control = 0,
-                  status = 1,
-                  resend = 2 };
+enum PacketType { Control = 0,
+                  Status = 1,
+                  Resend = 2 };
 
 /**
  * @brief Representation of the packet header
@@ -55,20 +55,20 @@ enum PacketType { control = 0,
  * Contains bit fields representing the respective fields of an IPbus packet header - note the little endianness
  */
 struct PacketHeader {
-  uint32_t PacketType : 4,
-    ByteOrder : 4,
-    PacketID : 16,
-    Rsvd : 4,
-    ProtocolVersion : 4;
+  uint32_t packetType : 4,
+    byteOrder : 4,
+    packetID : 16,
+    rsvd : 4,
+    protocolVersion : 4;
 
   /// @brief Creates a `PacketHeader` for a packet of type `t` and ID = `id`, with byte order `0xf` and protocol version 2
-  PacketHeader(enum PacketType t = status, uint16_t id = 0)
+  PacketHeader(enum PacketType t = Status, uint16_t id = 0)
   {
-    PacketType = t;
-    ByteOrder = 0xf;
-    PacketID = id;
-    Rsvd = 0;
-    ProtocolVersion = 2;
+    packetType = t;
+    byteOrder = 0xf;
+    packetID = id;
+    rsvd = 0;
+    protocolVersion = 2;
   }
 
   /// @brief Constructs the packet header from a raw `uint32_t` value
@@ -79,37 +79,37 @@ struct PacketHeader {
 };
 
 enum TransactionType {
-  data_read = 0,
-  data_write = 1,
-  nonIncrementingRead = 2,
-  nonIncrementingWrite = 3,
+  DataRead = 0,
+  DataWrite = 1,
+  NonIncrementingRead = 2,
+  NonIncrementingWrite = 3,
   RMWbits = 4,
   RMWsum = 5,
-  configurationRead = 6,
-  configurationWrite = 7
+  ConfigurationRead = 6,
+  ConfigurationWrite = 7
 };
 
 struct TransactionHeader {
-  uint32_t InfoCode : 4,
-    TypeID : 4,
-    Words : 8,
-    TransactionID : 12,
-    ProtocolVersion : 4;
+  uint32_t infoCode : 4,
+    typeID : 4,
+    words : 8,
+    transactionID : 12,
+    protocolVersion : 4;
   TransactionHeader(TransactionType t, uint8_t nWords, uint16_t id = 0)
   {
-    InfoCode = 0xf;
-    TypeID = t;
-    Words = nWords;
-    TransactionID = id;
-    ProtocolVersion = 2;
+    infoCode = 0xf;
+    typeID = t;
+    words = nWords;
+    transactionID = id;
+    protocolVersion = 2;
   }
   TransactionHeader(const uint32_t& word) { memcpy(this, &word, wordSize); }
   operator uint32_t() { return *reinterpret_cast<uint32_t*>(this); }
   std::string infoCodeString()
   {
-    switch (InfoCode) {
+    switch (infoCode) {
       case 0x0:
-        return "Successfull request";
+        return "Successful request";
       case 0x1:
         return "Bad header";
       case 0x4:
@@ -121,9 +121,9 @@ struct TransactionHeader {
       case 0x7:
         return "IPbus write timeout";
       case 0xf:
-        return "outbound request";
+        return "Outbound request";
       default:
-        return "unknown Info Code";
+        return "Unknown info code";
     }
   }
 };
@@ -150,8 +150,8 @@ struct Transaction {
 /** @brief A struct containing definition of the packet used to check the connection
  */
 struct StatusPacket {
-  PacketHeader header = swap_endian<uint32_t>(uint32_t(PacketHeader(status))); // 0x200000F1: {0xF1, 0, 0, 0x20} -> {0x20, 0, 0, 0xF1}
-  uint32_t MTU = 0,
+  PacketHeader header = reverseBytes<uint32_t>(uint32_t(PacketHeader(Status))); // 0x200000F1: {0xF1, 0, 0, 0x20} -> {0x20, 0, 0, 0xF1}
+  uint32_t mtu = 0,
            nResponseBuffers = 0,
            nextPacketID = 0;
   uint8_t trafficHistory[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
