@@ -39,8 +39,6 @@ class IPbusControlPacket
   }
   ~IPbusControlPacket() {}
 
-  void debugPrint(std::string st);
-
   uint32_t* masks(uint32_t mask0, uint32_t mask1);
 
   void addTransaction(TransactionType type, uint32_t address, uint32_t* dataIn, uint32_t* dataOut, uint8_t nWords = 1);

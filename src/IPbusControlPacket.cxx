@@ -1,18 +1,8 @@
 #include "IPbusControlPacket.h"
+#include <boost/log/trivial.hpp>
 
 namespace ipbus
 {
-
-void IPbusControlPacket::debugPrint(std::string st)
-{
-  std::cerr << st << std::endl;
-  std::cerr << "Request:\n";
-  for (uint16_t i = 0; i < m_requestSize; ++i)
-    std::cerr << std::hex << m_request[i] << std::endl;
-  std::cerr << "\t\tResponse:" << std::endl;
-  for (uint16_t i = 0; i < m_responseSize; ++i)
-    std::cerr << "\t\t" << std::hex << m_response[i] << std::endl;
-}
 
 uint32_t* IPbusControlPacket::masks(uint32_t mask0, uint32_t mask1)
 {
@@ -59,10 +49,10 @@ void IPbusControlPacket::addTransaction(TransactionType type, uint32_t address, 
       break;
 
     default:
-      debugPrint("unknown transaction type");
+      BOOST_LOG_TRIVIAL(warning) << "Unknown transaction type " << type << ": no transaction was added";
   }
   if (m_requestSize > maxPacket || m_responseSize > maxPacket) {
-    debugPrint("packet size exceeded");
+    BOOST_LOG_TRIVIAL(error) << "Packet size exceeded";
     return;
   } else {
     m_transactionsList.push_back(currentTransaction);
@@ -75,8 +65,8 @@ bool IPbusControlPacket::processResponse()
   for (uint16_t i = 0; i < m_transactionsList.size(); ++i) {
     TransactionHeader* th = m_transactionsList.at(i).responseHeader;
     if (th->protocolVersion != 2 || th->transactionID != i || th->typeID != m_transactionsList.at(i).requestHeader->typeID) {
-      std::string message = "unexpected transaction header: " + std::to_string(*th) + ", expected: " + std::to_string(*m_transactionsList.at(i).requestHeader & 0xFFFFFFF0);
-      debugPrint(message);
+      std::string message = "Unexpected transaction header: " + std::to_string(*th) + ", expected: " + std::to_string(*m_transactionsList.at(i).requestHeader & 0xFFFFFFF0);
+      BOOST_LOG_TRIVIAL(error) << message;
       return false;
     }
     if (th->words > 0) {
@@ -91,8 +81,8 @@ bool IPbusControlPacket::processResponse()
             }
             // emit successfulRead(wordsAhead); !!!
             if (th->infoCode == 0) {
-              std::string message = "read transaction from " + std::to_string(*m_transactionsList.at(i).address) + " truncated " + std::to_string(wordsAhead) + "words received: " + std::to_string(th->words);
-              debugPrint(message);
+              std::string message = "Read transaction from " + std::to_string(*m_transactionsList.at(i).address) + " truncated " + std::to_string(wordsAhead) + "words received: " + std::to_string(th->words);
+              BOOST_LOG_TRIVIAL(warning) << message;
             }
             return false;
           } else {
@@ -106,7 +96,7 @@ bool IPbusControlPacket::processResponse()
         case RMWbits:
         case RMWsum: {
           if (th->words != 1) {
-            debugPrint("wrong RMW transaction");
+            BOOST_LOG_TRIVIAL(error) << "Invalid RMW transaction";
             return false;
           }
           memcpy(m_dataOut.at(i), (uint32_t*)th + 1, wordSize);
@@ -118,13 +108,13 @@ bool IPbusControlPacket::processResponse()
           break;
 
         default:
-          debugPrint("Unknown transaction type");
+          BOOST_LOG_TRIVIAL(error) << "Unknown transaction type: response cannot be processed";
           return false;
       }
     }
     if (th->infoCode != 0) {
       std::string message = th->infoCodeString() + ", address: " + std::to_string(*m_transactionsList.at(i).address + th->words);
-      debugPrint(message);
+      BOOST_LOG_TRIVIAL(error) << "Transaction response error: " << message;
       return false;
     }
   }

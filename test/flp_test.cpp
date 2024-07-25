@@ -14,7 +14,6 @@ try {
 
         boost::asio::io_context io_service;
         IPbusTarget target(io_service,"172.20.75.175", 0, 50001);
-        target.debugMode(IPbusTarget::DebugMode::Full);
         //target.timerTick(std::chrono::seconds(1));
         
         IPbusControlPacket packet;

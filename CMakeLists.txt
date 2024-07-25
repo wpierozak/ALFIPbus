@@ -16,14 +16,14 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 include(GNUInstallDirs)
 
 # Find Boost libraries
-find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS system log)
 
 # Add the library
 add_library(IPbusInterface STATIC src/IPbusInterface.cxx src/IPbusControlPacket.cxx)
 
-# Link Boost.System to the library
+# Link Boost to the library
 target_include_directories(IPbusInterface PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc)
-target_link_libraries(IPbusInterface Boost::system)
+target_link_libraries(IPbusInterface Boost::system Boost::log)
 
 # Add the test executable
 add_executable(flp_test test/flp_test.cpp)
