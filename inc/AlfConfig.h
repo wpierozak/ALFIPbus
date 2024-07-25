@@ -11,10 +11,8 @@ namespace po = boost::program_options;
 
 #include <boost/log/trivial.hpp>
 
-class AlfConfig
+struct AlfConfig
 {
- public:
-
   struct Link {
     std::string address;
     unsigned rport;
@@ -35,9 +33,8 @@ class AlfConfig
     }
   };
 
-  std::string m_name;
-  std::vector<Link> m_links;
-  unsigned m_lport;
+  std::string name;
+  std::vector<Link> links;
 
   AlfConfig(int argc, const char** argv) {
     std::vector<std::string> linkArgs;
@@ -46,7 +43,7 @@ class AlfConfig
     po::options_description desc("Allowed options");
     desc.add_options()
       ("help,h", "see available options")
-      ("name,n", po::value<std::string>(&m_name), "set server name")
+      ("name,n", po::value<std::string>(&name), "set server name")
       ("link,l", po::value<std::vector<std::string>>(&linkArgs),
        "set the IP address and port for consecutive links (can be used multiple times)."
        "\nFormat: [IP address]:[Port number]");
@@ -73,15 +70,15 @@ class AlfConfig
     }
 
     for (const auto& arg : linkArgs)
-      m_links.push_back(arg);
+      links.push_back(arg);
 
     std::cout << static_cast<std::string>(*this) << "\n";
   }
 
   operator std::string() {
-    std::string result = "ALF IPbus\nNAME: " + m_name + "\nLOCAL PORT: " + std::to_string(m_lport) + "\n";
-    for(size_t i = 0; i < m_links.size(); i++)
-      result += "LINK_" + std::to_string(i) + ": " + static_cast<std::string>(m_links[i]) + "\n";
+    std::string result = "ALF IPbus\nNAME: " + name + "\n";
+    for(size_t i = 0; i < links.size(); i++)
+      result += "LINK_" + std::to_string(i) + ": " + static_cast<std::string>(links[i]) + "\n";
     return result;
   }
 };
