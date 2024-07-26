@@ -59,62 +59,78 @@ cmake3 --build .
 
 ## SWT Frame
 
-SWTelectronics is compatible with SWT frame designed for FIT ALICE detector.
+SWTelectronics is compatible with SWT frame designed for ALICE's FIT detector.
 
 ```
-    0011    0000000         00           1       11001100110011001100110011001100 00110011001100110011001100110011
-   SWT ID     NOT USED    MASKED     READ/WRITE             ADDRESS                         DATA
-
+Total: 80b
+| SWT ID (4b) | NOT USED (9b) | MASKED (2b) | READ/WRITE (1b) |             ADDRESS (32b)                 |                 DATA (32b)              |
+    0011         0000 0000 0        00              1           1100 1100 1100 1100 1100 1100 1100 1100      0011 0011 0011 0011 0011 0011 0011 0011
 ```
 
 ### IPbus operations in SWT
 
+```
+MM | R/W | ADDRESS | DATA |  ->  RESPONSE
+2b | 1b  | 32b     | 32b  |  ->  ... + 32b
+```
 
-MM R/W ADDRESS    DATA   ->  RESPONSE
+#### READ (non-incrementing) (FIFO)
 
-`2b  1b  32b       32b    ->  32b`
+```
+MM | R/W | ADDRESS | DATA     |  ->  RESPONSE
+---------------------------------------------
+00 | 0   | ADDRESS | DONTCARE |  ->  DATA
+00 | 0   | ADDRESS | DONTCARE |  ->  DATA
+```
 
-#### READ non-inc (FIFO)
+#### READ (incrementing)
 
-MM R/W ADDRESS    DATA   ->  RESPONSE
+```
+MM | R/W | ADDRESS   | DATA     |  ->  RESPONSE
+-----------------------------------------------
+00 | 0   | ADDRESS   | DONTCARE |  ->  DATA
+00 | 0   | ADDRESS+1 | DONTCARE |  ->  DATA
+```
 
-`00 0  ADDRESS   DONTCARE   ->  X`
-`00 0  ADDRESS   DONTCARE   ->  X`
+#### WRITE (non-incrementing) (FIFO)
 
-#### READ inc
+```
+MM | R/W | ADDRESS | DATA |  ->  RESPONSE
+-----------------------------------------
+00 | 1   | ADDRESS | DATA |  ->  OK
+00 | 1   | ADDRESS | DATA |  ->  OK
+```
 
-MM R/W ADDRESS    DATA   ->  RESPONSE
-
-`00 0  ADDRESS   DONTCARE   ->  X`
-`00 0  ADDRESS+1 DONTCARE   ->  X`
-
-#### WRITE non-inc (FIFO)
+#### WRITE (incrementing)
 
 MM R/W ADDRESS DATA   ->  RESPONSE
 
-`00 1  ADDRESS   DATA   ->  OK`
-`00 1  ADDRESS   DATA   ->  OK`
-
-#### WRITE inc
-
-MM R/W ADDRESS DATA   ->  RESPONSE
-
-`00 1  ADDRESS   DATA   ->  OK`
-`00 1  ADDRESS+1 DATA   ->  OK`
+```
+MM | R/W | ADDRESS   | DATA |  ->  RESPONSE
+-------------------------------------------
+00 | 1   | ADDRESS   | DATA |  ->  OK
+00 | 1   | ADDRESS+1 | DATA |  ->  OK
+```
 
 #### RMW bits X <= (X & A) | B
 
-MM R/W ADDRESS DATA   ->  RESPONSE
-
-`01 0   ADDRESS A     ->  preX`
-`01 1   ADDRESS B	  ->  OK`
+```
+MM | R/W | ADDRESS   | DATA     |  ->  RESPONSE
+-----------------------------------------------
+01 | 0   | ADDRESS   | AND_MASK |  ->  DATA_PRE     # READ_AND
+01 | 1   | ADDRESS+1 | OR_MASK  |  ->  OK           # WRITE_OR
+```
 
 
 #### RMW Sum  X <= (X + A)
 
 MM R/W ADDRESS DATA   ->  RESPONSE
 
-`10 0   ADDRESS A     ->  preX`
+```
+MM | R/W | ADDRESS   | DATA     |  ->  RESPONSE
+-----------------------------------------------
+10 | 0   | ADDRESS   | SUM_TERM |  ->  DATA_PRE     # READ_SUM
+```
 
 ## Message format
 
