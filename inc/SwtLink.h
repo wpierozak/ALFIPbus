@@ -30,17 +30,16 @@ class SwtLink : public ipbus::IPbusTarget, DimRpcParallel
   bool parseFrames();
   bool interpretFrames();
 
-  void execute();
-  void createResponse();
+  void writeToResponse();
+  void sendResponse();
 
   void setPacketPadding(int);
   int getPacketPadding() const;
 
-  static constexpr int s_maxPacketsNumber = 10;
-
  private:
-  ipbus::IPbusControlPacket m_packets[s_maxPacketsNumber];
-  int m_packetsNumber{0};
+  ipbus::IPbusControlPacket m_packet;
+  int m_lineBeg{0};
+  int m_lineEnd{0};
   int m_packetPadding{8};
 
   std::vector<std::string> m_lines;

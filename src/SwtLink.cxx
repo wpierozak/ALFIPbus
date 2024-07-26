@@ -15,6 +15,7 @@ void SwtLink::rpcHandler()
 
 void SwtLink::processRequest(const char* swtSequence)
 {
+  m_response = "";
   splitLines(swtSequence);
 
   if (!parseFrames()) {
@@ -23,7 +24,7 @@ void SwtLink::processRequest(const char* swtSequence)
   }
 
   if (interpretFrames()) {
-    execute();
+    sendResponse();
   } else {
     sendFailure();
   }
@@ -67,28 +68,39 @@ bool SwtLink::parseFrames()
 bool SwtLink::interpretFrames()
 {
   uint32_t buffer[2];
-  int currentPacket = 0;
-  m_packetsNumber = 1;
+  const int packetSizePadding = 128;
+  m_lineBeg = 0;
+  m_lineEnd = 0;
 
   for (int i = 0; i < m_frames.size(); i++) {
+    m_lineEnd++;
 
-    if (m_packets[currentPacket].m_requestSize + m_packetPadding >= ipbus::maxPacket) {
-      BOOST_LOG_TRIVIAL(debug) << "Max packet size exceeded, splitting packet";
-      currentPacket++;
-      m_packetsNumber++;
+    if (m_packet.requestSize + packetSizePadding >= ipbus::maxPacket) {
+      if(transcieve(m_packet))
+      {
+        writeToResponse();
+        m_lineBeg = i;
+      }
+      else
+      {
+        return false;
+      }
     }
 
     if (m_frames[i].data == 0 && m_frames[i].address == 0 && m_frames[i].mode == 0) {
       continue;
     }
 
+
     switch (m_frames[i].getTransactionType()) {
       case Swt::TransactionType::Read:
-        m_packets[currentPacket].addTransaction(ipbus::DataRead, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
+        // std::cerr << "Read operation...\n";
+        m_packet.addTransaction(ipbus::data_read, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
         break;
 
       case Swt::TransactionType::Write:
-        m_packets[currentPacket].addTransaction(ipbus::DataWrite, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
+        // std::cerr << "Write operation...\n";
+        m_packet.addTransaction(ipbus::data_write, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
         break;
 
       case Swt::TransactionType::RMWbits:
@@ -135,27 +147,29 @@ bool SwtLink::interpretFrames()
     }
   }
 
+  if(transcieve(m_packet))
+  {
+    writeToResponse();
+  }
+  else
+  {
+    return false;
+  }
+
   return true;
 }
 
-void SwtLink::execute()
+
+void SwtLink::sendResponse()
 {
-  for (int i = 0; i < m_packetsNumber; i++) {
-    BOOST_LOG_TRIVIAL(debug) << "Processing packet " << i;
-    if (transceive(m_packets[i]) == false) {
-      sendFailure();
-      return;
-    }
-  }
-  BOOST_LOG_TRIVIAL(info) << "Request executed successfully - sending response";
-  createResponse();
+  m_response = "success " + m_response;
+  setData(m_response.c_str());
 }
 
-void SwtLink::createResponse()
-{
-  m_response = "success\n";
 
-  for (int i = 0; i < m_lines.size(); i++) {
+void SwtLink::writeToResponse()
+{
+  for (int i = m_lineBeg; i < m_lineEnd; i++) {
     if (m_lines[i] == "read") {
       writeFrame(m_frames[i - 1]);
       m_response += "\n";
@@ -164,8 +178,6 @@ void SwtLink::createResponse()
       m_response += "0\n";
     }
   }
-
-  setData(m_response.c_str());
 }
 
 void SwtLink::writeFrame(Swt frame)
