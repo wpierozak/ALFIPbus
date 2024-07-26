@@ -44,7 +44,7 @@ bool SwtLink::parseFrames()
   m_lines.erase(m_lines.begin());
 
   for (auto line : m_lines) {
-    if (line.find("write") == std::string::npos) {
+    if (line.find("read") != std::string::npos) {
       m_frames.push_back({ 0, 0, 0 });
       continue;
     }
@@ -66,24 +66,39 @@ bool SwtLink::parseFrames()
 bool SwtLink::interpretFrames()
 {
   uint32_t buffer[2];
+  int currentPacket = 0;
+  m_packetsNumber = 1;
+  const int packetSizePadding = 128;
 
   for (int i = 0; i < m_frames.size(); i++) {
+
+    if (m_packets[currentPacket].requestSize + packetSizePadding >= ipbus::maxPacket) {
+      std::cerr << "Max packet size exceeds, splitting packet...\n";
+      currentPacket++;
+      m_packetsNumber++;
+    }
+
     if (m_frames[i].data == 0 && m_frames[i].address == 0 && m_frames[i].mode == 0) {
       continue;
     }
+
     switch (m_frames[i].getTransactionType()) {
       case Swt::TransactionType::Read:
-        std::cerr << "Read operation...\n";
-        m_packet.addTransaction(ipbus::DataRead, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
+        // std::cerr << "Read operation...\n";
+        m_packets[currentPacket].addTransaction(ipbus::data_read, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
         break;
 
       case Swt::TransactionType::Write:
-        std::cerr << "Write operation...\n";
-        m_packet.addTransaction(ipbus::DataWrite, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
+        // std::cerr << "Write operation...\n";
+        m_packets[currentPacket].addTransaction(ipbus::data_write, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
         break;
 
       case Swt::TransactionType::RMWbits:
-        std::cerr << "RMWbits operation...\n";
+        // std::cerr << "RMWbits operation...\n";
+        if (m_frames[i].mode != 2) {
+          std::cerr << "RMWbits failed: first frame is not the AND frame" << std::endl;
+          return false;
+        }
         if (i + 1 >= m_frames.size()) {
           std::cerr << "RMWbits failed: second frame has been not received" << std::endl;
           return false;
@@ -99,7 +114,7 @@ bool SwtLink::interpretFrames()
           }
           buffer[0] = m_frames[i].data;
           buffer[1] = m_frames[i + 2].data;
-          m_packet.addTransaction(ipbus::RMWbits, m_frames[i].address, buffer, &m_frames[i].data);
+          m_packets[currentPacket].addTransaction(ipbus::RMWbits, m_frames[i].address, buffer, &m_frames[i].data);
           i += 2;
         } else {
           if ((m_frames[i + 1].mode) != 3) {
@@ -108,14 +123,14 @@ bool SwtLink::interpretFrames()
           }
           buffer[0] = m_frames[i].data;
           buffer[1] = m_frames[i + 1].data;
-          m_packet.addTransaction(ipbus::RMWbits, m_frames[i].address, buffer, &m_frames[i].data);
+          m_packets[currentPacket].addTransaction(ipbus::RMWbits, m_frames[i].address, buffer, &m_frames[i].data);
           i += 1;
         }
 
         break;
 
       case Swt::TransactionType::RMWsum:
-        m_packet.addTransaction(ipbus::RMWsum, m_frames[i].address, &m_frames[i].data, &m_frames[i].data);
+        m_packets[currentPacket].addTransaction(ipbus::RMWsum, m_frames[i].address, &m_frames[i].data, &m_frames[i].data);
         break;
 
       default:
@@ -128,11 +143,13 @@ bool SwtLink::interpretFrames()
 
 void SwtLink::execute()
 {
-  if (transceive(m_packet)) {
-    createResponse();
-  } else {
-    sendFailure();
+  for (int i = 0; i < m_packetsNumber; i++) {
+    if (transcieve(m_packets[i]) == false) {
+      sendFailure();
+      return;
+    }
   }
+  createResponse();
 }
 
 void SwtLink::createResponse()

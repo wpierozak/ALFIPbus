@@ -38,8 +38,12 @@ class SwtLink : public ipbus::IPbusTarget, DimRpcParallel
   void execute();
   void createResponse();
 
+  static constexpr int s_maxPacketsNumber = 10;
+
  private:
-  ipbus::IPbusControlPacket m_packet;
+  ipbus::IPbusControlPacket m_packets[s_maxPacketsNumber];
+  int m_packetsNumber{0};
+
   std::vector<std::string> m_lines;
   std::vector<Swt> m_frames;
   std::string m_response;
