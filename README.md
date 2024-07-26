@@ -68,14 +68,12 @@ Total: 80b
 ```
 
 ### IPbus operations in SWT
-
 ```
 MM | R/W | ADDRESS | DATA |  ->  RESPONSE
 2b | 1b  | 32b     | 32b  |  ->  ... + 32b
 ```
 
 #### READ (non-incrementing) (FIFO)
-
 ```
 MM | R/W | ADDRESS | DATA     |  ->  RESPONSE
 ---------------------------------------------
@@ -84,7 +82,6 @@ MM | R/W | ADDRESS | DATA     |  ->  RESPONSE
 ```
 
 #### READ (incrementing)
-
 ```
 MM | R/W | ADDRESS   | DATA     |  ->  RESPONSE
 -----------------------------------------------
@@ -93,7 +90,6 @@ MM | R/W | ADDRESS   | DATA     |  ->  RESPONSE
 ```
 
 #### WRITE (non-incrementing) (FIFO)
-
 ```
 MM | R/W | ADDRESS | DATA |  ->  RESPONSE
 -----------------------------------------
@@ -102,9 +98,6 @@ MM | R/W | ADDRESS | DATA |  ->  RESPONSE
 ```
 
 #### WRITE (incrementing)
-
-MM R/W ADDRESS DATA   ->  RESPONSE
-
 ```
 MM | R/W | ADDRESS   | DATA |  ->  RESPONSE
 -------------------------------------------
@@ -113,7 +106,6 @@ MM | R/W | ADDRESS   | DATA |  ->  RESPONSE
 ```
 
 #### RMW bits X <= (X & A) | B
-
 ```
 MM | R/W | ADDRESS   | DATA     |  ->  RESPONSE
 -----------------------------------------------
@@ -123,9 +115,6 @@ MM | R/W | ADDRESS   | DATA     |  ->  RESPONSE
 
 
 #### RMW Sum  X <= (X + A)
-
-MM R/W ADDRESS DATA   ->  RESPONSE
-
 ```
 MM | R/W | ADDRESS   | DATA     |  ->  RESPONSE
 -----------------------------------------------
