@@ -187,10 +187,10 @@ bool IPbusTarget::transceive(IPbusControlPacket& p, bool shouldResponseBeProcess
     RETURN_AND_RELEASE(m_linkMutex, false);
   }
 
-  size_t bytes_recevied = receive((char*)&p.m_response, maxPacket);
+  size_t bytes_recevied = receive((char*)&p.m_response, maxPacket*wordSize);
 
   if (bytes_recevied == 64 && p.m_response[0] == m_status.header) {
-    bytes_recevied = receive((char*)&p.m_response, maxPacket);
+    bytes_recevied = receive((char*)&p.m_response, maxPacket*wordSize);
   }
 
   if (bytes_recevied == 0) {
