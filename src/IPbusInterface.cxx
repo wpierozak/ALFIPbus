@@ -48,7 +48,7 @@ size_t IPbusTarget::receive(char* destBuffer, size_t maxSize)
 {
   try {
     BOOST_LOG_TRIVIAL(debug) << "Synchronous receiving...";
-    size_t bytesTransferred = m_socket.receive_from(boost::asio::buffer(destBuffer, IO_BUFFER_SIZE), m_remoteEndpoint);
+    size_t bytesTransferred = m_socket.receive_from(boost::asio::buffer(destBuffer, maxSize), m_remoteEndpoint);
     BOOST_LOG_TRIVIAL(debug) << "Message received: " << bytesTransferred << " bytes";
     return bytesTransferred;
   } catch (const boost::system::system_error& e) {
