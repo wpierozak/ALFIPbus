@@ -44,7 +44,7 @@ class IPbusTarget
   // Sync communication
 
   size_t receive(char* destBuffer, size_t maxSize);
-  int m_timeout{2000}; // in miliseconds
+  timeval m_timeout{2, 0};
 
   pthread_mutex_t m_linkMutex;
   void intializeMutex(pthread_mutex_t& mutex);
@@ -60,8 +60,8 @@ class IPbusTarget
 
   bool isIPbusOK() { return m_isAvailable; }
 
-  void setTimeout(int timeout);
-  int getTimeout() const;
+  void setTimeout(timeval timeout);
+  timeval getTimeout() const;
 };
 
 } // namespace ipbus

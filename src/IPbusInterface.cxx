@@ -151,13 +151,13 @@ void IPbusTarget::intializeMutex(pthread_mutex_t& mutex)
   pthread_mutex_init(&mutex, NULL);
 }
 
-void IPbusTarget::setTimeout(int timeout)
+void IPbusTarget::setTimeout(timeval timeout)
 {
   m_timeout = timeout;
   ::setsockopt(m_socket.native_handle(), SOL_SOCKET, SO_RCVTIMEO, (const void*) &m_timeout, sizeof(m_timeout));
 }
 
-int IPbusTarget::getTimeout() const
+timeval IPbusTarget::getTimeout() const
 {
   return m_timeout;
 }
