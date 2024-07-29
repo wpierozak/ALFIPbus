@@ -9,6 +9,7 @@ namespace fit_swt
 
 void SwtLink::rpcHandler()
 {
+  BOOST_LOG_TRIVIAL(info) << "Received request";
   processRequest(getString());
 }
 
@@ -24,7 +25,6 @@ void SwtLink::processRequest(const char* swtSequence)
   if (interpretFrames()) {
     execute();
   } else {
-    std::cerr << "Sequence failed!" << std::endl;
     sendFailure();
   }
 }
@@ -39,6 +39,7 @@ bool SwtLink::parseFrames()
 {
   m_frames.clear();
   if (m_lines[0] != "reset") {
+    BOOST_LOG_TRIVIAL(error) << "Sequence parsing failed: missing reset word";
     return false;
   }
   m_lines.erase(m_lines.begin());
@@ -55,7 +56,7 @@ bool SwtLink::parseFrames()
     try {
       m_frames.emplace_back(stringToSwt(line.c_str()));
     } catch (const std::exception& e) {
-      std::cerr << boost::diagnostic_information(e) << '\n';
+      BOOST_LOG_TRIVIAL(error) << "Sequence parsing failed: " << boost::diagnostic_information(e);
       return false;
     }
   }
@@ -68,12 +69,11 @@ bool SwtLink::interpretFrames()
   uint32_t buffer[2];
   int currentPacket = 0;
   m_packetsNumber = 1;
-  const int packetSizePadding = 128;
 
   for (int i = 0; i < m_frames.size(); i++) {
 
-    if (m_packets[currentPacket].requestSize + packetSizePadding >= ipbus::maxPacket) {
-      std::cerr << "Max packet size exceeds, splitting packet...\n";
+    if (m_packets[currentPacket].requestSize + m_packetPadding >= ipbus::maxPacket) {
+      BOOST_LOG_TRIVIAL(debug) << "Max packet size exceeded, splitting packet";
       currentPacket++;
       m_packetsNumber++;
     }
@@ -84,32 +84,29 @@ bool SwtLink::interpretFrames()
 
     switch (m_frames[i].getTransactionType()) {
       case Swt::TransactionType::Read:
-        // std::cerr << "Read operation...\n";
         m_packets[currentPacket].addTransaction(ipbus::data_read, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
         break;
 
       case Swt::TransactionType::Write:
-        // std::cerr << "Write operation...\n";
         m_packets[currentPacket].addTransaction(ipbus::data_write, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
         break;
 
       case Swt::TransactionType::RMWbits:
-        // std::cerr << "RMWbits operation...\n";
         if (m_frames[i].mode != 2) {
-          std::cerr << "RMWbits failed: first frame is not the AND frame" << std::endl;
+          BOOST_LOG_TRIVIAL(error) << "SWT sequence failed (" << i << "): " << "RMWbits failed: first frame is not the AND frame" << std::endl;
           return false;
         }
         if (i + 1 >= m_frames.size()) {
-          std::cerr << "RMWbits failed: second frame has been not received" << std::endl;
+          BOOST_LOG_TRIVIAL(error) << "SWT sequence failed (" << i << "): " << "RMWbits failed: second frame has been not received" << std::endl;
           return false;
         }
         if (m_frames[i + 1].data == 0 && m_frames[i + 1].address == 0 && m_frames[i + 1].mode == 0) {
           if (i + 2 >= m_frames.size()) {
-            std::cerr << "RMWbits failed: second frame has been not received" << std::endl;
+            BOOST_LOG_TRIVIAL(error) << "SWT sequence failed (" << i << "): "<< "RMWbits failed: second frame has been not received" << std::endl;
             return false;
           }
           if ((m_frames[i + 2].mode) != 3) {
-            std::cerr << "RMWbits failed: invalid second frame - mode: " << m_frames[i + 2].mode << std::endl;
+            BOOST_LOG_TRIVIAL(error) << "SWT sequence failed (" << i << "): " << "RMWbits failed: invalid second frame - mode: " << m_frames[i + 2].mode << std::endl;
             return false;
           }
           buffer[0] = m_frames[i].data;
@@ -118,7 +115,7 @@ bool SwtLink::interpretFrames()
           i += 2;
         } else {
           if ((m_frames[i + 1].mode) != 3) {
-            std::cerr << "RMWbits failed: invalid second frame - mode: " << m_frames[i + 1].mode << std::endl;
+            BOOST_LOG_TRIVIAL(error) << "SWT sequence failed (" << i << "): " << "RMWbits failed: invalid second frame - mode: " << m_frames[i + 1].mode << std::endl;
             return false;
           }
           buffer[0] = m_frames[i].data;
@@ -144,11 +141,13 @@ bool SwtLink::interpretFrames()
 void SwtLink::execute()
 {
   for (int i = 0; i < m_packetsNumber; i++) {
+    BOOST_LOG_TRIVIAL(debug) << "Processing packet " << i;
     if (transcieve(m_packets[i]) == false) {
       sendFailure();
       return;
     }
   }
+  BOOST_LOG_TRIVIAL(info) << "Request executed successfully - sending response";
   createResponse();
 }
 
@@ -188,7 +187,18 @@ void SwtLink::writeFrame(Swt frame)
 
 void SwtLink::sendFailure()
 {
+  BOOST_LOG_TRIVIAL(error) << "Request execution failed";
   setData("failure");
+}
+
+void setPacketPadding(int padding)
+{
+  m_packetPadding = padding;
+}
+
+int getPacketPadding() const
+{
+  return m_packetPadding;
 }
 
 } // namespace fit_swt

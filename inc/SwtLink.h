@@ -18,12 +18,7 @@ class SwtLink : public ipbus::IPbusTarget, DimRpcParallel
   SwtLink(std::string rpc, boost::asio::io_context& ioContext, std::string address = "172.20.75.175", uint16_t rport = 50001, uint16_t lport = 0) : IPbusTarget(ioContext, address, lport, rport),
                                                                                                                                                     DimRpcParallel(rpc.c_str(), "C", "C", 0)
   {
-    BOOST_LOG_TRIVIAL(trace) << "Trace log test";
-    BOOST_LOG_TRIVIAL(debug) << "Debug log test";
-    BOOST_LOG_TRIVIAL(info) << "Info log test";
-    BOOST_LOG_TRIVIAL(warning) << "Warning log test";
-    BOOST_LOG_TRIVIAL(error) << "Error log test";
-    BOOST_LOG_TRIVIAL(fatal) << "Fatal log test";
+    BOOST_LOG_TRIVIAL(info) << "SWT-IPbus link initialization - " << address << ":" << rport;
   }
 
   void rpcHandler();
@@ -38,11 +33,15 @@ class SwtLink : public ipbus::IPbusTarget, DimRpcParallel
   void execute();
   void createResponse();
 
+  void setPacketPadding(int);
+  int getPacketPadding() const;
+
   static constexpr int s_maxPacketsNumber = 10;
 
  private:
   ipbus::IPbusControlPacket m_packets[s_maxPacketsNumber];
   int m_packetsNumber{0};
+  int m_packetPadding{8};
 
   std::vector<std::string> m_lines;
   std::vector<Swt> m_frames;
