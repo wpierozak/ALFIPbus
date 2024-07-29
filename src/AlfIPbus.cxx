@@ -1,17 +1,17 @@
 #include "AlfIPbus.h"
 
-std::atomic<bool> AlfIPbus::s_running{false};
+bool AlfIPbus::s_running = false;
 
 AlfIPbus::AlfIPbus(const AlfConfig& cfg)
   : m_cfg(cfg)
 {
   BOOST_LOG_TRIVIAL(info) << "Created ALF IPbus named " << m_cfg.name;
-  s_running.store(true);
 }
 
-AlfIPbus::~AlfIPbus() {
+AlfIPbus::~AlfIPbus()
+{
   BOOST_LOG_TRIVIAL(info) << "ALF IPbus " << m_cfg.name << " shutting down";
-  s_running.store(false);
+  s_running = false;
 }
 
 void AlfIPbus::initLinks()
@@ -26,18 +26,23 @@ void AlfIPbus::initLinks()
 
 void AlfIPbus::startServer()
 {
+  s_running = true;
   DimServer::start(m_cfg.name.c_str());
   mainLoop();
 }
 
 void AlfIPbus::stop(int)
 {
-  s_running.store(false);
+  if (s_running)
+    s_running = false;
+  else
+    exit(1);
 }
 
 void AlfIPbus::mainLoop()
 {
-  while (AlfIPbus::s_running.load()) {
-    pause();
+  while (AlfIPbus::s_running) {
+    usleep(100000);
   }
+  std::cout << "Loop over";
 }

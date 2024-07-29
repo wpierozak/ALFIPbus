@@ -19,7 +19,7 @@ class AlfIPbus
   ~AlfIPbus();
 
  private:
-  static std::atomic<bool> s_running;
+  static bool s_running;
 
   void mainLoop();
   AlfConfig m_cfg;
