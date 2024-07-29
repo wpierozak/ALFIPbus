@@ -72,7 +72,7 @@ bool SwtLink::interpretFrames()
 
   for (int i = 0; i < m_frames.size(); i++) {
 
-    if (m_packets[currentPacket].requestSize + m_packetPadding >= ipbus::maxPacket) {
+    if (m_packets[currentPacket].m_requestSize + m_packetPadding >= ipbus::maxPacket) {
       BOOST_LOG_TRIVIAL(debug) << "Max packet size exceeded, splitting packet";
       currentPacket++;
       m_packetsNumber++;
@@ -84,11 +84,11 @@ bool SwtLink::interpretFrames()
 
     switch (m_frames[i].getTransactionType()) {
       case Swt::TransactionType::Read:
-        m_packets[currentPacket].addTransaction(ipbus::data_read, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
+        m_packets[currentPacket].addTransaction(ipbus::DataRead, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
         break;
 
       case Swt::TransactionType::Write:
-        m_packets[currentPacket].addTransaction(ipbus::data_write, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
+        m_packets[currentPacket].addTransaction(ipbus::DataWrite, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
         break;
 
       case Swt::TransactionType::RMWbits:
@@ -142,7 +142,7 @@ void SwtLink::execute()
 {
   for (int i = 0; i < m_packetsNumber; i++) {
     BOOST_LOG_TRIVIAL(debug) << "Processing packet " << i;
-    if (transcieve(m_packets[i]) == false) {
+    if (transceive(m_packets[i]) == false) {
       sendFailure();
       return;
     }
@@ -191,12 +191,12 @@ void SwtLink::sendFailure()
   setData("failure");
 }
 
-void setPacketPadding(int padding)
+void SwtLink::setPacketPadding(int padding)
 {
   m_packetPadding = padding;
 }
 
-int getPacketPadding() const
+int SwtLink::getPacketPadding() const
 {
   return m_packetPadding;
 }
