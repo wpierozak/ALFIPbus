@@ -52,7 +52,9 @@ size_t IPbusTarget::receive(char* destBuffer, size_t maxSize)
     BOOST_LOG_TRIVIAL(debug) << "Synchronous receiving...";
     m_socket.async_receive_from(boost::asio::buffer(destBuffer, maxSize), m_remoteEndpoint, boost::bind(&IPbusTarget::handleReceive, this, std::placeholders::_1, std::placeholders::_2));
     
+    m_receivedSize = 0;
     m_receiveStatus = ReceiveStatus::Wait;
+    
     m_timer.expires_from_now(m_timeout);
     m_timer.async_wait(boost::bind(&IPbusTarget::handleDeadline, this));
 
@@ -62,7 +64,6 @@ size_t IPbusTarget::receive(char* destBuffer, size_t maxSize)
     } 
     while(m_error == boost::asio::error::would_block);
 
-    BOOST_LOG_TRIVIAL(debug) << "Message received: " << m_receivedSize << " bytes";
     return m_receivedSize;
 
   } catch (const boost::system::system_error& e) {
@@ -82,6 +83,8 @@ void IPbusTarget::handleReceive(const boost::system::error_code& ec, std::size_t
 {
   std::lock_guard<std::mutex> lock(m_receiveStatusMutex);
 
+  BOOST_LOG_TRIVIAL(debug) << "Message received: " << length << " bytes";
+
   m_receiveStatus = ReceiveStatus::Received;
   m_error = ec;
   m_receivedSize = length;
@@ -90,6 +93,11 @@ void IPbusTarget::handleReceive(const boost::system::error_code& ec, std::size_t
 
 void IPbusTarget::handleDeadline()
 {
+  if(m_timer.expires_at() > boost::asio::deadline_timer::traits_type::now())
+  {
+    m_timer.async_wait(boost::bind(&IPbusTarget::handleDeadline, this));
+  }
+
   std::lock_guard<std::mutex> lock(m_receiveStatusMutex);
 
   if(m_receiveStatus == ReceiveStatus::Wait)
@@ -109,11 +117,29 @@ bool IPbusTarget::checkStatus()
 
   try {
     BOOST_LOG_TRIVIAL(debug) << "Checking status of device at " << m_ipAddress << ":" << m_remotePort;
-    // Send a status packet to the remote endpoint
+    
+    m_isAvailable = false;
+
     m_socket.send_to(boost::asio::buffer(&m_status, sizeof(m_status)), m_remoteEndpoint);
-    receive((char*)&m_statusRespone, sizeof(m_statusRespone));
-    BOOST_LOG_TRIVIAL(info) << "Status check successful: Device at " << m_ipAddress << ":" << m_remotePort << " is available.";
-    m_isAvailable = true;
+    size_t bytes = receive((char*)&m_statusRespone, sizeof(m_statusRespone));
+
+    if(m_error)
+    {
+      BOOST_LOG_TRIVIAL(info) << m_error.message();
+    }
+    else if(m_receiveStatus == ReceiveStatus::Expired)
+    {
+      BOOST_LOG_TRIVIAL(info) << "Status packet has not been received";
+    }
+    else if(bytes < sizeof(m_status))
+    {
+       BOOST_LOG_TRIVIAL(info) << "Status packet is too short - received " << bytes << " (expected " << sizeof(m_status) << ")";
+    }
+    else
+    {
+      BOOST_LOG_TRIVIAL(info) << "Status check successful: Device at " << m_ipAddress << ":" << m_remotePort << " is available.";
+      m_isAvailable = true;
+    }
 
     response = true;
 
