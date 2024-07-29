@@ -25,10 +25,10 @@ bool IPbusTarget::openSocket()
 {
   BOOST_LOG_TRIVIAL(debug) << "Attempting to open socket...";
   m_socket.open(boost::asio::ip::udp::v4());
-  ::setsockopt(m_socket.native_handle(), SOL_SOCKET, SO_RCVTIMEO, (const void*) &m_timeout, sizeof(m_timeout));
 
   if (m_socket.is_open()) {
     BOOST_LOG_TRIVIAL(info) << "Socket at " << m_ipAddress << ":" << m_remotePort << " successfully opened";
+    ::setsockopt(m_socket.native_handle(), SOL_SOCKET, SO_RCVTIMEO, (const void*) &m_timeout, sizeof(m_timeout));
     return true;
   } else {
     BOOST_LOG_TRIVIAL(error) << "Failed to open socket at " << m_ipAddress << ":" << m_localPort;
