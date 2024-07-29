@@ -13,6 +13,7 @@ IPbusTarget::IPbusTarget(boost::asio::io_context& ioContext, std::string address
                                                                                                                     m_ipAddress(address),
                                                                                                                     m_localEndpoint(boost::asio::ip::udp::v4(), m_localPort),
                                                                                                                     m_remoteEndpoint(boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(m_ipAddress), m_remotePort)),
+                                                                                                                    m_timer(ioContext),
                                                                                                                     m_socket(ioContext)
 
 {
@@ -28,7 +29,6 @@ bool IPbusTarget::openSocket()
 
   if (m_socket.is_open()) {
     BOOST_LOG_TRIVIAL(info) << "Socket at " << m_ipAddress << ":" << m_remotePort << " successfully opened";
-    ::setsockopt(m_socket.native_handle(), SOL_SOCKET, SO_RCVTIMEO, (const void*) &m_timeout, sizeof(m_timeout));
     return true;
   } else {
     BOOST_LOG_TRIVIAL(error) << "Failed to open socket at " << m_ipAddress << ":" << m_localPort;
@@ -50,9 +50,21 @@ size_t IPbusTarget::receive(char* destBuffer, size_t maxSize)
 {
   try {
     BOOST_LOG_TRIVIAL(debug) << "Synchronous receiving...";
-    size_t bytesTransferred = m_socket.receive_from(boost::asio::buffer(destBuffer, maxSize), m_remoteEndpoint);
-    BOOST_LOG_TRIVIAL(debug) << "Message received: " << bytesTransferred << " bytes";
-    return bytesTransferred;
+    m_socket.async_receive_from(boost::asio::buffer(destBuffer, maxSize), m_remoteEndpoint, boost::bind(&IPbusTarget::handleReceive, this, std::placeholders::_1, std::placeholders::_2));
+    
+    m_receiveStatus = ReceiveStatus::Wait;
+    m_timer.expires_from_now(m_timeout);
+    m_timer.async_wait(boost::bind(&IPbusTarget::handleDeadline, this));
+
+    do
+    {
+      m_ioContext.run_one();
+    } 
+    while(m_error == boost::asio::error::would_block);
+
+    BOOST_LOG_TRIVIAL(debug) << "Message received: " << m_receivedSize << " bytes";
+    return m_receivedSize;
+
   } catch (const boost::system::system_error& e) {
     BOOST_LOG_TRIVIAL(error) << "Receive error: " << e.what();
     return 0;
@@ -64,6 +76,30 @@ size_t IPbusTarget::receive(char* destBuffer, size_t maxSize)
     return 0;
   }
   return 0;
+}
+
+void IPbusTarget::handleReceive(const boost::system::error_code& ec, std::size_t length)
+{
+  std::lock_guard<std::mutex> lock(m_receiveStatusMutex);
+
+  m_receiveStatus = ReceiveStatus::Received;
+  m_error = ec;
+  m_receivedSize = length;
+  m_timer.cancel();
+}
+
+void IPbusTarget::handleDeadline()
+{
+  std::lock_guard<std::mutex> lock(m_receiveStatusMutex);
+
+  if(m_receiveStatus == ReceiveStatus::Wait)
+  {
+    BOOST_LOG_TRIVIAL(error) << "Request has timed out";
+
+    m_receiveStatus = ReceiveStatus::Expired;
+    m_socket.cancel();
+    m_timer.expires_at(boost::posix_time::pos_infin);
+  }
 }
 
 bool IPbusTarget::checkStatus()
@@ -151,13 +187,12 @@ void IPbusTarget::intializeMutex(pthread_mutex_t& mutex)
   pthread_mutex_init(&mutex, NULL);
 }
 
-void IPbusTarget::setTimeout(timeval timeout)
+void IPbusTarget::setTimeout(boost::posix_time::milliseconds timeout)
 {
   m_timeout = timeout;
-  ::setsockopt(m_socket.native_handle(), SOL_SOCKET, SO_RCVTIMEO, (const void*) &m_timeout, sizeof(m_timeout));
 }
 
-timeval IPbusTarget::getTimeout() const
+boost::posix_time::milliseconds IPbusTarget::getTimeout() const
 {
   return m_timeout;
 }

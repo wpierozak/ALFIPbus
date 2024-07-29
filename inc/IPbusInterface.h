@@ -4,6 +4,7 @@
 #include <mutex>
 #include <boost/asio.hpp>
 #include <memory>
+#include<chrono>
 #include <pthread.h>
 
 #include "IPbusControlPacket.h"
@@ -44,7 +45,18 @@ class IPbusTarget
   // Sync communication
 
   size_t receive(char* destBuffer, size_t maxSize);
-  timeval m_timeout{2, 0};
+
+  void handleReceive(const boost::system::error_code& ec, std::size_t length);
+  void handleDeadline();
+  boost::asio::deadline_timer m_timer;
+
+  enum class ReceiveStatus{Wait, Expired, Received} m_receiveStatus;
+  std::mutex m_receiveStatusMutex;
+
+  size_t m_receivedSize;
+  boost::system::error_code m_error;
+
+  boost::posix_time::milliseconds m_timeout{2000};
 
   pthread_mutex_t m_linkMutex;
   void intializeMutex(pthread_mutex_t& mutex);
@@ -60,8 +72,8 @@ class IPbusTarget
 
   bool isIPbusOK() { return m_isAvailable; }
 
-  void setTimeout(timeval timeout);
-  timeval getTimeout() const;
+  void setTimeout(boost::posix_time::milliseconds timeout);
+  boost::posix_time::milliseconds getTimeout() const;
 };
 
 } // namespace ipbus
