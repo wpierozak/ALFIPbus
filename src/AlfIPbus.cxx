@@ -1,9 +1,13 @@
 #include "AlfIPbus.h"
 
 AlfIPbus::AlfIPbus(const AlfConfig& cfg)
-  : m_cfg(cfg), m_work(true)
+  : m_cfg(cfg)
 {
   BOOST_LOG_TRIVIAL(info) << "Created ALF IPbus named " << m_cfg.name;
+}
+
+AlfIPbus::~AlfIPbus() {
+  BOOST_LOG_TRIVIAL(info) << "ALF IPbus " << m_cfg.name << " shutting down";
 }
 
 void AlfIPbus::initLinks()
@@ -22,9 +26,14 @@ void AlfIPbus::startServer()
   mainLoop();
 }
 
+void AlfIPbus::stop(int)
+{
+  s_running.store(false);
+}
+
 void AlfIPbus::mainLoop()
 {
-  while (m_work) {
-    std::this_thread::sleep_for(std::chrono::seconds(1000));
+  while (AlfIPbus::s_running.load()) {
+    pause();
   }
 }

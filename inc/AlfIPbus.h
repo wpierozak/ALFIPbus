@@ -1,6 +1,7 @@
 #include "AlfConfig.h"
 #include "../IpbusSWT/inc/SwtLink.h"
 #include <list>
+#include <atomic>
 
 class AlfIPbus
 {
@@ -10,12 +11,18 @@ class AlfIPbus
 
   void startServer();
 
-  bool m_work;
+  static void stop(int);
+
+  ~AlfIPbus();
 
  private:
+  static std::atomic<bool> s_running;
+
   void mainLoop();
   AlfConfig m_cfg;
   std::list<fit_swt::SwtLink> m_swtLinks;
 
   boost::asio::io_context m_ioContext;
 };
+
+std::atomic<bool> AlfIPbus::s_running = true;
