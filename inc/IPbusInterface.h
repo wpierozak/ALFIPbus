@@ -51,7 +51,7 @@ class IPbusTarget
   boost::asio::deadline_timer m_timer;
 
   enum class ReceiveStatus{Wait, Expired, Received} m_receiveStatus;
-  std::mutex m_receiveStatusMutex;
+  pthread_mutex_t m_receiveStatusMutex;
 
   size_t m_receivedSize;
   boost::system::error_code m_error;

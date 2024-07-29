@@ -19,6 +19,7 @@ IPbusTarget::IPbusTarget(boost::asio::io_context& ioContext, std::string address
 {
   openSocket();
   intializeMutex(m_linkMutex);
+  intializeMutex(m_receiveStatusMutex);
   checkStatus();
 }
 
@@ -62,7 +63,7 @@ size_t IPbusTarget::receive(char* destBuffer, size_t maxSize)
     {
       m_ioContext.run_one();
     } 
-    while(m_error == boost::asio::error::would_block);
+    while(m_error == boost::asio::error::would_block || m_receiveStatus == ReceiveStatus::Wait);
 
     return m_receivedSize;
 
@@ -81,14 +82,17 @@ size_t IPbusTarget::receive(char* destBuffer, size_t maxSize)
 
 void IPbusTarget::handleReceive(const boost::system::error_code& ec, std::size_t length)
 {
-  std::lock_guard<std::mutex> lock(m_receiveStatusMutex);
+  pthread_mutex_lock(&m_receiveStatusMutex);
 
   BOOST_LOG_TRIVIAL(debug) << "Message received: " << length << " bytes";
 
   m_receiveStatus = ReceiveStatus::Received;
   m_error = ec;
   m_receivedSize = length;
+
   m_timer.cancel();
+
+  pthread_mutex_unlock(&m_receiveStatusMutex);
 }
 
 void IPbusTarget::handleDeadline()
@@ -99,7 +103,7 @@ void IPbusTarget::handleDeadline()
     return;
   }
 
-  std::lock_guard<std::mutex> lock(m_receiveStatusMutex);
+  pthread_mutex_lock(&m_receiveStatusMutex);
 
   if(m_receiveStatus == ReceiveStatus::Wait)
   {
@@ -109,6 +113,8 @@ void IPbusTarget::handleDeadline()
     m_socket.cancel();
     m_timer.expires_at(boost::posix_time::pos_infin);
   }
+
+  pthread_mutex_unlock(&m_receiveStatusMutex);
 }
 
 bool IPbusTarget::checkStatus()
@@ -181,10 +187,10 @@ bool IPbusTarget::transceive(IPbusControlPacket& p, bool shouldResponseBeProcess
     RETURN_AND_RELEASE(m_linkMutex, false);
   }
 
-  size_t bytes_recevied = receive((char*)&p.m_response, p.m_requestSize * wordSize);
+  size_t bytes_recevied = receive((char*)&p.m_response, maxPacket);
 
   if (bytes_recevied == 64 && p.m_response[0] == m_status.header) {
-    bytes_recevied = receive((char*)&p.m_response, p.m_requestSize * wordSize);
+    bytes_recevied = receive((char*)&p.m_response, maxPacket);
   }
 
   if (bytes_recevied == 0) {

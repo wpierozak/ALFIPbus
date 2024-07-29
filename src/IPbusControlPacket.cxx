@@ -81,7 +81,7 @@ bool IPbusControlPacket::processResponse()
             }
             // emit successfulRead(wordsAhead); !!!
             if (th->infoCode == 0) {
-              std::string message = "Read transaction from " + std::to_string(*m_transactionsList.at(i).address) + " truncated " + std::to_string(wordsAhead) + "words received: " + std::to_string(th->words);
+              std::string message = "Read transaction from " + std::to_string(*m_transactionsList.at(i).address) + " truncated " + std::to_string(wordsAhead) + " words received: " + std::to_string(th->words);
               BOOST_LOG_TRIVIAL(warning) << message;
             }
             return false;
