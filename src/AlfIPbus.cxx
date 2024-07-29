@@ -4,10 +4,12 @@ AlfIPbus::AlfIPbus(const AlfConfig& cfg)
   : m_cfg(cfg)
 {
   BOOST_LOG_TRIVIAL(info) << "Created ALF IPbus named " << m_cfg.name;
+  s_running.store(true);
 }
 
 AlfIPbus::~AlfIPbus() {
   BOOST_LOG_TRIVIAL(info) << "ALF IPbus " << m_cfg.name << " shutting down";
+  s_running.store(false);
 }
 
 void AlfIPbus::initLinks()

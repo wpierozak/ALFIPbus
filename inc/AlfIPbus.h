@@ -25,4 +25,4 @@ class AlfIPbus
   boost::asio::io_context m_ioContext;
 };
 
-std::atomic<bool> AlfIPbus::s_running = true;
+std::atomic<bool> AlfIPbus::s_running = false;
