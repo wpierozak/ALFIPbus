@@ -96,6 +96,7 @@ void IPbusTarget::handleDeadline()
   if(m_timer.expires_at() > boost::asio::deadline_timer::traits_type::now())
   {
     m_timer.async_wait(boost::bind(&IPbusTarget::handleDeadline, this));
+    return;
   }
 
   std::lock_guard<std::mutex> lock(m_receiveStatusMutex);
