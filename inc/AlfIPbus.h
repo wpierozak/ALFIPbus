@@ -1,3 +1,6 @@
+#ifndef ALF_IPBUS_H
+#define ALF_IPBUS_H
+
 #include "AlfConfig.h"
 #include "../IpbusSWT/inc/SwtLink.h"
 #include <list>
@@ -25,4 +28,4 @@ class AlfIPbus
   boost::asio::io_context m_ioContext;
 };
 
-std::atomic<bool> AlfIPbus::s_running = false;
+#endif

@@ -1,5 +1,7 @@
 #include "AlfIPbus.h"
 
+std::atomic<bool> AlfIPbus::s_running{false};
+
 AlfIPbus::AlfIPbus(const AlfConfig& cfg)
   : m_cfg(cfg)
 {
