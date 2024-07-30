@@ -72,8 +72,6 @@ In general, sending IPbus packet follows below schema.
 5. Add transaction to the packet: you need to provide transaction type, register address, buffer address and number of words
 6. Pass packet to IPbusTarget::transcieve (called on the created IPbusTarget object)
 
-**IMPORTANT** at the initialization IPbusTarget tries to send status packet to the device, then it waits for the response. If device is not reposnding, program will block until it receivces status packet respond. It will be handled in non-blocking way in the future.
-
 ## How to create a packet
 
 `IPbusControlPacket` class is responsible for preparing IPbus packet to be sent. You can add transaction to packet using `addTransaction` method with following arguments:
