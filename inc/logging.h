@@ -24,7 +24,7 @@ void init(std::string filename = "")
     bl::add_console_log(std::cout,
                         bl::keywords::format = (ble::stream
                                                 << "["
-                                                << ble::format_date_time<boost::posix_time::ptime>("TimeStamp", "%H:%M:%S.%f")
+                                                << ble::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S.%f")
                                                 << "] "
                                                 << "[" << std::setw(7) << bl::trivial::severity << "]:\t"
                                                 << ble::smessage));
@@ -33,7 +33,7 @@ void init(std::string filename = "")
                      bl::keywords::auto_flush = true,
                      bl::keywords::format = (ble::stream
                                              << "["
-                                             << ble::format_date_time<boost::posix_time::ptime>("TimeStamp", "%H:%M:%S.%f")
+                                             << ble::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S.%f")
                                              << "] "
                                              << "[" << std::setw(7) << bl::trivial::severity << "]:\t"
                                              << ble::smessage));
