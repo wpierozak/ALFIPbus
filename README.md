@@ -1,12 +1,12 @@
 ## Description
 
-The IpbusSWT repository provides an implementation of SWT-to-IPbus translation dedicated for use with FRED Alice software. The core of the solution is the **SWTelectronics** class, which inherits from the **IPbusTarget** (IPbus submodule) and the **DimRpcParallel** (DimRpcParallel submodule). SWTelectronics is designed to provide a single service in a ALF-like manner and to receive messages in a format provided by FRED to ALF. 
+The IpbusSWT repository provides an implementation of SWT-to-IPbus translation dedicated for use with FRED Alice software. The core of the solution is the **SwtLink** class, which inherits from the **IPbusTarget** (IPbus submodule) and the **DimRpcParallel** (DimRpcParallel submodule). SwtLink is designed to provide a single service in a ALF-like manner and to receive messages in a format provided by FRED to ALF. 
 
 ### Example
 Example code is provided in the **flp_test_server.cpp** file, content of the file is also included below.
 
 ```
-#include"SWTelectronics.h"
+#include"SwtLink.h"
 #include<dim/dis.hxx>
 #include<chrono>
 #include<thread>
@@ -16,7 +16,7 @@ int main(int argc, const char** argv)
     
     boost::asio::io_context io_context;
 
-    SWTelectronics target(argv[2], io_context);
+    SwtLink target(argv[2], io_context);
     target.debug_mode(IPbusTarget::DebugMode::Full, "172.20.75.175", 50001);
 
     DimServer::start(argv[1]);
@@ -29,10 +29,10 @@ int main(int argc, const char** argv)
 }
 ```
 
-To use the SWTelectronics class, follow these basic steps:
+To use the SwtLink class, follow these basic steps:
 
 1. Create a boost::asio::io_context variable (it must exist for the entire program's lifetime).
-2. Create a SWTelectronics object by providing the RPC name, io_context variable, remote device address, and port it listens to.
+2. Create a SwtLink object by providing the RPC name, io_context variable, remote device address, and port it listens to.
 3. (Optional) Set the level of detail for the debug information.
 4. Start the DimServer.
 5. Create a loop.
@@ -59,7 +59,7 @@ cmake3 --build .
 
 ## SWT Frame
 
-SWTelectronics is compatible with SWT frame designed for ALICE's FIT detector.
+SwtLink is compatible with SWT frame designed for ALICE's FIT detector.
 
 ```
 Total: 80b
@@ -175,5 +175,4 @@ success 0
 000000010041004BADCAFEE
 ```
 
-## Protocols translation
-SWT protocol provides only simple read/write operations, thus it is straightforward to map them to the IPbus trasactions. Each sequence of SWT command is put into one IPbus packet and each command is send as a single transcation. SWT read is translated to the IPbus read, SWT write is translated to the IPbus write. Address and data in both protocols are 32-bit long.
+
