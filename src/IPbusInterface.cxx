@@ -166,8 +166,13 @@ bool IPbusTarget::transceive(IPbusControlPacket& p, bool shouldResponseBeProcess
 
   if (m_isAvailable == false) {
     BOOST_LOG_TRIVIAL(error) << "Device at " << m_ipAddress << ":" << m_remotePort << " is not available";
-    RETURN_AND_RELEASE(m_linkMutex, false);
+
+    checkStatus();
+    if (m_isAvailable == false){
+      RETURN_AND_RELEASE(m_linkMutex, false);
+    }
   }
+  
   if (p.m_requestSize <= 1) {
     BOOST_LOG_TRIVIAL(warning) << "Empty request";
     RETURN_AND_RELEASE(m_linkMutex, true);
@@ -188,6 +193,20 @@ bool IPbusTarget::transceive(IPbusControlPacket& p, bool shouldResponseBeProcess
   }
 
   size_t bytes_recevied = receive((char*)&p.m_response, maxPacket*wordSize);
+
+  if(m_receiveStatus == ReceiveStatus::Expired)
+  {
+    checkStatus();
+    if(m_isAvailable == false)
+    {
+      RETURN_AND_RELEASE(m_linkMutex, false);
+    }
+    else
+    {
+      BOOST_LOG_TRIVIAL(error) << "Device is available but request has expired - request failed";
+      RETURN_AND_RELEASE(m_linkMutex, false);
+    }
+  }
 
   if (bytes_recevied == 64 && p.m_response[0] == m_status.header) {
     bytes_recevied = receive((char*)&p.m_response, maxPacket*wordSize);
