@@ -110,7 +110,7 @@ MM | R/W | ADDRESS   | DATA |  ->  RESPONSE
 MM | R/W | ADDRESS   | DATA     |  ->  RESPONSE
 -----------------------------------------------
 01 | 0   | ADDRESS   | AND_MASK |  ->  DATA_PRE     # READ_AND
-01 | 1   | ADDRESS+1 | OR_MASK  |  ->  OK           # WRITE_OR
+01 | 1   | ADDRESS   | OR_MASK  |  ->  OK           # WRITE_OR
 ```
 
 
