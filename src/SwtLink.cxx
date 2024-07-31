@@ -68,7 +68,6 @@ bool SwtLink::parseFrames()
 bool SwtLink::interpretFrames()
 {
   uint32_t buffer[2];
-  const int packetSizePadding = 128;
   m_lineBeg = 0;
   m_lineEnd = 0;
 
@@ -92,15 +91,12 @@ bool SwtLink::interpretFrames()
       continue;
     }
 
-
     switch (m_frames[i].getTransactionType()) {
       case Swt::TransactionType::Read:
-        // std::cerr << "Read operation...\n";
         m_packet.addTransaction(ipbus::DataRead, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
         break;
 
       case Swt::TransactionType::Write:
-        // std::cerr << "Write operation...\n";
         m_packet.addTransaction(ipbus::DataWrite, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
         break;
 
@@ -148,13 +144,16 @@ bool SwtLink::interpretFrames()
     }
   }
 
-  if(transceive(m_packet))
+  if(m_packet.m_requestSize <= 1)
   {
-    writeToResponse();
-  }
-  else
-  {
-    return false;
+    if(transceive(m_packet))
+    {
+      writeToResponse();
+    }
+    else
+    {
+      return false;
+    }
   }
 
   return true;
