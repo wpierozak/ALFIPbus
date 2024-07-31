@@ -73,10 +73,9 @@ bool SwtLink::interpretFrames()
   m_lineEnd = 0;
 
   for (int i = 0; i < m_frames.size(); i++) {
-    m_lineEnd++;
-
-    if (m_packet.requestSize + packetSizePadding >= ipbus::maxPacket) {
-      if(transcieve(m_packet))
+  
+    if (m_packet.m_requestSize + packetSizePadding >= ipbus::maxPacket) {
+      if(transceive(m_packet))
       {
         writeToResponse();
         m_lineBeg = i;
@@ -87,6 +86,8 @@ bool SwtLink::interpretFrames()
       }
     }
 
+    m_lineEnd++;
+
     if (m_frames[i].data == 0 && m_frames[i].address == 0 && m_frames[i].mode == 0) {
       continue;
     }
@@ -95,12 +96,12 @@ bool SwtLink::interpretFrames()
     switch (m_frames[i].getTransactionType()) {
       case Swt::TransactionType::Read:
         // std::cerr << "Read operation...\n";
-        m_packet.addTransaction(ipbus::data_read, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
+        m_packet.addTransaction(ipbus::DataRead, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
         break;
 
       case Swt::TransactionType::Write:
         // std::cerr << "Write operation...\n";
-        m_packet.addTransaction(ipbus::data_write, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
+        m_packet.addTransaction(ipbus::DataWrite, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
         break;
 
       case Swt::TransactionType::RMWbits:
@@ -147,7 +148,7 @@ bool SwtLink::interpretFrames()
     }
   }
 
-  if(transcieve(m_packet))
+  if(transceive(m_packet))
   {
     writeToResponse();
   }
