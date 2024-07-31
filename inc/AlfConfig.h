@@ -23,6 +23,7 @@ struct AlfConfig {
 
   std::string name;
   std::string logFilename;
+  int timeout;
   std::vector<Link> links;
 
   AlfConfig(int argc, const char** argv);

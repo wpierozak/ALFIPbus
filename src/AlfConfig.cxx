@@ -25,7 +25,8 @@ AlfConfig::AlfConfig(int argc, const char** argv)
   desc.add_options()("help,h", "see available options")("name,n", po::value<std::string>(&name), "set server name")("link,l", po::value<std::vector<std::string>>(&linkArgs),
                                                                                                                     "set the IP address and port for consecutive links (can be used multiple times).\n"
                                                                                                                     "Format: [IP address]:[Port number]")("log_file,f", po::value<std::string>(&logFilename)->default_value(""),
-                                                                                                                                                          "specify file path for the logs. If unspecified, logs get printed to stdout");
+                                                                                                                                                          "specify file path for the logs. If unspecified, logs get printed to stdout")
+                                                                                                                                                          ("timeout,t", po::value<int>(&timeout)->default_value(2000),"Set timeout [ms]");
 
   // Parse the provided arguments
   po::variables_map vm;
