@@ -74,7 +74,7 @@ bool SwtLink::interpretFrames()
 
   for (int i = 0; i < m_frames.size(); i++) {
   
-    if (m_packet.m_requestSize + packetSizePadding >= ipbus::maxPacket) {
+    if (m_packet.m_requestSize + m_packetPadding >= ipbus::maxPacket) {
       if(transceive(m_packet))
       {
         writeToResponse();
@@ -124,7 +124,7 @@ bool SwtLink::interpretFrames()
           }
           buffer[0] = m_frames[i].data;
           buffer[1] = m_frames[i + 2].data;
-          m_packets[currentPacket].addTransaction(ipbus::RMWbits, m_frames[i].address, buffer, &m_frames[i].data);
+          m_packet.addTransaction(ipbus::RMWbits, m_frames[i].address, buffer, &m_frames[i].data);
           i += 2;
         } else {
           if ((m_frames[i + 1].mode) != 3) {
@@ -133,14 +133,14 @@ bool SwtLink::interpretFrames()
           }
           buffer[0] = m_frames[i].data;
           buffer[1] = m_frames[i + 1].data;
-          m_packets[currentPacket].addTransaction(ipbus::RMWbits, m_frames[i].address, buffer, &m_frames[i].data);
+          m_packet.addTransaction(ipbus::RMWbits, m_frames[i].address, buffer, &m_frames[i].data);
           i += 1;
         }
 
         break;
 
       case Swt::TransactionType::RMWsum:
-        m_packets[currentPacket].addTransaction(ipbus::RMWsum, m_frames[i].address, &m_frames[i].data, &m_frames[i].data);
+        m_packet.addTransaction(ipbus::RMWsum, m_frames[i].address, &m_frames[i].data, &m_frames[i].data);
         break;
 
       default:
