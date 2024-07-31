@@ -12,6 +12,8 @@
 
 int main(int argc, const char** argv)
 {
+  std::signal(SIGINT, AlfIPbus::stop);
+
   AlfConfig cfg(argc, argv);
 
   logging::init(cfg.logFilename);

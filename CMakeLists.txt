@@ -10,7 +10,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 find_package(Boost REQUIRED COMPONENTS system log log_setup program_options)
 
 add_subdirectory(IpbusSWT)
-add_executable(AlfIPbus src/AlfIPbus.cxx src/main.cxx)
+add_executable(AlfIPbus src/AlfIPbus.cxx src/main.cxx src/AlfConfig.cxx)
 # Include directories
 target_include_directories(AlfIPbus PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc)
 
