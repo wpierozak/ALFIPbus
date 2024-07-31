@@ -153,7 +153,7 @@ void SwtLink::execute()
 
 void SwtLink::createResponse()
 {
-  m_response = "success ";
+  m_response = "success\n";
 
   for (int i = 0; i < m_lines.size(); i++) {
     if (m_lines[i] == "read") {
