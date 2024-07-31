@@ -120,44 +120,41 @@ void IPbusTarget::handleDeadline()
 bool IPbusTarget::checkStatus()
 {
   pthread_mutex_lock(&m_linkMutex);
-  bool response = true;
+  m_isAvailable = false;
 
   try {
     BOOST_LOG_TRIVIAL(debug) << "Checking status of device at " << m_ipAddress << ":" << m_remotePort;
     
-    m_isAvailable = false;
+    for(int i = 0; i < 5 && m_isAvailable == false; i++)
+    {
+      m_socket.send_to(boost::asio::buffer(&m_status, sizeof(m_status)), m_remoteEndpoint);
+      size_t bytes = receive((char*)&m_statusRespone, sizeof(m_statusRespone));
 
-    m_socket.send_to(boost::asio::buffer(&m_status, sizeof(m_status)), m_remoteEndpoint);
-    size_t bytes = receive((char*)&m_statusRespone, sizeof(m_statusRespone));
-
-    if(m_error)
-    {
-      BOOST_LOG_TRIVIAL(info) << m_error.message();
+      if(m_error)
+      {
+        BOOST_LOG_TRIVIAL(info) << m_error.message();
+      }
+      else if(m_receiveStatus == ReceiveStatus::Expired)
+      {
+        BOOST_LOG_TRIVIAL(info) << "Status packet has not been received";
+      }
+      else if(bytes < sizeof(m_status))
+      {
+        BOOST_LOG_TRIVIAL(info) << "Status packet is too short - received " << bytes << " (expected " << sizeof(m_status) << ")";
+      }
+      else
+      {
+        BOOST_LOG_TRIVIAL(info) << "Device at " << m_ipAddress << ":" << m_remotePort << " is available.";
+        m_isAvailable = true;
+      }
     }
-    else if(m_receiveStatus == ReceiveStatus::Expired)
-    {
-      BOOST_LOG_TRIVIAL(info) << "Status packet has not been received";
-    }
-    else if(bytes < sizeof(m_status))
-    {
-       BOOST_LOG_TRIVIAL(info) << "Status packet is too short - received " << bytes << " (expected " << sizeof(m_status) << ")";
-    }
-    else
-    {
-      BOOST_LOG_TRIVIAL(info) << "Status check successful: Device at " << m_ipAddress << ":" << m_remotePort << " is available.";
-      m_isAvailable = true;
-    }
-
-    response = true;
 
   } catch (const std::exception& e) {
     BOOST_LOG_TRIVIAL(error) << "Failed to check status of device at " << m_ipAddress << ":" << m_remotePort << ": " << e.what() << std::endl;
     m_isAvailable = false;
-
-    response = false;
   }
 
-  RETURN_AND_RELEASE(m_linkMutex, response);
+  RETURN_AND_RELEASE(m_linkMutex, m_isAvailable);
 }
 
 bool IPbusTarget::transceive(IPbusControlPacket& p, bool shouldResponseBeProcessed)
