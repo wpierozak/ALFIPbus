@@ -144,7 +144,7 @@ bool SwtLink::interpretFrames()
     }
   }
 
-  if(m_packet.m_requestSize <= 1)
+  if(m_packet.m_requestSize > 1)
   {
     if(transceive(m_packet))
     {
