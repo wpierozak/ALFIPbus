@@ -8,6 +8,8 @@
 #include <pthread.h>
 
 #include "IPbusControlPacket.h"
+#include "IPbusRequest.h"
+#include "IPbusResponse.h"
 
 /* Should be used instead of simple "return" in every method that locks m_link_mutex */
 #define RETURN_AND_RELEASE(mutex, statement) \
@@ -17,7 +19,7 @@
 namespace ipbus
 {
 
-class IPbusTarget
+class IPbusMaster
 {
  private:
   // BOOST ASIO //
@@ -61,14 +63,17 @@ class IPbusTarget
   pthread_mutex_t m_linkMutex;
   void intializeMutex(pthread_mutex_t& mutex);
 
+  bool processResponse(const IPbusRequest& request, IPbusResponse& response);
+
  public:
-  IPbusTarget(boost::asio::io_context& ioContext, std::string address = "172.20.75.175", uint16_t lport = 0, uint16_t rport = 50001);
-  virtual ~IPbusTarget() {}
+
+  IPbusMaster(boost::asio::io_context& ioContext, std::string address = "172.20.75.175", uint16_t lport = 0, uint16_t rport = 50001);
+  virtual ~IPbusMaster() {}
 
   bool checkStatus();
   bool reopen();
 
-  bool transceive(IPbusControlPacket& p, bool shouldResponseBeProcessed = true);
+  bool transceive(const IPbusRequest& request, IPbusResponse& response, bool shouldResponseBeProcessed = true);
 
   bool isIPbusOK() { return m_isAvailable; }
 
