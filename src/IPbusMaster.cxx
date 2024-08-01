@@ -3,7 +3,7 @@
 #include "IPbusMaster.h"
 #include <boost/log/trivial.hpp>
 #include <sys/socket.h>
-
+#include <sstream>
 namespace ipbus
 {
 
@@ -256,7 +256,18 @@ bool IPbusMaster::processResponse(IPbusRequest& request, IPbusResponse& response
     if(headerResponse->protocolVersion != 2 || headerResponse->transactionID != idx || 
       headerResponse->typeID != headerRequest->typeID)
     {
-        std::string message = "Unexpected transaction header: " + std::to_string(*headerResponse) + ", expected: " + std::to_string(*headerRequest & 0xFFFFFFF0);
+        std::stringstream ss;
+        ss << std::hex << *headerResponse;
+        std::string headerResponseHex = ss.str();
+
+        ss.str(""); // Clear the stringstream
+        ss.clear(); // Clear any error flags
+
+        ss << std::hex << (*headerRequest & 0xFFFFFFF0);
+        std::string headerRequestHex = ss.str();
+
+        std::string message = "Unexpected transaction header: " + headerResponseHex + ", expected: " + headerRequestHex;
+        //std::string message = "Unexpected transaction header: " + std::to_string(*headerResponse) + ", expected: " + std::to_string(*headerRequest & 0xFFFFFFF0);
         BOOST_LOG_TRIVIAL(error) << message;
         return false;
     }
