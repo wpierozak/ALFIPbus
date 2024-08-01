@@ -254,7 +254,7 @@ bool IPbusMaster::processResponse(IPbusRequest& request, IPbusResponse& response
     TransactionHeader* headerResponse = (TransactionHeader*) response.getBuffer() + (idx_response++);
 
     if(headerResponse->protocolVersion != 2 || headerResponse->transactionID != idx || 
-      headerResponse->typeID != headerRequest->transactionID)
+      headerResponse->typeID != headerRequest->typeID)
     {
         std::string message = "Unexpected transaction header: " + std::to_string(*headerResponse) + ", expected: " + std::to_string(*headerRequest & 0xFFFFFFF0);
         BOOST_LOG_TRIVIAL(error) << message;
@@ -311,7 +311,16 @@ bool IPbusMaster::processResponse(IPbusRequest& request, IPbusResponse& response
       
       }
     }
+
+    if(headerResponse->infoCode != 0)
+    {
+      std::string message = headerResponse->infoCodeString();
+      BOOST_LOG_TRIVIAL(error) << "Transaction response error: " << message;
+      return false;
+    }
   }
+
+  return true;
 }
 
 void IPbusMaster::intializeMutex(pthread_mutex_t& mutex)

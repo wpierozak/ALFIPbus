@@ -7,14 +7,14 @@ namespace ipbus
         m_buffer[0] = PacketHeader(Control, 0);
         m_size = 1;
         m_transactionsNumber = 0;
-        m_expectedResponseSize = 0;
+        m_expectedResponseSize = 1;
     }
 
     void IPbusRequest::reset()
     {
         m_size = 1;
         m_transactionsNumber = 0;
-        m_expectedResponseSize = 0;
+        m_expectedResponseSize = 1;
         m_dataOut.clear();
     }
 
@@ -37,6 +37,7 @@ namespace ipbus
         case ConfigurationRead:
             m_expectedResponseSize += nWords;
             break;
+
         case DataWrite:
         case NonIncrementingWrite:
         case ConfigurationWrite:
@@ -44,14 +45,19 @@ namespace ipbus
             {
                 m_buffer[m_size++] = dataIn[i];
             }
+            break;
+
         case RMWbits:
             m_buffer[m_size++] = dataIn[0];
             m_buffer[m_size++] = dataIn[1];
             m_expectedResponseSize++;
+            break;
 
         case RMWsum:
             m_buffer[m_size++] = dataIn[0];
             m_expectedResponseSize++;
+            break;
+
         default:
             BOOST_LOG_TRIVIAL(warning) << "Unknown transaction type " << type << ": no transaction was added";
             break;

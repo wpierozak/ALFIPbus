@@ -37,6 +37,7 @@ try {
 
         packet.addTransaction(TransactionType::DataWrite, address, data, data, SIZE);
         target.transceive(packet, response);
+        
         packet.reset();
         response.reset();
 
