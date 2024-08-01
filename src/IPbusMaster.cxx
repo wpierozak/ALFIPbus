@@ -298,7 +298,6 @@ bool IPbusMaster::processResponse(IPbusRequest& request, IPbusResponse& response
         break;
 
         case RMWbits:
-        case RMWsum:
         {
           if(headerResponse->words != 1)
           {
@@ -312,6 +311,22 @@ bool IPbusMaster::processResponse(IPbusRequest& request, IPbusResponse& response
             idx_request += 3;
           }
         }
+        break;
+        case RMWsum:
+        {
+          if(headerResponse->words != 1)
+          {
+            BOOST_LOG_TRIVIAL(error) << "Invalid RMW transaction";
+            return false;
+          }
+          if(request.getDataOut(idx) != nullptr)
+          {
+            memcpy(request.getDataOut(idx), response.getBuffer() + idx_response, wordSize);
+            idx_response++;
+            idx_request += 1;
+          }
+        }
+        break;
 
         case DataWrite:
         case NonIncrementingWrite:
