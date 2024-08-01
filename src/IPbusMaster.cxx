@@ -307,7 +307,7 @@ bool IPbusMaster::processResponse(IPbusRequest& request, IPbusResponse& response
           }
           if(request.getDataOut(idx) != nullptr)
           {
-            memcpy(request.getDataOut(idx), response.getBuffer() + idx_response, 1);
+            memcpy(request.getDataOut(idx), response.getBuffer(), wordSize);
             idx_response++;
             idx_request += 3;
           }
