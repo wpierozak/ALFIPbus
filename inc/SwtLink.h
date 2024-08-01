@@ -39,15 +39,16 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
   int getPacketPadding() const;
 
  private:
-  ipbus::IPbusRequest m_packet;
-  ipbus::IPbusResponse m_ipbusResponse;
+  ipbus::IPbusRequest m_request;
+  ipbus::IPbusResponse m_response;
+
   int m_lineBeg{0};
   int m_lineEnd{0};
   int m_packetPadding{8};
 
   std::vector<std::string> m_lines;
   std::vector<Swt> m_frames;
-  std::string m_response;
+  std::string m_fredResponse;
 };
 
 } // namespace fit_swt

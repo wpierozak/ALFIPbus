@@ -15,7 +15,7 @@ void SwtLink::rpcHandler()
 
 void SwtLink::processRequest(const char* swtSequence)
 {
-  m_response = "";
+  m_fredResponse = "";
   splitLines(swtSequence);
 
   if (!parseFrames()) {
@@ -71,11 +71,14 @@ bool SwtLink::interpretFrames()
   m_lineBeg = 0;
   m_lineEnd = 0;
 
+  m_request.reset();
+
   for (int i = 0; i < m_frames.size(); i++) {
   
-    if (m_packet.m_requestSize + m_packetPadding >= ipbus::maxPacket) {
-      if(transceive(m_packet))
+    if (m_request.getSize() + m_packetPadding >= ipbus::maxPacket) {
+      if(transceive(m_request, m_response))
       {
+        m_request.reset();
         writeToResponse();
         m_lineBeg = i;
       }
@@ -93,11 +96,11 @@ bool SwtLink::interpretFrames()
 
     switch (m_frames[i].getTransactionType()) {
       case Swt::TransactionType::Read:
-        m_packet.addTransaction(ipbus::DataRead, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
+        m_request.addTransaction(ipbus::DataRead, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
         break;
 
       case Swt::TransactionType::Write:
-        m_packet.addTransaction(ipbus::DataWrite, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
+        m_request.addTransaction(ipbus::DataWrite, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
         break;
 
       case Swt::TransactionType::RMWbits:
@@ -120,7 +123,7 @@ bool SwtLink::interpretFrames()
           }
           buffer[0] = m_frames[i].data;
           buffer[1] = m_frames[i + 2].data;
-          m_packet.addTransaction(ipbus::RMWbits, m_frames[i].address, buffer, &m_frames[i].data);
+          m_request.addTransaction(ipbus::RMWbits, m_frames[i].address, buffer, &m_frames[i].data);
           i += 2;
           m_lineEnd += 2;
         } else {
@@ -130,7 +133,7 @@ bool SwtLink::interpretFrames()
           }
           buffer[0] = m_frames[i].data;
           buffer[1] = m_frames[i + 1].data;
-          m_packet.addTransaction(ipbus::RMWbits, m_frames[i].address, buffer, &m_frames[i].data);
+          m_request.addTransaction(ipbus::RMWbits, m_frames[i].address, buffer, &m_frames[i].data);
           i += 1;
           m_lineEnd += 1;
         }
@@ -138,7 +141,7 @@ bool SwtLink::interpretFrames()
         break;
 
       case Swt::TransactionType::RMWsum:
-        m_packet.addTransaction(ipbus::RMWsum, m_frames[i].address, &m_frames[i].data, &m_frames[i].data);
+        m_request.addTransaction(ipbus::RMWsum, m_frames[i].address, &m_frames[i].data, &m_frames[i].data);
         break;
 
       default:
@@ -146,8 +149,9 @@ bool SwtLink::interpretFrames()
     }
   }
 
-  if(transceive(m_packet))
+  if(transceive(m_request, m_response))
   {
+    m_request.reset();
     writeToResponse();
     return true;
   }
@@ -161,8 +165,8 @@ bool SwtLink::interpretFrames()
 
 void SwtLink::sendResponse()
 {
-  m_response = "success " + m_response;
-  setData(m_response.c_str());
+  m_fredResponse = "success " + m_fredResponse;
+  setData(m_fredResponse.c_str());
 }
 
 
@@ -171,29 +175,29 @@ void SwtLink::writeToResponse()
   for (int i = m_lineBeg; i < m_lineEnd; i++) {
     if (m_lines[i] == "read") {
       writeFrame(m_frames[i - 1]);
-      m_response += "\n";
+      m_fredResponse += "\n";
       continue;
     } else if (m_lines[i].find("write") != std::string::npos) {
-      m_response += "0\n";
+      m_fredResponse += "0\n";
     }
   }
 }
 
 void SwtLink::writeFrame(Swt frame)
 {
-  m_response += "0x";
+  m_fredResponse += "0x";
   HalfWord h;
   h.data = frame.mode;
 
   std::string mode = halfWordToString(h);
   mode = mode.substr(1);
-  m_response += mode;
+  m_fredResponse += mode;
 
   Word w;
   w.data = frame.address;
-  m_response += wordToString(w);
+  m_fredResponse += wordToString(w);
   w.data = frame.data;
-  m_response += wordToString(w);
+  m_fredResponse += wordToString(w);
 }
 
 void SwtLink::sendFailure()
