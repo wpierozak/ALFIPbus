@@ -7,7 +7,7 @@
 #include<chrono>
 #include <pthread.h>
 
-#include "IPbusControlPacket.h"
+#include "IPbusPacket.h"
 #include "IPbusRequest.h"
 #include "IPbusResponse.h"
 
@@ -63,7 +63,7 @@ class IPbusMaster
   pthread_mutex_t m_linkMutex;
   void intializeMutex(pthread_mutex_t& mutex);
 
-  bool processResponse(const IPbusRequest& request, IPbusResponse& response);
+  bool processResponse(IPbusRequest& request, IPbusResponse& response);
 
  public:
 
@@ -73,7 +73,7 @@ class IPbusMaster
   bool checkStatus();
   bool reopen();
 
-  bool transceive(const IPbusRequest& request, IPbusResponse& response, bool shouldResponseBeProcessed = true);
+  bool transceive(IPbusRequest& request, IPbusResponse& response, bool shouldResponseBeProcessed = true);
 
   bool isIPbusOK() { return m_isAvailable; }
 

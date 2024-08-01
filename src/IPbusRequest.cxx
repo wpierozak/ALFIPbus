@@ -2,7 +2,7 @@
 
 namespace ipbus
 {
-    IPbusRequst::IPbusRequest()
+    IPbusRequest::IPbusRequest()
     {
         m_buffer[0] = PacketHeader(Control, 0);
         m_size = 1;
@@ -18,7 +18,7 @@ namespace ipbus
         m_dataOut.clear();
     }
 
-    void IPbusRequst::addTransaction(TransactionType type, uint32_t address, uint32_t* dataIn, uint32_t* dataOut, uint8_t nWords)
+    void IPbusRequest::addTransaction(TransactionType type, uint32_t address, uint32_t* dataIn, uint32_t* dataOut, uint8_t nWords)
     {
         if(m_size + nWords + 1 > maxPacket)
         {
