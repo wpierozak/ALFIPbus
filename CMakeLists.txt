@@ -25,11 +25,15 @@ add_library(IPbusInterface STATIC src/IPbusInterface.cxx src/IPbusControlPacket.
 target_include_directories(IPbusInterface PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc)
 target_link_libraries(IPbusInterface Boost::system Boost::log)
 
-# Add the test executable
-add_executable(flp_test test/flp_test.cpp)
+# Add an option for TEST
+option(TEST "Compile the flp_test target" OFF)
 
-# Link the test executable with the static library and Boost.System library
-target_include_directories(flp_test PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc)
-target_link_libraries(flp_test IPbusInterface Boost::system pthread dim)
+if(TEST)
+    # Add the test executable
+    add_executable(flp_test test/flp_test.cpp)
 
+    # Link the test executable with the static library and Boost.System library
+    target_include_directories(flp_test PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc)
+    target_link_libraries(flp_test IPbusInterface Boost::system pthread dim)
+endif()
 
