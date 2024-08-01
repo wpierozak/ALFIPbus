@@ -2,6 +2,7 @@
 #include <dim/dic.hxx>
 #include <chrono>
 #include <thread>
+#include<iostream>
 
 using namespace fit_swt;
 

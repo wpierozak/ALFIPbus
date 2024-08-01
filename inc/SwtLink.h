@@ -1,7 +1,9 @@
 #ifndef SWTELECTRONICS_H
 #define SWTELECTRONICS_H
 
-#include "IPbusInterface.h"
+#include "IPbusMaster.h"
+#include"IPbusRequest.h"
+#include"IPbusResponse.h"
 #include "Swt.h"
 #include "dimrpcparallel.h"
 #include <string>
@@ -12,10 +14,10 @@
 namespace fit_swt
 {
 
-class SwtLink : public ipbus::IPbusTarget, DimRpcParallel
+class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
 {
  public:
-  SwtLink(std::string rpc, boost::asio::io_context& ioContext, std::string address = "172.20.75.175", uint16_t rport = 50001, uint16_t lport = 0) : IPbusTarget(ioContext, address, lport, rport),
+  SwtLink(std::string rpc, boost::asio::io_context& ioContext, std::string address = "172.20.75.175", uint16_t rport = 50001, uint16_t lport = 0) : IPbusMaster(ioContext, address, lport, rport),
                                                                                                                                                     DimRpcParallel(rpc.c_str(), "C", "C", 0)
   {
     BOOST_LOG_TRIVIAL(info) << "SWT-IPbus link initialization - " << address << ":" << rport;
@@ -37,7 +39,8 @@ class SwtLink : public ipbus::IPbusTarget, DimRpcParallel
   int getPacketPadding() const;
 
  private:
-  ipbus::IPbusControlPacket m_packet;
+  ipbus::IPbusRequest m_packet;
+  ipbus::IPbusResponse m_ipbusResponse;
   int m_lineBeg{0};
   int m_lineEnd{0};
   int m_packetPadding{8};
