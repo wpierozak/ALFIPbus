@@ -14,28 +14,15 @@ const uint16_t maxPacket = 368; // 368 words, limit from ethernet MTU of 1500 by
 enum ErrorType { NetworkError = 0,
                  IPbusError = 1,
                  logicError = 2 };
-static const char* errorTypeName[3] = { "Network error", "IPbus error", "Logic error" };
 
 class IPbusControlPacket
 {
-
  public:
-  /** \brief List of transactions that will be sent  */
-  std::vector<Transaction> m_transactionsList;
-  std::vector<uint32_t*> m_dataOut;
-  /** \brief Size of the request specified in words */
-  uint16_t m_requestSize = 1,
-           /** \brief Size of the response specified in words */
-    m_responseSize = 1;
-  /** \brief Buffer where the request is stored */
-  uint32_t m_request[maxPacket],
-    /** \brief Buffer where the response will be saved */
-    m_response[maxPacket];
-  uint32_t m_dt[2];
 
-  IPbusControlPacket()
+  IPbusControlPacket(IPbusMode mode = IPbusMode::Master)
   {
     m_request[0] = PacketHeader(Control, 0);
+    m_mode = mode;
   }
   ~IPbusControlPacket() {}
 
@@ -43,13 +30,25 @@ class IPbusControlPacket
 
   void addTransaction(TransactionType type, uint32_t address, uint32_t* dataIn, uint32_t* dataOut, uint8_t nWords = 1);
 
+  uint16_t getRequestSize() const { return m_requestSize; }
+  uint16_t getResponseSize() const { return m_responseSize; }
+
   bool processResponse();
-  /**
-   * @brief resets packet data
-   *
-   * @details reset method clears transactionList and resets request and response sizes to 1.
-   */
   void reset();
+
+  IPbusMode getMode() { return m_mode; }
+  void setMode(IPbusMode mode) { m_mode = mode; }
+
+  private:
+
+  std::vector<Transaction> m_transactionsList;
+  std::vector<uint32_t*> m_dataOut;
+  uint16_t m_requestSize = 1,
+          m_responseSize = 1;
+  uint32_t m_request[maxPacket],
+          m_response[maxPacket];
+
+  IPbusMode m_mode;
 };
 
 } // namespace ipbus

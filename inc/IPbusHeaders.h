@@ -10,6 +10,8 @@
 namespace ipbus
 {
 
+enum class IPbusMode {Master, Slave};
+
 template <typename T>
 T reverseBytes(T u)
 {
@@ -28,32 +30,14 @@ T reverseBytes(T u)
   return dest.u;
 }
 
-/**
- * @brief Size of one word in bytes
- */
 const uint8_t wordSize = sizeof(uint32_t); // 4 bytes
 
-/**
- * @brief Packet Type values of an IPbus header
- *
- * Supported values:
- * - 0x0; Direction: Both; Control packet (i.e. contains IPbus transactions)
- * - 0x1; Direction: Both; Status packet
- * - 0x2; Direction: Request; Resend request packet
- * - 0x3-0xf - reserved
- */
+
 enum PacketType { Control = 0,
                   Status = 1,
                   Resend = 2 };
 
-/**
- * @brief Representation of the packet header
- *
- * See the [IPbus specification](https://ipbus.web.cern.ch/doc/user/html/_downloads/d251e03ea4badd71f62cffb24f110cfa/ipbus_protocol_v2_0.pdf) section 2 for detailed descriptions
- * and `IPbusHeaders.h` for terminology
- *
- * Contains bit fields representing the respective fields of an IPbus packet header - note the little endianness
- */
+
 struct PacketHeader {
   uint32_t packetType : 4,
     byteOrder : 4,
