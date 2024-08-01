@@ -281,6 +281,7 @@ bool IPbusMaster::processResponse(IPbusRequest& request, IPbusResponse& response
               memcpy(request.getDataOut(idx), headerResponse + 1,  headerResponse->words*wordSize);
             }
             idx_response += headerResponse->words*wordSize;
+            idx_request += 1;
           }
         }
         break;
@@ -297,12 +298,14 @@ bool IPbusMaster::processResponse(IPbusRequest& request, IPbusResponse& response
           {
             memcpy(request.getDataOut(idx), response.getBuffer() + idx_response, 1);
             idx_response++;
+            idx_request += 3;
           }
         }
 
         case DataWrite:
         case NonIncrementingWrite:
         case ConfigurationWrite:
+          idx_request += 2;
           break;
 
         default:

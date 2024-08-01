@@ -42,7 +42,7 @@ try {
         response.reset();
 
         std::cout << "\n\n\tRead after write...\n\n";
-
+        data[0] = 0; data[1] = 0;
         packet.addTransaction(TransactionType::DataRead, address, data, data, SIZE);
         target.transceive(packet, response);
         packet.reset();
