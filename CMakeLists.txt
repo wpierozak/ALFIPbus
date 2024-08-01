@@ -36,6 +36,6 @@ target_include_directories(flp_test_server PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/in
 target_include_directories(flp_test_client PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc ${CMAKE_CURRENT_SOURCE_DIR}/IPbus/inc ${CMAKE_CURRENT_SOURCE_DIR}/DimRpcParallel/include/DimRpcParallel)
 
 # Link the test executables with the libraries
-target_link_libraries(flp_test_server IPbusInterface ipbus_swt DimRpcParallel Boost::system pthread dim)
-target_link_libraries(flp_test_client IPbusInterface ipbus_swt DimRpcParallel Boost::system pthread dim)
-target_link_libraries(ipbus_swt IPbusInterface DimRpcParallel pthread Boost::system Boost::log dim)
+target_link_libraries(flp_test_server ipbus ipbus_swt DimRpcParallel Boost::system pthread dim)
+target_link_libraries(flp_test_client ipbus ipbus_swt DimRpcParallel Boost::system pthread dim)
+target_link_libraries(ipbus_swt ipbus DimRpcParallel pthread Boost::system Boost::log dim)
