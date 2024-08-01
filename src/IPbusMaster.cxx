@@ -291,7 +291,7 @@ bool IPbusMaster::processResponse(IPbusRequest& request, IPbusResponse& response
             {
               memcpy(request.getDataOut(idx), headerResponse + 1,  headerResponse->words*wordSize);
             }
-            idx_response += headerResponse->words*wordSize;
+            idx_response += headerResponse->words;
             idx_request += 1;
           }
         }
