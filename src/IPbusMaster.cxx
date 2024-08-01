@@ -323,7 +323,7 @@ bool IPbusMaster::processResponse(IPbusRequest& request, IPbusResponse& response
           {
             memcpy(request.getDataOut(idx), response.getBuffer() + idx_response, wordSize);
             idx_response++;
-            idx_request += 1;
+            idx_request += 2;
           }
         }
         break;
