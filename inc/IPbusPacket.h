@@ -23,6 +23,7 @@ namespace ipbus
         uint32_t operator[](int idx)  {return m_buffer[idx];}
         uint32_t* getBuffer() { return m_buffer; }
         uint16_t getSize() const { return m_size; }
+        void setSize(uint16_t size) { m_size = size; }
         uint32_t* getDataOut(int idx) { return m_dataOut[idx]; }
 
         protected:

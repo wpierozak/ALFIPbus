@@ -15,9 +15,6 @@ namespace ipbus
         void reset(int packetID = 0);
 
         bool addTransaction(TransactionType type, uint32_t address, uint32_t* dataIn, uint8_t nWords, InfoCode infocode);
-        
-        void setSize(uint16_t size) { m_size = size; }
-
     };
 }
 #endif
