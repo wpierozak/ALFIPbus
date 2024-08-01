@@ -10,8 +10,9 @@ namespace ipbus
         m_expectedResponseSize = 1;
     }
 
-    void IPbusRequest::reset()
+    void IPbusRequest::reset(int packetID)
     {
+        m_buffer[0] = PacketHeader(Control, packetID);
         m_size = 1;
         m_transactionsNumber = 0;
         m_expectedResponseSize = 1;

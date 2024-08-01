@@ -79,9 +79,9 @@ struct TransactionHeader {
     words : 8,
     transactionID : 12,
     protocolVersion : 4;
-  TransactionHeader(TransactionType t, uint8_t nWords, uint16_t id = 0)
+  TransactionHeader(TransactionType t, uint8_t nWords, uint16_t id = 0, uint8_t code = 0xf)
   {
-    infoCode = 0xf;
+    infoCode = code;
     typeID = t;
     words = nWords;
     transactionID = id;

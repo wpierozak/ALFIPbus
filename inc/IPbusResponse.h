@@ -12,9 +12,9 @@ namespace ipbus
         public:
 
         IPbusResponse();
-        void reset();
+        void reset(int packetID = 0);
 
-        void addTransaction(TransactionType type, uint32_t address, uint32_t* dataIn, uint8_t nWords, InfoCode infocode);
+        bool addTransaction(TransactionType type, uint32_t address, uint32_t* dataIn, uint8_t nWords, InfoCode infocode);
         
         void setSize(uint16_t size) { m_size = size; }
 

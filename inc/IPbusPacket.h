@@ -23,10 +23,13 @@ namespace ipbus
         uint32_t operator[](int idx)  {return m_buffer[idx];}
         uint32_t* getBuffer() { return m_buffer; }
         uint16_t getSize() const { return m_size; }
+        uint32_t* getDataOut(int idx) { return m_dataOut[idx]; }
 
         protected:
         uint32_t m_buffer[maxPacket];
         size_t m_size;
+
+        uint16_t m_transactionsNumber;
     };
 }
 
