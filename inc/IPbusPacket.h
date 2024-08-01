@@ -8,6 +8,14 @@
 
 namespace ipbus
 {
+    enum InfoCode{Response=0x0,
+                BadHeader=0x1,
+                ErrorRead=0x4,
+                ErrorWrite=0x5,
+                TimeoutRead=0x6,
+                TimeoutWrite=0x7,
+                Request=0xf};
+                
     const uint16_t maxPacket = 368;
     class IPbusPacket
     {
