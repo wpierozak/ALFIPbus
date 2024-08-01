@@ -4,12 +4,6 @@
 namespace ipbus
 {
 
-uint32_t* IPbusControlPacket::masks(uint32_t mask0, uint32_t mask1)
-{
-  m_dt[0] = mask0; // for writing 0's: AND term
-  m_dt[1] = mask1; // for writing 1's: OR term
-  return m_dt;
-}
 
 void IPbusControlPacket::addTransaction(TransactionType type, uint32_t address, uint32_t* dataIn, uint32_t* dataOut, uint8_t nWords)
 {

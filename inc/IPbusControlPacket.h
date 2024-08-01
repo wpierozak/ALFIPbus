@@ -26,8 +26,6 @@ class IPbusControlPacket
   }
   ~IPbusControlPacket() {}
 
-  uint32_t* masks(uint32_t mask0, uint32_t mask1);
-
   void addTransaction(TransactionType type, uint32_t address, uint32_t* dataIn, uint32_t* dataOut, uint8_t nWords = 1);
 
   uint16_t getRequestSize() const { return m_requestSize; }
@@ -38,8 +36,6 @@ class IPbusControlPacket
 
   IPbusMode getMode() { return m_mode; }
   void setMode(IPbusMode mode) { m_mode = mode; }
-
-  private:
 
   std::vector<Transaction> m_transactionsList;
   std::vector<uint32_t*> m_dataOut;

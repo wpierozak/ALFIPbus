@@ -12,8 +12,8 @@ namespace ipbus
     class Memory
     {
         public:
-        virtual InfoCode dataRead(uint32_t address, size_t words, uint32_t* out) = 0;
-        virtual InfoCode dataWrite(uint32_t address, size_t words, uint32_t* in) = 0;
+        virtual InfoCode dataRead(uint32_t address, size_t words, uint32_t* out) const = 0;
+        virtual InfoCode dataWrite(uint32_t address, size_t words, const uint32_t* in) = 0;
         virtual getSize() = 0;
     };
 }
