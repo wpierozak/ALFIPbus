@@ -44,8 +44,14 @@ namespace ipbus
 
         uint16_t idx_request = 1;
         
+        if(length == wordSize * 16 || m_request[0] == m_statusRequest.header)
+        {
+            sendStatusResponse(endpoint);
+            return;
+        }
+        
         memory->lock();
-
+        
         for(uint16_t idx = 0; idx < m_request.getTransactionNumber(); idx++)
         {
             TransactionHeader* headerRequest = (TransactionHeader*) m_request.getBuffer() + (idx_request++);
@@ -113,6 +119,11 @@ namespace ipbus
     void IPbusSlave::sendResponse(const boost::asio::ip::udp::endpoint& endpoint)
     {
         m_socket.send_to(boost::asio::buffer(m_response.getBuffer(), m_response.getSize()*wordSize), endpoint);
+    }
+
+    void sendStatusResponse(const boost::asio::ip::udp::endpoint& endpoint)
+    {
+        m_socket.send_to(boost::asio::buffer(m_statusResponse, 16*wordSize), endpoint);
     }
 
     InfoCode IPbusSlave::read(uint32_t address, uint8_t words, uint32_t* out)

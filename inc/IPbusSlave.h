@@ -20,6 +20,7 @@ namespace ipbus
 
         void handleRequest(const boost::system::error_code& ec, std::size_t length);
         void sendResponse(const boost::asio::ip::udp::endpoint&);
+        void sendStatusResponse(const boost::asio::ip::udp::endpoint&);
 
         InfoCode read(uint32_t address, uint8_t words, uint32_t* out);
         InfoCode write(uint32_t address, uint8_t words, uint32_t* in);
