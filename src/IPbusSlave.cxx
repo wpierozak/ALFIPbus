@@ -9,6 +9,7 @@ namespace ipbus
         m_memory(m_memory),
         m_socket(io),
         m_localPort(lport),
+        m_remoteEndpoint(boost::asio::ip::udp::v4(), 0),
         m_localEndpoint(boost::asio::ip::udp::v4(), lport)
     {
         if(openSocket())

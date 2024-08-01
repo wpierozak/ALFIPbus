@@ -32,6 +32,7 @@ namespace ipbus
 
         boost::asio::io_context& m_ioContext;
         uint16_t m_localPort;
+        
         boost::asio::ip::udp::socket m_socket;
         boost::asio::ip::udp::endpoint m_remoteEndpoint;
         boost::asio::ip::udp::endpoint m_localEndpoint;

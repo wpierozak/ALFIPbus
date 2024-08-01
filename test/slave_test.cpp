@@ -29,8 +29,8 @@ class Registers : public ipbus::Memory
     }
 
     private:
-    uint32_t buffer[128];
-    size_t size{128};
+    uint32_t buffer[2048];
+    size_t size{2048};
 };  
 
 
