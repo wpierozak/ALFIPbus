@@ -2,7 +2,7 @@
 #include<chrono>
 #include<thread>
 #include<ctime>
-#include "IPbusInterface.h"
+#include "IPbusMaster.h"
 
 #define SIZE 2
 
@@ -13,16 +13,19 @@ try {
         srand(time(NULL));
 
         boost::asio::io_context io_service;
-        IPbusTarget target(io_service,"172.20.75.175", 0, 50001);
+        IPbusMaster target(io_service,"172.20.75.175", 0, 50001);
         //target.timerTick(std::chrono::seconds(1));
         
-        IPbusControlPacket packet;
+        IPbusRequest packet;
+        IPbusResponse response;
 
         uint32_t data[SIZE] = {0x0,0x0};
         uint32_t address = 0x1004;
 
         packet.addTransaction(TransactionType::DataRead, address, data, data, SIZE);
-        target.transceive(packet);
+        target.transceive(packet, response);
+        packet.reset();
+        response.reset();
 
         std::cout << "\n\n\tRead...\n\n";
         std::cout << std::hex << data[0] << ' ' << std::hex << data[1] << std::endl;        
@@ -33,12 +36,18 @@ try {
 
 
         packet.addTransaction(TransactionType::DataWrite, address, data, data, SIZE);
-        target.transceive(packet);
+        target.transceive(packet, response);
+        
+        packet.reset();
+        response.reset();
 
         std::cout << "\n\n\tRead after write...\n\n";
-
+        data[0] = 0; data[1] = 0;
         packet.addTransaction(TransactionType::DataRead, address, data, data, SIZE);
-        target.transceive(packet);
+        target.transceive(packet, response);
+        packet.reset();
+        response.reset();
+
         std::cout << std::hex << data[0] << ' ' << std::hex << data[1] << std::endl;
        // target.startTimer();
         std::this_thread::sleep_for(std::chrono::seconds(5));
@@ -47,7 +56,9 @@ try {
         {
             std::this_thread::sleep_for(std::chrono::seconds(5));
             packet.addTransaction(TransactionType::DataRead, address, data, data, SIZE);
-            target.transceive(packet);
+            target.transceive(packet,response);
+            packet.reset();
+            response.reset();
 
             std::cout << "\n\n\tRead...\n\n";
             std::cout << std::hex << data[0] << ' ' << std::hex << data[1] << std::endl;        

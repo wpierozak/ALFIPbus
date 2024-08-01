@@ -4,7 +4,6 @@
 namespace ipbus
 {
 
-
 void IPbusControlPacket::addTransaction(TransactionType type, uint32_t address, uint32_t* dataIn, uint32_t* dataOut, uint8_t nWords)
 {
   Transaction currentTransaction;

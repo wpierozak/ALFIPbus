@@ -1,5 +1,7 @@
 #include<cstdint>
 
+#ifndef IPBUS_MEMORY
+#define IPBUS_MEMORY
 namespace ipbus
 {
     enum InfoCode{Response=0x0,
@@ -17,3 +19,4 @@ namespace ipbus
         virtual size_t getSize() const = 0;
     };
 }
+#endif

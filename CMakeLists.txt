@@ -19,11 +19,11 @@ include(GNUInstallDirs)
 find_package(Boost REQUIRED COMPONENTS system log)
 
 # Add the library
-add_library(IPbusInterface STATIC src/IPbusInterface.cxx src/IPbusControlPacket.cxx)
+add_library(ipbus STATIC src/IPbusMaster.cxx src/IPbusRequest.cxx src/IPbusResponse.cxx)
 
 # Link Boost to the library
-target_include_directories(IPbusInterface PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc)
-target_link_libraries(IPbusInterface Boost::system Boost::log)
+target_include_directories(ipbus PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc)
+target_link_libraries(ipbus Boost::system Boost::log)
 
 # Add an option for TEST
 option(TEST "Compile the flp_test target" OFF)
@@ -34,6 +34,6 @@ if(TEST)
 
     # Link the test executable with the static library and Boost.System library
     target_include_directories(flp_test PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc)
-    target_link_libraries(flp_test IPbusInterface Boost::system pthread dim)
+    target_link_libraries(flp_test ipbus Boost::system pthread dim)
 endif()
 

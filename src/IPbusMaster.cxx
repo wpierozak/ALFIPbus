@@ -1,13 +1,13 @@
 #include <boost/bind.hpp>
 #include <iostream>
-#include "IPbusInterface.h"
+#include "IPbusMaster.h"
 #include <boost/log/trivial.hpp>
 #include <sys/socket.h>
-
+#include <sstream>
 namespace ipbus
 {
 
-IPbusTarget::IPbusTarget(boost::asio::io_context& ioContext, std::string address, uint16_t lport, uint16_t rport) : m_ioContext(ioContext),
+IPbusMaster::IPbusMaster(boost::asio::io_context& ioContext, std::string address, uint16_t lport, uint16_t rport) : m_ioContext(ioContext),
                                                                                                                     m_localPort(lport),
                                                                                                                     m_remotePort(rport),
                                                                                                                     m_ipAddress(address),
@@ -23,7 +23,7 @@ IPbusTarget::IPbusTarget(boost::asio::io_context& ioContext, std::string address
   checkStatus();
 }
 
-bool IPbusTarget::openSocket()
+bool IPbusMaster::openSocket()
 {
   BOOST_LOG_TRIVIAL(debug) << "Attempting to open socket...";
   m_socket.open(boost::asio::ip::udp::v4());
@@ -37,7 +37,7 @@ bool IPbusTarget::openSocket()
   }
 }
 
-bool IPbusTarget::reopen()
+bool IPbusMaster::reopen()
 {
   if (m_socket.is_open()) {
     BOOST_LOG_TRIVIAL(debug) << "Socket is already open.";
@@ -47,17 +47,17 @@ bool IPbusTarget::reopen()
   return openSocket(); // Reopen the socket if it is not open
 }
 
-size_t IPbusTarget::receive(char* destBuffer, size_t maxSize)
+size_t IPbusMaster::receive(char* destBuffer, size_t maxSize)
 {
   try {
     BOOST_LOG_TRIVIAL(debug) << "Synchronous receiving...";
-    m_socket.async_receive_from(boost::asio::buffer(destBuffer, maxSize), m_remoteEndpoint, boost::bind(&IPbusTarget::handleReceive, this, std::placeholders::_1, std::placeholders::_2));
+    m_socket.async_receive_from(boost::asio::buffer(destBuffer, maxSize), m_remoteEndpoint, boost::bind(&IPbusMaster::handleReceive, this, std::placeholders::_1, std::placeholders::_2));
     
     m_receivedSize = 0;
     m_receiveStatus = ReceiveStatus::Wait;
     
     m_timer.expires_from_now(m_timeout);
-    m_timer.async_wait(boost::bind(&IPbusTarget::handleDeadline, this));
+    m_timer.async_wait(boost::bind(&IPbusMaster::handleDeadline, this));
 
     do
     {
@@ -80,7 +80,7 @@ size_t IPbusTarget::receive(char* destBuffer, size_t maxSize)
   return 0;
 }
 
-void IPbusTarget::handleReceive(const boost::system::error_code& ec, std::size_t length)
+void IPbusMaster::handleReceive(const boost::system::error_code& ec, std::size_t length)
 {
   pthread_mutex_lock(&m_receiveStatusMutex);
 
@@ -95,11 +95,11 @@ void IPbusTarget::handleReceive(const boost::system::error_code& ec, std::size_t
   pthread_mutex_unlock(&m_receiveStatusMutex);
 }
 
-void IPbusTarget::handleDeadline()
+void IPbusMaster::handleDeadline()
 {
   if(m_timer.expires_at() > boost::asio::deadline_timer::traits_type::now())
   {
-    m_timer.async_wait(boost::bind(&IPbusTarget::handleDeadline, this));
+    m_timer.async_wait(boost::bind(&IPbusMaster::handleDeadline, this));
     return;
   }
 
@@ -117,7 +117,7 @@ void IPbusTarget::handleDeadline()
   pthread_mutex_unlock(&m_receiveStatusMutex);
 }
 
-bool IPbusTarget::checkStatus()
+bool IPbusMaster::checkStatus()
 {
   pthread_mutex_lock(&m_linkMutex);
   m_isAvailable = false;
@@ -157,7 +157,7 @@ bool IPbusTarget::checkStatus()
   RETURN_AND_RELEASE(m_linkMutex, m_isAvailable);
 }
 
-bool IPbusTarget::transceive(IPbusControlPacket& p, bool shouldResponseBeProcessed)
+bool IPbusMaster::transceive(IPbusRequest& request, IPbusResponse& response, bool shouldResponseBeProcessed)
 {
   pthread_mutex_lock(&m_linkMutex);
 
@@ -170,7 +170,7 @@ bool IPbusTarget::transceive(IPbusControlPacket& p, bool shouldResponseBeProcess
     }
   }
   
-  if (p.m_requestSize <= 1) {
+  if (request.getSize() <= 1) {
     BOOST_LOG_TRIVIAL(warning) << "Empty request";
     RETURN_AND_RELEASE(m_linkMutex, true);
   }
@@ -178,18 +178,19 @@ bool IPbusTarget::transceive(IPbusControlPacket& p, bool shouldResponseBeProcess
   size_t send_bytes = 0;
 
   try {
-    send_bytes = m_socket.send_to(boost::asio::buffer((char*)&p.m_request, p.m_requestSize * wordSize), m_remoteEndpoint);
+    send_bytes = m_socket.send_to(boost::asio::buffer((char*)request.getBuffer(), request.getSize() * wordSize), m_remoteEndpoint);
   } catch (const std::exception& e) {
     BOOST_LOG_TRIVIAL(error) << "Sending packet to " << m_ipAddress << ":" << m_remotePort << " failed: " << e.what();
     RETURN_AND_RELEASE(m_linkMutex, false);
   }
 
-  if (send_bytes < p.m_requestSize * wordSize) {
-    BOOST_LOG_TRIVIAL(error) << "Sending packet to " << m_ipAddress << ":" << m_remotePort << " failed: " << send_bytes << " bytes were sent instead of " << p.m_requestSize * wordSize;
+  if (send_bytes < request.getSize() * wordSize) {
+    BOOST_LOG_TRIVIAL(error) << "Sending packet to " << m_ipAddress << ":" << m_remotePort << " failed: " << send_bytes << " bytes were sent instead of " << request.getSize() * wordSize;
     RETURN_AND_RELEASE(m_linkMutex, false);
   }
 
-  size_t bytes_recevied = receive((char*)&p.m_response, maxPacket*wordSize);
+  response.reset();
+  size_t bytes_recevied = receive((char*)response.getBuffer(), maxPacket*wordSize);
 
   if(m_receiveStatus == ReceiveStatus::Expired)
   {
@@ -205,43 +206,148 @@ bool IPbusTarget::transceive(IPbusControlPacket& p, bool shouldResponseBeProcess
     }
   }
 
-  if (bytes_recevied == 64 && p.m_response[0] == m_status.header) {
-    bytes_recevied = receive((char*)&p.m_response, maxPacket*wordSize);
+  if (bytes_recevied == 64 && response[0] == m_status.header) 
+  {
+    bytes_recevied = receive((char*)response.getBuffer(), maxPacket*wordSize);
   }
 
-  if (bytes_recevied == 0) {
+  if (bytes_recevied == 0) 
+  {
     BOOST_LOG_TRIVIAL(error) << "Empty response from " << m_ipAddress << ":" << m_remotePort;
     RETURN_AND_RELEASE(m_linkMutex, false);
-  } else if (bytes_recevied / wordSize > p.m_responseSize || p.m_response[0] != p.m_request[0] || bytes_recevied % wordSize > 0) {
-    BOOST_LOG_TRIVIAL(error) << "Incorrect response from " << m_ipAddress << ":" << m_remotePort << ": received " << bytes_recevied << " bytes instead of " << p.m_responseSize * wordSize;
+  } 
+  else if (bytes_recevied / wordSize != request.getExpectedResponseSize() || response[0] != request[0] || bytes_recevied % wordSize > 0) 
+  {
+    BOOST_LOG_TRIVIAL(error) << "Incorrect response from " << m_ipAddress << ":" << m_remotePort << ": received " << bytes_recevied << " bytes instead of " << request.getSize() * wordSize;
     RETURN_AND_RELEASE(m_linkMutex, false);
-  } else {
-    p.m_responseSize = uint16_t(bytes_recevied / wordSize); // response can be shorter then expected if a transaction wasn't successful
-    if (shouldResponseBeProcessed) {
+  } 
+  else 
+  {
+    response.setSize(bytes_recevied / wordSize);
+
+    if (shouldResponseBeProcessed) 
+    {
       BOOST_LOG_TRIVIAL(debug) << "Processing response";
     } else {
       BOOST_LOG_TRIVIAL(debug) << "Response will not be processed";
     }
-    bool result = shouldResponseBeProcessed ? p.processResponse() : true;
+
+    bool result = shouldResponseBeProcessed ? processResponse(request, response) : true;
     if(!result)
+    {
       BOOST_LOG_TRIVIAL(error) << "Failed to process response";
-    p.reset();
+    }
+
     RETURN_AND_RELEASE(m_linkMutex, result);
   }
   RETURN_AND_RELEASE(m_linkMutex, false);
 }
 
-void IPbusTarget::intializeMutex(pthread_mutex_t& mutex)
+bool IPbusMaster::processResponse(IPbusRequest& request, IPbusResponse& response)
+{
+  uint16_t idx_request = 1;
+  uint16_t idx_response = 1;
+
+  for(uint16_t idx = 0; idx < request.getTransactionNumber(); idx++)
+  {
+    TransactionHeader* headerRequest = (TransactionHeader*) request.getBuffer() + (idx_request++);
+    TransactionHeader* headerResponse = (TransactionHeader*) response.getBuffer() + (idx_response++);
+
+    if(headerResponse->protocolVersion != 2 || headerResponse->transactionID != idx || 
+      headerResponse->typeID != headerRequest->typeID)
+    {
+        std::stringstream ss;
+        ss << std::hex << *headerResponse;
+        std::string headerResponseHex = ss.str();
+
+        ss.str(""); // Clear the stringstream
+        ss.clear(); // Clear any error flags
+
+        ss << std::hex << (*headerRequest & 0xFFFFFFF0);
+        std::string headerRequestHex = ss.str();
+
+        std::string message = "Unexpected transaction header: " + headerResponseHex + ", expected: " + headerRequestHex;
+        //std::string message = "Unexpected transaction header: " + std::to_string(*headerResponse) + ", expected: " + std::to_string(*headerRequest & 0xFFFFFFF0);
+        BOOST_LOG_TRIVIAL(error) << message;
+        return false;
+    }
+
+    if(headerResponse->words > 0)
+    {
+      switch (headerResponse->typeID)
+      {
+        case DataRead:
+        case NonIncrementingRead:
+        case ConfigurationRead:
+        {
+          if(headerResponse->words != headerRequest->words)
+          {
+            BOOST_LOG_TRIVIAL(error) << "Read transaction failed: expected " << headerRequest->words << ", received: " << headerResponse->words;
+            return false;
+          }
+          else
+          {
+            if(request.getDataOut(idx) != nullptr)
+            {
+              memcpy(request.getDataOut(idx), headerResponse + 1,  headerResponse->words*wordSize);
+            }
+            idx_response += headerResponse->words;
+            idx_request += 1;
+          }
+        }
+        break;
+
+        case RMWbits:
+        case RMWsum:
+        {
+          if(headerResponse->words != 1)
+          {
+            BOOST_LOG_TRIVIAL(error) << "Invalid RMW transaction";
+            return false;
+          }
+          if(request.getDataOut(idx) != nullptr)
+          {
+            memcpy(request.getDataOut(idx), response.getBuffer() + idx_response, wordSize);
+            idx_response++;
+            idx_request += 3;
+          }
+        }
+
+        case DataWrite:
+        case NonIncrementingWrite:
+        case ConfigurationWrite:
+          idx_request += 2;
+          break;
+
+        default:
+          BOOST_LOG_TRIVIAL(error) << "Unknown transaction type: response cannot be processed";
+          return false;
+      
+      }
+    }
+
+    if(headerResponse->infoCode != 0)
+    {
+      std::string message = headerResponse->infoCodeString();
+      BOOST_LOG_TRIVIAL(error) << "Transaction response error: " << message;
+      return false;
+    }
+  }
+
+  return true;
+}
+
+void IPbusMaster::intializeMutex(pthread_mutex_t& mutex)
 {
   pthread_mutex_init(&mutex, NULL);
 }
 
-void IPbusTarget::setTimeout(boost::posix_time::milliseconds timeout)
+void IPbusMaster::setTimeout(boost::posix_time::milliseconds timeout)
 {
   m_timeout = timeout;
 }
 
-boost::posix_time::milliseconds IPbusTarget::getTimeout() const
+boost::posix_time::milliseconds IPbusMaster::getTimeout() const
 {
   return m_timeout;
 }
