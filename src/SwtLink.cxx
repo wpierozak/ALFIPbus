@@ -122,6 +122,7 @@ bool SwtLink::interpretFrames()
           buffer[1] = m_frames[i + 2].data;
           m_packet.addTransaction(ipbus::RMWbits, m_frames[i].address, buffer, &m_frames[i].data);
           i += 2;
+          m_lineEnd += 2;
         } else {
           if ((m_frames[i + 1].mode) != 3) {
             BOOST_LOG_TRIVIAL(error) << "SWT sequence failed (" << i << "): " << "RMWbits failed: invalid second frame - mode: " << m_frames[i + 1].mode << std::endl;
@@ -131,6 +132,7 @@ bool SwtLink::interpretFrames()
           buffer[1] = m_frames[i + 1].data;
           m_packet.addTransaction(ipbus::RMWbits, m_frames[i].address, buffer, &m_frames[i].data);
           i += 1;
+          m_lineEnd += 1;
         }
 
         break;
@@ -144,19 +146,16 @@ bool SwtLink::interpretFrames()
     }
   }
 
-  if(m_packet.m_requestSize > 1)
+  if(transceive(m_packet))
   {
-    if(transceive(m_packet))
-    {
-      writeToResponse();
-    }
-    else
-    {
-      return false;
-    }
+    writeToResponse();
+    return true;
+  }
+  else
+  {
+    return false;
   }
 
-  return true;
 }
 
 
