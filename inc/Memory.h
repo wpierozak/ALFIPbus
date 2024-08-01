@@ -14,6 +14,6 @@ namespace ipbus
         public:
         virtual InfoCode dataRead(uint32_t address, size_t words, uint32_t* out) const = 0;
         virtual InfoCode dataWrite(uint32_t address, size_t words, const uint32_t* in) = 0;
-        virtual size_t getSize() = 0;
+        virtual size_t getSize() const = 0;
     };
 }
