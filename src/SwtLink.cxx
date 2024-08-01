@@ -165,7 +165,7 @@ bool SwtLink::interpretFrames()
 
 void SwtLink::sendResponse()
 {
-  m_fredResponse = "success " + m_fredResponse;
+  m_fredResponse = "success\n" + m_fredResponse;
   setData(m_fredResponse.c_str());
 }
 
