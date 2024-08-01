@@ -4,18 +4,18 @@ namespace ipbus
     IPbusResponse::IPbusResponse()
     {
         m_buffer[0] = PacketHeader(Control, 0);
-        m_transactionNumber = 0;
+        m_transactionsNumber = 0;
         m_size = 1;
     }
 
     void IPbusResponse::reset(int packetID)
     {
         m_buffer[0] = PacketHeader(Control, packetID);
-        m_transactionNumber = 0;
+        m_transactionsNumber = 0;
         m_size = 1;
     }
 
-    bool IPbusResponse::addTransaction(TransactionType type, uint32_t* dataIn, uint8_t nWords, InfoCode infocode)
+    bool IPbusResponse::addTransaction(TransactionType type, uint32_t* dataIn, uint8_t nWords, InfoCode infoCode)
     {
         if(m_size + nWords + 1 > maxPacket)
         {
@@ -23,9 +23,9 @@ namespace ipbus
         }
 
         m_buffer[m_size++] = TransactionHeader(type, nWords, m_transactionsNumber++, infoCode);
-        if(infocode != Response)
+        if(infoCode != Response)
         {
-            continue;
+            return true;
         }
         switch(type)
         {

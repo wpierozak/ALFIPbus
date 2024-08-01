@@ -1,6 +1,7 @@
 #include"IPbusRequest.h"
 #include"IPbusResponse.h"
 #include"Memory.h"
+#include<boost/asio.hpp>
 
 #ifndef IPBUS_SLAVE
 #define IPBUS_SLAVE
@@ -14,8 +15,8 @@ namespace ipbus
         bool openSocket();
         bool startAsyncRecv();
 
-        constexpr uint8_t BufferSize = UINT8_MAX;
-
+        static constexpr uint8_t BufferSize = UINT8_MAX;
+        
         private:
 
         void handleRequest(const boost::system::error_code& ec, std::size_t length);
@@ -24,8 +25,8 @@ namespace ipbus
 
         InfoCode read(uint32_t address, uint8_t words, uint32_t* out);
         InfoCode write(uint32_t address, uint8_t words, uint32_t* in);
-        InfoCode RMWbits(uint32_t address, uint32_t and, uint32_t or);
-        InfoCode RMWsum(uint32_t address, uint32_t add);
+        InfoCode rmwBits(uint32_t address, uint32_t andMask, uint32_t orMask);
+        InfoCode rmwSum(uint32_t address, uint32_t add);
         InfoCode readNonIncrement(uint32_t address, uint8_t words, uint32_t* out);
         InfoCode writeNonIncrement(uint32_t address, uint8_t words, uint32_t* in);
 
@@ -33,6 +34,7 @@ namespace ipbus
         uint16_t m_localPort;
         boost::asio::ip::udp::socket m_socket;
         boost::asio::ip::udp::endpoint m_remoteEndpoint;
+        boost::asio::ip::udp::endpoint m_localEndpoint;
 
         StatusPacket m_statusRequest;
         StatusPacket m_statusResponse;
