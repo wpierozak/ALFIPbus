@@ -15,7 +15,7 @@ namespace ipbus
         m_size = 1;
     }
 
-    bool IPbusResponse::addTransaction(TransactionType type, uint32_t address, uint32_t* dataIn, uint8_t nWords, InfoCode infocode)
+    bool IPbusResponse::addTransaction(TransactionType type, uint32_t* dataIn, uint8_t nWords, InfoCode infocode)
     {
         if(m_size + nWords + 1 > maxPacket)
         {
@@ -23,6 +23,10 @@ namespace ipbus
         }
 
         m_buffer[m_size++] = TransactionHeader(type, nWords, m_transactionsNumber++, infoCode);
+        if(infocode != Response)
+        {
+            continue;
+        }
         switch(type)
         {
             case DataRead:
