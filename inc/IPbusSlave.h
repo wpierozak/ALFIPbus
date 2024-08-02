@@ -15,6 +15,9 @@ namespace ipbus
         bool openSocket();
         bool startAsyncRecv();
 
+        const IPbusRequest& getRequest() { return m_request; }
+        const IPbusResponse& getResponse() { return m_response; }
+
         static constexpr uint8_t BufferSize = UINT8_MAX;
         
         private:

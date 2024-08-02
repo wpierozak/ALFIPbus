@@ -20,10 +20,15 @@ namespace ipbus
     class IPbusPacket
     {
         public:
-        uint32_t operator[](int idx)  {return m_buffer[idx];}
+        uint32_t& operator[](int idx) {return m_buffer[idx];}
         uint32_t* getBuffer() { return m_buffer; }
+
+        uint32_t operator[](int idx) const  {return m_buffer[idx];}
+        const uint32_t* getBuffer() const { return m_buffer; }
+
         uint16_t getSize() const { return m_size; }
-        uint16_t getTransactionNumber() { return m_transactionsNumber; }
+        uint16_t getTransactionNumber() const { return m_transactionsNumber; } // Not works when request/response is received!
+
         void setSize(uint16_t size) { m_size = size; }
 
         protected:

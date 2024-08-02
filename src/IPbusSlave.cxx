@@ -68,8 +68,6 @@ namespace ipbus
                 m_response.addTransaction((TransactionType) headerRequest->typeID, nullptr, 1, BadHeader);
             }
 
-            BOOST_LOG_TRIVIAL(info) << headerRequest->typeID;
-
             switch(headerRequest->typeID)
             {
                 case DataRead:
@@ -131,7 +129,6 @@ namespace ipbus
     void IPbusSlave::sendResponse(const boost::asio::ip::udp::endpoint& endpoint)
     {
         m_socket.send_to(boost::asio::buffer((char*)m_response.getBuffer(), m_response.getSize()*wordSize), endpoint);
-        m_request.reset();
     }
 
     void IPbusSlave::sendStatusResponse(const boost::asio::ip::udp::endpoint& endpoint)

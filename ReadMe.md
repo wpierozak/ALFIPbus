@@ -34,26 +34,27 @@ cmake3 --build .
 You can find an examples within the test directory. Content of the example.cpp file is included below.
 ```
 #include <iostream>
-#include<chrono>
-#include<thread>
-#include<ctime>
-#include "IPbusInterface.h"
-
-#define SIZE 2
+#include <chrono>
+#include <thread>
+#include <ctime>
+#include "IPbusMaster.h"
+#include "IPbusRequest.h"
+#include "IPbusResponse.h"
 
 int main() {
     try {
         srand(time(NULL));
 
         boost::asio::io_context io;
-        IPbusTarget target(io,"172.20.75.175", 0, 50001);
-        IPbusControlPacket packet;
+        IPbusMaster target(io,"172.20.75.175", 0, 50001);
+        IPbusRequest request;
+        IPbusResponse response;
 
         uint32_t data[SIZE] = {0x0,0x0};
         uint32_t address = 0x1004;
 
-        packet.addTransaction(TransactionType::ipread, address, data, SIZE);
-        target.transcieve(packet);
+        request.addTransaction(TransactionType::DataRead, address, data, SIZE);
+        target.transceive(request, response);
 
         std::cout << "\nRead...\n";
         std::cout << std::hex << data[0] << ' ' << std::hex << data[1] << std::endl;
@@ -64,27 +65,13 @@ int main() {
     return 0;
 }
 ```
-In general, sending IPbus packet follows below schema.
+In general, sending IPbus packet as master follows below schema.
 1. Create a boost::asio::io_context variable (it must exist for the entire program's lifetime).
-2. Create IPbusTarget object, you need to provide io_context, remote device address, and port it listens to
-3. Create IPbusControlPacket object
+2. Create IPbusMaster object, you need to provide io_context, remote device address, and port it listens to
+3. Create IPbusRequest and IPbusResponse
 4. Create a buffer for data
-5. Add transaction to the packet: you need to provide transaction type, register address, buffer address and number of words
-6. Pass packet to IPbusTarget::transcieve (called on the created IPbusTarget object)
-
-## How to create a packet
-
-`IPbusControlPacket` class is responsible for preparing IPbus packet to be sent. You can add transaction to packet using `addTransaction` method with following arguments:
-
-- `TransactionType` type- transaction type (`IPbusHeaders.h`)
-- `uint32_t` address - register address (or address of first register for multi-register write)
-- `uint32_t` data - pointer to buffer with data
-- `uint8_t` words - number of (32 bits) words
-
-`IPbusControlPacket` provides also `addWordToWrite` for one-word write and `addNBitsToChange` for RMWbits operation.
-
-After adding all transaction you can pass the packet to the `IPbusTarget`
-
+5. Add transaction to the request: you need to provide transaction type, register address, buffer address and number of words
+6. Pass request and response to IPbusMaster::transceive
 
 
 
