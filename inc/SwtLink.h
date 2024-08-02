@@ -38,6 +38,10 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
   void setPacketPadding(int);
   int getPacketPadding() const;
 
+  static constexpr uint16_t EmptyMode = 0xFFFF;
+  static constexpr uint16_t EmptyAddress = 0x0;
+  static constexpr uint16_t EmptyData = 0x0;
+
  private:
   ipbus::IPbusRequest m_request;
   ipbus::IPbusResponse m_response;

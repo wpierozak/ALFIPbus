@@ -47,7 +47,7 @@ bool SwtLink::parseFrames()
 
   for (auto line : m_lines) {
     if (line.find("read") != std::string::npos) {
-      m_frames.push_back({ 0, 0, 0 });
+      m_frames.push_back({ EmptyData, EmptyAddress, EmptyMode });
       continue;
     }
 
@@ -90,7 +90,7 @@ bool SwtLink::interpretFrames()
 
     m_lineEnd++;
 
-    if (m_frames[i].data == 0 && m_frames[i].address == 0 && m_frames[i].mode == 0) {
+    if (m_frames[i].data == EmptyData && m_frames[i].address == EmptyAddress && m_frames[i].mode == EmptyMode) {
       continue;
     }
 
@@ -112,7 +112,7 @@ bool SwtLink::interpretFrames()
           BOOST_LOG_TRIVIAL(error) << "SWT sequence failed (" << i << "): " << "RMWbits failed: second frame has been not received" << std::endl;
           return false;
         }
-        if (m_frames[i + 1].data == 0 && m_frames[i + 1].address == 0 && m_frames[i + 1].mode == 0) {
+        if (m_frames[i + 1].data == EmptyData && m_frames[i + 1].address == EmptyAddress && m_frames[i + 1].mode == EmptyMode) {
           if (i + 2 >= m_frames.size()) {
             BOOST_LOG_TRIVIAL(error) << "SWT sequence failed (" << i << "): "<< "RMWbits failed: second frame has been not received" << std::endl;
             return false;
