@@ -2,7 +2,26 @@
 
 The IpbusSWT repository provides an implementation of SWT-to-IPbus translation dedicated for use with FRED Alice software. The core of the solution is the **SwtLink** class, which inherits from the **IPbusTarget** (IPbus submodule) and the **DimRpcParallel** (DimRpcParallel submodule). SwtLink is designed to provide a single service in a ALF-like manner and to receive messages in a format provided by FRED to ALF. 
 
-### Example
+## Building
+
+### Requirements
+- C++20
+- boost::asio
+- pthreads
+- DIM (https://dim.web.cern.ch/index.html)
+
+### Step-by-step
+
+If you already pulled repository and all submodules, then you need to:
+
+```
+mkdir build
+cd build
+cmake3 ..
+cmake3 --build .
+```
+
+## Example
 Example code is provided in the **flp_test_server.cpp** file, content of the file is also included below.
 
 ```
@@ -37,25 +56,6 @@ To use the SwtLink class, follow these basic steps:
 4. Start the DimServer.
 5. Create a loop.
 
-
-## Building
-
-### Requirements
-- C++20
-- boost::asio
-- pthreads
-- DIM (https://dim.web.cern.ch/index.html)
-
-### Step-by-step
-
-If you already pulled repository and all submodules, then you need to:
-
-```
-mkdir build
-cd build
-cmake3 ..
-cmake3 --build .
-```
 
 ## SWT Frame
 
