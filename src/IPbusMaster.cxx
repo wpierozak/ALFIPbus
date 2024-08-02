@@ -154,6 +154,9 @@ bool IPbusMaster::transceive(IPbusRequest& request, IPbusResponse& response, boo
     if (m_isAvailable == false) {
       return false;
     }
+    else{
+      BOOST_LOG_TRIVIAL(info) << "Reconnected to " << m_ipAddress << ":" << m_remotePort;
+    }
   }
   
   pthread_mutex_lock(&m_linkMutex);
