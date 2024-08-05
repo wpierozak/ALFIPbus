@@ -40,4 +40,4 @@ if(TEST)
     target_link_libraries(slave_test ipbus Boost::system pthread dim)
 endif()
 
-add_compile_options("-Wall -Wextra")
+add_compile_options(-Wall -Wextra -Wpedantic)
