@@ -36,7 +36,7 @@ namespace ipbus
 
     void IPbusSlave::startAsyncRecv()
     {
-        BOOST_LOG_TRIVIAL(info) << "Initalizing async receiving";
+        BOOST_LOG_TRIVIAL(debug) << "Initalizing async receiving";
         m_socket.async_receive_from(boost::asio::buffer((char*) m_request.getBuffer(), maxPacket*wordSize), m_remoteEndpoint,
                                 boost::bind(&IPbusSlave::handleRequest, this, boost::placeholders::_1, boost::placeholders::_2));
     }
@@ -44,7 +44,7 @@ namespace ipbus
     void IPbusSlave::handleRequest(const boost::system::error_code& ec, std::size_t length)
     {
         
-        BOOST_LOG_TRIVIAL(info) << "Processing " << length << " bytes...";
+        BOOST_LOG_TRIVIAL(debug) << "Processing " << length << " bytes...";
         boost::asio::ip::udp::endpoint endpoint = m_remoteEndpoint;
 
         m_request.setSize(length/wordSize);
@@ -117,7 +117,7 @@ namespace ipbus
 
                 default:
                 {
-                    BOOST_LOG_TRIVIAL(error) << "Invalid request...";
+                    BOOST_LOG_TRIVIAL(error) << "Invalid request";
                     m_response.addTransaction((TransactionType)headerRequest->typeID, nullptr, 1, ErrorRead);
                 }
                 break;
