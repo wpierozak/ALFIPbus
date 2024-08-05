@@ -210,7 +210,7 @@ bool IPbusMaster::transceive(IPbusRequest& request, IPbusResponse& response, boo
 
       for(int i = 0; i < response.getSize(); i++)
       {
-        BOOST_LOG_TRIVIAL(error) << "Unexpected transaction header: " << boost::str(boost::format("%1$x") % response[i]);
+        BOOST_LOG_TRIVIAL(error) << boost::str(boost::format("%1$x") % response[i]);
       }
     }
 
