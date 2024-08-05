@@ -4,6 +4,11 @@
 class Registers : public ipbus::Memory
 {
     public:
+    Registers()
+    {
+        buffer[0] = 8;
+        buffer[1] = 8;
+    }
     bool dataRead(uint32_t address, size_t words, uint32_t* out) const override
     {
         memcpy(out, buffer + address, words*sizeof(uint32_t));

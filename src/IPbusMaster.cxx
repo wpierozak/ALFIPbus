@@ -54,6 +54,7 @@ size_t IPbusMaster::receive(char* destBuffer, size_t maxSize)
     m_socket.async_receive_from(boost::asio::buffer(destBuffer, maxSize), m_remoteEndpoint, boost::bind(&IPbusMaster::handleReceive, this, std::placeholders::_1, std::placeholders::_2));
 
     m_receivedSize = 0;
+    m_error = boost::asio::error::would_block;
     m_receiveStatus = ReceiveStatus::Wait;
 
     m_timer.expires_from_now(m_timeout);
@@ -61,7 +62,7 @@ size_t IPbusMaster::receive(char* destBuffer, size_t maxSize)
 
     do {
       m_ioContext.run_one();
-    } while (m_error == boost::asio::error::would_block || m_receiveStatus == ReceiveStatus::Wait);
+    } while (m_receiveStatus == ReceiveStatus::Wait);
 
     return m_receivedSize;
 
@@ -84,11 +85,11 @@ void IPbusMaster::handleReceive(const boost::system::error_code& ec, std::size_t
 
   BOOST_LOG_TRIVIAL(debug) << "Message received: " << length << " bytes";
 
-  m_receiveStatus = ReceiveStatus::Received;
   m_error = ec;
   m_receivedSize = length;
 
   m_timer.cancel();
+  m_receiveStatus = ReceiveStatus::Received;
 
   pthread_mutex_unlock(&m_receiveStatusMutex);
 }
@@ -121,21 +122,19 @@ bool IPbusMaster::checkStatus()
   try {
     BOOST_LOG_TRIVIAL(debug) << "Checking status of device at " << m_ipAddress << ":" << m_remotePort;
 
-    for (int i = 0; i < 5 && m_isAvailable == false; i++) {
       m_socket.send_to(boost::asio::buffer(&m_status, sizeof(m_status)), m_remoteEndpoint);
       size_t bytes = receive((char*)&m_statusRespone, sizeof(m_statusRespone));
-
+    
       if (m_error) {
         BOOST_LOG_TRIVIAL(info) << m_error.message();
       } else if (m_receiveStatus == ReceiveStatus::Expired) {
         BOOST_LOG_TRIVIAL(info) << "Status packet has not been received";
-      } else if (bytes < sizeof(m_status)) {
-        BOOST_LOG_TRIVIAL(info) << "Status packet is too short - received " << bytes << " (expected " << sizeof(m_status) << ")";
+      } else if (bytes != sizeof(m_status)) {
+        BOOST_LOG_TRIVIAL(info) << "Status packet is invalid - received " << bytes << " (expected " << sizeof(m_status) << ")";
       } else {
         BOOST_LOG_TRIVIAL(info) << "Device at " << m_ipAddress << ":" << m_remotePort << " is available.";
         m_isAvailable = true;
       }
-    }
 
   } catch (const std::exception& e) {
     BOOST_LOG_TRIVIAL(error) << "Failed to check status of device at " << m_ipAddress << ":" << m_remotePort << ": " << e.what() << std::endl;
@@ -149,14 +148,6 @@ bool IPbusMaster::transceive(IPbusRequest& request, IPbusResponse& response, boo
 {
   if (m_isAvailable == false) {
     BOOST_LOG_TRIVIAL(error) << "Device at " << m_ipAddress << ":" << m_remotePort << " is not available";
-
-    checkStatus();
-    if (m_isAvailable == false) {
-      return false;
-    }
-    else{
-      BOOST_LOG_TRIVIAL(info) << "Reconnected to " << m_ipAddress << ":" << m_remotePort;
-    }
   }
   
   pthread_mutex_lock(&m_linkMutex);
@@ -194,8 +185,12 @@ bool IPbusMaster::transceive(IPbusRequest& request, IPbusResponse& response, boo
   if (bytes_recevied == 0) {
     BOOST_LOG_TRIVIAL(error) << "Empty response from " << m_ipAddress << ":" << m_remotePort;
     RETURN_AND_RELEASE(m_linkMutex, false);
-  } else if (bytes_recevied / wordSize != request.getExpectedResponseSize() || response[0] != request[0] || bytes_recevied % wordSize > 0) {
+  } else if (bytes_recevied / wordSize != request.getExpectedResponseSize() || bytes_recevied % wordSize > 0) {
     BOOST_LOG_TRIVIAL(error) << "Incorrect response from " << m_ipAddress << ":" << m_remotePort << ": received " << bytes_recevied << " bytes instead of " << request.getSize() * wordSize;
+    RETURN_AND_RELEASE(m_linkMutex, false);
+  } else if ( response[0] != request[0])
+  {
+    BOOST_LOG_TRIVIAL(error) << "Invalid packet header";
     RETURN_AND_RELEASE(m_linkMutex, false);
   } else {
     response.setSize(bytes_recevied / wordSize);
