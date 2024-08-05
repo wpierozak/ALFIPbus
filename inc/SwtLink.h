@@ -20,6 +20,14 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
   SwtLink(std::string rpc, boost::asio::io_context& ioContext, std::string address = "172.20.75.175", uint16_t rport = 50001, uint16_t lport = 0) : IPbusMaster(ioContext, address, lport, rport),
                                                                                                                                                     DimRpcParallel(rpc.c_str(), "C", "C", 0)
   {
+    if(isIPbusOK() == false)
+    {
+      for(int i = 0; i < 4; i++)
+      {
+        checkStatus();
+      }
+    }
+
     BOOST_LOG_TRIVIAL(info) << "SWT-IPbus link initialization - " << address << ":" << rport;
   }
 
