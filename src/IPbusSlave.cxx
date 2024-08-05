@@ -89,14 +89,14 @@ namespace ipbus
                 case DataWrite:
                 {
                     InfoCode code = write(m_request[idx_request], headerRequest->words, m_request.getBuffer() + idx_request + 1);
-                    m_response.addTransaction((TransactionType)headerRequest->typeID, nullptr, 0, code);
+                    m_response.addTransaction((TransactionType)headerRequest->typeID, nullptr, headerRequest->words, code);
                     idx_request += headerRequest->words + 1;
                 }
                 break;
                 case NonIncrementingWrite:
                 {
                     InfoCode code = writeNonIncrement(m_request[idx_request], headerRequest->words, m_request.getBuffer() + idx_request + 1);
-                    m_response.addTransaction((TransactionType)headerRequest->typeID, nullptr, 0, code);
+                    m_response.addTransaction((TransactionType)headerRequest->typeID, nullptr, headerRequest->words, code);
                     idx_request += headerRequest->words + 1;
                 }
                 break;
