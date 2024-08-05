@@ -131,6 +131,8 @@ bool IPbusMaster::checkStatus()
         BOOST_LOG_TRIVIAL(info) << "Status packet has not been received";
       } else if (bytes != sizeof(m_status)) {
         BOOST_LOG_TRIVIAL(info) << "Status packet is invalid - received " << bytes << " (expected " << sizeof(m_status) << ")";
+      } else if(m_statusRespone.header != m_status.header) {
+        BOOST_LOG_TRIVIAL(info) << "Received unexpected packet";
       } else {
         BOOST_LOG_TRIVIAL(info) << "Device at " << m_ipAddress << ":" << m_remotePort << " is available.";
         m_isAvailable = true;
