@@ -296,7 +296,7 @@ bool IPbusMaster::processResponse(IPbusRequest& request, IPbusResponse& response
         case DataWrite:
         case NonIncrementingWrite:
         case ConfigurationWrite:
-          idx_request += 2;
+          idx_request += headerRequest->words + 1;
           break;
 
         default:
