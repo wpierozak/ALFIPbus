@@ -19,7 +19,7 @@ namespace ipbus
     {
         if(m_size + nWords + 1 > maxPacket)
         {
-            BOOST_LOG_TRIVIAL(warning) << "Request packet size exceeded";
+            BOOST_LOG_TRIVIAL(warning) << "Response packet size exceeded";
         }
 
         m_buffer[m_size++] = TransactionHeader(type, nWords, m_transactionsNumber++, infoCode);
@@ -44,7 +44,7 @@ namespace ipbus
             {
                 if(nWords != 0 || dataIn != nullptr)
                 {
-                    BOOST_LOG_TRIVIAL(warning) << "Write transaction response contains only header!";
+                    BOOST_LOG_TRIVIAL(warning) << "Write transaction response should contain only header!";
                 }
             }
             break;
@@ -54,7 +54,7 @@ namespace ipbus
             {
                 if(nWords != 1)
                 {
-                    BOOST_LOG_TRIVIAL(warning)  << "RMWbits/RMWsum response contains only the register value before operation";
+                    BOOST_LOG_TRIVIAL(warning)  << "RMWbits/RMWsum response should contain only the register value before operation";
                 }
                 if(dataIn == nullptr)
                 {
