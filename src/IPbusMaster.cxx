@@ -244,7 +244,7 @@ bool IPbusMaster::processResponse(IPbusRequest& request, IPbusResponse& response
       ss.str(""); // Clear the stringstream
       ss.clear(); // Clear any error flags
 
-      ss << std::hex << (*headerRequest & 0xFFFFFFF0);
+      ss << std::hex << headerRequest;
       std::string headerRequestHex = ss.str();
 
       std::string message = "Unexpected transaction header: [" + std::to_string(idx) + "]: " + headerResponseHex + ", expected: " + headerRequestHex;
@@ -289,7 +289,7 @@ bool IPbusMaster::processResponse(IPbusRequest& request, IPbusResponse& response
           if (request.getDataOut(idx) != nullptr) {
             memcpy(request.getDataOut(idx), response.getBuffer() + idx_response, wordSize);
             idx_response++;
-            idx_request += 2;
+            idx_request += headerResponse->words;
           }
         } break;
 
