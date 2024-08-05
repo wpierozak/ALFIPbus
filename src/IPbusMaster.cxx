@@ -212,6 +212,13 @@ bool IPbusMaster::transceive(IPbusRequest& request, IPbusResponse& response, boo
       {
         BOOST_LOG_TRIVIAL(error) << boost::str(boost::format("%1$x") % response[i]);
       }
+
+      BOOST_LOG_TRIVIAL(error) << "Printing request...";
+      for(int i = 0; i < request.getSize(); i++)
+      {
+        BOOST_LOG_TRIVIAL(error) << boost::str(boost::format("%1$x") % request[i]);
+      }
+
     }
 
     RETURN_AND_RELEASE(m_linkMutex, result);
