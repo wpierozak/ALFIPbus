@@ -15,6 +15,16 @@ add_executable(AlfIPbus src/AlfIPbus.cxx src/main.cxx src/AlfConfig.cxx)
 target_include_directories(AlfIPbus PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc)
 
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Debug")
+endif()
+
+# Check if we are in debug mode and define DEBUG macro
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(AlfIPbus PRIVATE DEBUG)
+    message("DEBUG mode compilation")
+endif()
+
 # Include GNUInstallDirs to use standard directory variables
 include(GNUInstallDirs)
 

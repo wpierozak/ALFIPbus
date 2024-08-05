@@ -43,5 +43,6 @@ void init(std::string filename = "")
   bl::core::get()->set_filter(
     bl::trivial::severity >= bl::trivial::info);
 #endif
+  BOOST_LOG_TRIVIAL(debug) << "Debug log mode enabled";
 }
 } // namespace logging
