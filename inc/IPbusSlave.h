@@ -11,7 +11,7 @@ namespace ipbus
     class IPbusSlave
     {
         public:
-        IPbusSlave(boost::asio::io_context& io, Memory* memory, uint16_t lport);
+        IPbusSlave(boost::asio::io_context& io, Memory& memory, uint16_t lport);
         bool openSocket();
         bool startAsyncRecv();
 
@@ -50,7 +50,7 @@ namespace ipbus
 
         uint32_t m_buffer[BufferSize];
 
-        Memory* m_memory;
+        Memory& m_memory;
     };
 }
 

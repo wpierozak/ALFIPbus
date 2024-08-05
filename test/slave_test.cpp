@@ -43,7 +43,7 @@ int main()
 {
     boost::asio::io_context io;
     Registers reg;
-    ipbus::IPbusSlave slave(io, &reg, 50001);
+    ipbus::IPbusSlave slave(io, reg, 50001);
     while(true) io.run();
     
     return 0;

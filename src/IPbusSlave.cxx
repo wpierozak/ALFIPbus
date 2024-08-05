@@ -4,7 +4,7 @@
 
 namespace ipbus
 {
-    IPbusSlave::IPbusSlave(boost::asio::io_context& io, Memory* m_memory, uint16_t lport):
+    IPbusSlave::IPbusSlave(boost::asio::io_context& io, Memory& m_memory, uint16_t lport):
         m_ioContext(io),
         m_memory(m_memory),
         m_socket(io),
@@ -57,7 +57,7 @@ namespace ipbus
             return;
         }
         
-        m_memory->lock();
+        m_memory.lock();
         
 
         while(idx_request < m_request.getSize())
@@ -120,7 +120,7 @@ namespace ipbus
                 break;
             }
         }
-        m_memory->unlock();
+        m_memory.unlock();
 
         sendResponse(endpoint);
         startAsyncRecv();
@@ -138,7 +138,7 @@ namespace ipbus
 
     InfoCode IPbusSlave::read(uint32_t address, uint8_t words, uint32_t* out)
     {
-        if(m_memory->dataRead(address, words, out))
+        if(m_memory.dataRead(address, words, out))
         {
             return Response;
         }
@@ -147,7 +147,7 @@ namespace ipbus
 
     InfoCode IPbusSlave::write(uint32_t address, uint8_t words, uint32_t* in)
     {
-        if(m_memory->dataWrite(address, words, in))
+        if(m_memory.dataWrite(address, words, in))
         {
             return Response;
         }
@@ -156,13 +156,13 @@ namespace ipbus
 
     InfoCode IPbusSlave::rmwBits(uint32_t address, uint32_t andMask, uint32_t orMask)
     {
-        if(m_memory->dataRead(address, 1, m_buffer) == false)
+        if(m_memory.dataRead(address, 1, m_buffer) == false)
         {
             return ErrorRead;
         }
         m_buffer[1] = m_buffer[0];
         m_buffer[1] = (m_buffer[1] & andMask) | orMask;
-        if(m_memory->dataWrite(address, 1, m_buffer + 1))
+        if(m_memory.dataWrite(address, 1, m_buffer + 1))
         {
             return Response;
         }
@@ -171,13 +171,13 @@ namespace ipbus
 
     InfoCode IPbusSlave::rmwSum(uint32_t address, uint32_t add)
     {
-        if(m_memory->dataRead(address, 1, m_buffer) == false)
+        if(m_memory.dataRead(address, 1, m_buffer) == false)
         {
             return ErrorRead;
         }
         m_buffer[1] = m_buffer[0];
         m_buffer[1] = m_buffer[1] + add;
-        if(m_memory->dataWrite(address, 1, m_buffer + 1))
+        if(m_memory.dataWrite(address, 1, m_buffer + 1))
         {
             return Response;
         }
@@ -188,7 +188,7 @@ namespace ipbus
     {
         for(int i = 0; i < words; i++)
         {
-            if(m_memory->dataRead(address, 1, out + i) == false)
+            if(m_memory.dataRead(address, 1, out + i) == false)
             {
                 return ErrorRead;
             }
@@ -200,7 +200,7 @@ namespace ipbus
     {
         for(int i = 0; i < words; i++)
         {
-            if(m_memory->dataWrite(address, 1, in + i) == false)
+            if(m_memory.dataWrite(address, 1, in + i) == false)
             {
                 return ErrorWrite;
             }
