@@ -25,6 +25,7 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
       for(int i = 0; i < 4; i++)
       {
         checkStatus();
+        if(isIPbusOK() == true) break;
       }
     }
 
