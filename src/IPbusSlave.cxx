@@ -117,6 +117,7 @@ namespace ipbus
 
                 default:
                 {
+                    BOOST_LOG_TRIVIAL(error) << "Invalid request...";
                     m_response.addTransaction((TransactionType)headerRequest->typeID, nullptr, 1, ErrorRead);
                 }
                 break;

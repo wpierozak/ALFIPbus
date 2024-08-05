@@ -206,7 +206,11 @@ bool IPbusMaster::transceive(IPbusRequest& request, IPbusResponse& response, boo
 
     bool result = shouldResponseBeProcessed ? processResponse(request, response) : true;
     if (!result) {
-      BOOST_LOG_TRIVIAL(error) << "Failed to process response";
+      BOOST_LOG_TRIVIAL(error) << "Failed to process response. Printing response...";
+      for(int i = 0; i < response.getSize(); i++)
+      {
+        BOOST_LOG_TRIVIAL(error) << "Unexpected transaction header: " << boost::str(boost::format("%1$x") % response[i]);
+      }
     }
 
     RETURN_AND_RELEASE(m_linkMutex, result);
@@ -225,19 +229,9 @@ bool IPbusMaster::processResponse(IPbusRequest& request, IPbusResponse& response
 
     if (headerResponse->protocolVersion != 2 || headerResponse->transactionID != idx ||
         headerResponse->typeID != headerRequest->typeID) {
-      std::stringstream ss;
-      ss << std::hex << *headerResponse;
-      std::string headerResponseHex = ss.str();
-
-      ss.str(""); // Clear the stringstream
-      ss.clear(); // Clear any error flags
-
-      ss << std::hex << (*headerRequest & 0xFFFFFFF0);
-      std::string headerRequestHex = ss.str();
-
-      std::string message = "Unexpected transaction header: " + headerResponseHex + ", expected: " + headerRequestHex;
-      // std::string message = "Unexpected transaction header: " + std::to_string(*headerResponse) + ", expected: " + std::to_string(*headerRequest & 0xFFFFFFF0);
-      BOOST_LOG_TRIVIAL(error) << message;
+     
+      BOOST_LOG_TRIVIAL(error) << "Unexpected transaction header: " << boost::str(boost::format("%1$x") % (*headerResponse)) 
+        << ", expected: " <<  boost::str(boost::format("%1$x") % (*headerRequest & 0xFFFFFFF0));
       return false;
     }
 
