@@ -244,7 +244,7 @@ bool IPbusMaster::processResponse(IPbusRequest& request, IPbusResponse& response
       ss.str(""); // Clear the stringstream
       ss.clear(); // Clear any error flags
 
-      ss << std::hex << headerRequest;
+      ss << std::hex << *headerRequest;
       std::string headerRequestHex = ss.str();
 
       std::string message = "Unexpected transaction header: [" + std::to_string(idx) + "]: " + headerResponseHex + ", expected: " + headerRequestHex;
