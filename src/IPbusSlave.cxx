@@ -30,9 +30,11 @@ namespace ipbus
         } else {
             BOOST_LOG_TRIVIAL(error) << "Failed to open socket at ";
         }
+
+        return false;
     }
 
-    bool IPbusSlave::startAsyncRecv()
+    void IPbusSlave::startAsyncRecv()
     {
         BOOST_LOG_TRIVIAL(info) << "Initalizing async receiving";
         m_socket.async_receive_from(boost::asio::buffer((char*) m_request.getBuffer(), maxPacket*wordSize), m_remoteEndpoint,

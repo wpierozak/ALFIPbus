@@ -13,7 +13,7 @@ namespace ipbus
         public:
         IPbusSlave(boost::asio::io_context& io, Memory& memory, uint16_t lport);
         bool openSocket();
-        bool startAsyncRecv();
+        void startAsyncRecv();
 
         const IPbusRequest& getRequest() { return m_request; }
         const IPbusResponse& getResponse() { return m_response; }
