@@ -188,12 +188,8 @@ bool IPbusMaster::transceive(IPbusRequest& request, IPbusResponse& response, boo
   if (bytes_recevied == 0) {
     BOOST_LOG_TRIVIAL(error) << "Empty response from " << m_ipAddress << ":" << m_remotePort;
     RETURN_AND_RELEASE(m_linkMutex, false);
-  } else if (bytes_recevied / wordSize != request.getExpectedResponseSize() || bytes_recevied % wordSize > 0) {
+  } else if (bytes_recevied / wordSize > request.getExpectedResponseSize() || bytes_recevied % wordSize > 0) {
     BOOST_LOG_TRIVIAL(error) << "Incorrect response from " << m_ipAddress << ":" << m_remotePort << ": received " << bytes_recevied << " bytes instead of " << request.getSize() * wordSize;
-    for(int i = 0; i < bytes_recevied/wordSize; i++)
-    {
-      BOOST_LOG_TRIVIAL(error) << "\t" << boost::str(boost::format("%1$x") % response[i]);
-    }
     RETURN_AND_RELEASE(m_linkMutex, false);
   } else if ( response[0] != request[0])
   {
