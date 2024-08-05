@@ -192,7 +192,7 @@ bool IPbusMaster::transceive(IPbusRequest& request, IPbusResponse& response, boo
     BOOST_LOG_TRIVIAL(error) << "Transceive: Incorrect response from " << m_ipAddress << ":" << m_remotePort << ": received " << bytes_recevied << " bytes instead of " << request.getSize() * wordSize;
     RETURN_AND_RELEASE(m_linkMutex, false);
   } else if (response[0] != request[0]) {
-    BOOST_LOG_TRIVIAL(error) << "Transceive: Invalid packet header";
+    BOOST_LOG_TRIVIAL(error) << "Transceive: Invalid incoming packet header";
     RETURN_AND_RELEASE(m_linkMutex, false);
   } else {
     response.setSize(bytes_recevied / wordSize);
@@ -207,14 +207,14 @@ bool IPbusMaster::transceive(IPbusRequest& request, IPbusResponse& response, boo
     if (!result) {
       BOOST_LOG_TRIVIAL(error) << "Transceive: Failed to process response";
 
-      std::string reqString = "Request: ";
+      std::string reqString = "Request:\n";
       for (int i = 0; i < request.getSize(); i++) {
         reqString += boost::str(boost::format("%1$08x\n") % request[i]);
       }
 
       BOOST_LOG_TRIVIAL(debug) << reqString;
 
-      std::string resString = "Response: ";
+      std::string resString = "Response:\n";
       for (int i = 0; i < response.getSize(); i++) {
         resString += boost::str(boost::format("%1$08x\n") % response[i]);
       }
@@ -241,7 +241,7 @@ bool IPbusMaster::processResponse(IPbusRequest& request, IPbusResponse& response
 
       BOOST_LOG_TRIVIAL(error) << boost::str(
         boost::format(
-          "Unexpected header for transaction %1d: got %2$08x, expected %3$08x") %
+          "Unexpected header for transaction %1$d: got %2$08x, expected %3$08x") %
         idx % *reinterpret_cast<uint32_t*>(headerResponse) % *reinterpret_cast<uint32_t*>(headerRequest));
       
       return false;
