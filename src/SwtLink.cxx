@@ -78,12 +78,13 @@ bool SwtLink::interpretFrames()
     if (m_request.getSize() + m_packetPadding >= ipbus::maxPacket) {
       if(transceive(m_request, m_response))
       {
-        m_request.reset();
         writeToResponse();
+        m_request.reset();
         m_lineBeg = i;
       }
       else
       {
+        m_request.reset();
         return false;
       }
     }
@@ -151,12 +152,13 @@ bool SwtLink::interpretFrames()
 
   if(transceive(m_request, m_response))
   {
-    m_request.reset();
     writeToResponse();
+    m_request.reset();
     return true;
   }
   else
   {
+    m_request.reset();
     return false;
   }
 
