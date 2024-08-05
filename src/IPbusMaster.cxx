@@ -240,7 +240,7 @@ bool IPbusMaster::processResponse(IPbusRequest& request, IPbusResponse& response
       ss << std::hex << (*headerRequest & 0xFFFFFFF0);
       std::string headerRequestHex = ss.str();
 
-      std::string message = "Unexpected transaction header: " + headerResponseHex + ", expected: " + headerRequestHex;
+      std::string message = "Unexpected transaction header: [" + std::to_string(idx) + "]: " + headerResponseHex + ", expected: " + headerRequestHex;
       // std::string message = "Unexpected transaction header: " + std::to_string(*headerResponse) + ", expected: " + std::to_string(*headerRequest & 0xFFFFFFF0);
       BOOST_LOG_TRIVIAL(error) << message;
       return false;
