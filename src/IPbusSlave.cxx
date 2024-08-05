@@ -44,7 +44,7 @@ namespace ipbus
     void IPbusSlave::handleRequest(const boost::system::error_code& ec, std::size_t length)
     {
         
-        BOOST_LOG_TRIVIAL(info) << "Processing...";
+        BOOST_LOG_TRIVIAL(info) << "Processing " << length << " bytes...";
         boost::asio::ip::udp::endpoint endpoint = m_remoteEndpoint;
 
         m_request.setSize(length/wordSize);
