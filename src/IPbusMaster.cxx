@@ -52,11 +52,12 @@ size_t IPbusMaster::receive(char* destBuffer, size_t maxSize)
 {
   try {
     BOOST_LOG_TRIVIAL(debug) << "Synchronous receiving...";
-    m_socket.async_receive_from(boost::asio::buffer(destBuffer, maxSize), m_remoteEndpoint, boost::bind(&IPbusMaster::handleReceive, this, std::placeholders::_1, std::placeholders::_2));
-
+   
     m_receivedSize = 0;
     m_error = boost::asio::error::would_block;
     m_receiveStatus = ReceiveStatus::Wait;
+
+    m_socket.async_receive_from(boost::asio::buffer(destBuffer, maxSize), m_remoteEndpoint, boost::bind(&IPbusMaster::handleReceive, this, std::placeholders::_1, std::placeholders::_2));
 
     m_timer.expires_from_now(m_timeout);
     m_timer.async_wait(boost::bind(&IPbusMaster::handleDeadline, this));
@@ -108,7 +109,7 @@ void IPbusMaster::handleDeadline()
     BOOST_LOG_TRIVIAL(error) << "Request has timed out";
 
     m_receiveStatus = ReceiveStatus::Expired;
-    m_socket.cancel();
+    //m_socket.cancel();
     m_timer.expires_at(boost::posix_time::pos_infin);
   }
 
