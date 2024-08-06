@@ -1,12 +1,5 @@
 # IPbus interface
 
-## General notes
-
-- The implementation provides synchronized message exchange and periodic asynchronous message exchange. If you need periodic uploads, you can set the cycle time (in seconds) and run the timer. WARNING: For now, the timer cannot be stopped.
-- Pthread library is required
-- boost::asio is required
-- It is adviced to use IPbusTarget class as a base class for specific usage
-
 ## IPbus specification
 
 IPbus is a packet-based protocol. An IPbus packet stacks multiple transactions, with the maximum packet size set to 1500 bytes, though it can be adjusted (const uint16_t maxPacket within IPbusControlPacket.h). Full IPbus documentation is provided  [here](https://ipbus.web.cern.ch/doc/user/html/_downloads/d251e03ea4badd71f62cffb24f110cfa/ipbus_protocol_v2_0.pdf).
@@ -29,6 +22,10 @@ cmake3 --build .
 ```
 
 ## Documentation
+
+### Introduction
+The IPbus library provides both master and slave implementations. The `IPbusMaster` class is a complete master-side implementation, ready for use in IPbus communication. On the other hand, `IPbusSlave` is a software mock of the FPGA implementation and can be used for testing purposes.
+
 
 ### Example
 You can find an examples within the test directory. Content of the example.cpp file is included below.
