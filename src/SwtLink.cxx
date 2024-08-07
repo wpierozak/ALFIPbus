@@ -76,6 +76,7 @@ bool SwtLink::interpretFrames()
   for (int i = 0; i < m_frames.size(); i++) {
   
     if (m_request.getSize() + m_packetPadding >= ipbus::maxPacket) {
+      m_request.markPartialSwt();
       if(transceive(m_request, m_response))
       {
         writeToResponse();
