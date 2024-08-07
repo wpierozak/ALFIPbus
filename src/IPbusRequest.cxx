@@ -73,4 +73,12 @@ namespace ipbus
 
         m_dataOut.push_back(dataOut);
     }
+
+    bool IPbusRequest::isPartialSwt() const {
+        return m_isPartialSwt;
+    }
+
+    void IPbusRequest::markPartialSwt() {
+        m_isPartialSwt = true;
+    }
 }

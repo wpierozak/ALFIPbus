@@ -9,7 +9,7 @@ namespace ipbus
 {
     class IPbusRequest: public IPbusPacket
     {
-        public:
+       public:
 
         IPbusRequest();
         void reset(int packetID = 0);
@@ -18,10 +18,15 @@ namespace ipbus
         uint16_t getExpectedResponseSize() const { return m_expectedResponseSize; }
         uint32_t* getDataOut(int idx) { return m_dataOut[idx]; }
 
-        private:
+        bool isPartialSwt() const;
+
+        void markPartialSwt();
+
+       private:
 
         uint16_t m_expectedResponseSize;
         std::vector<uint32_t*> m_dataOut;
+        bool m_isPartialSwt = false;
     };
 }
 
