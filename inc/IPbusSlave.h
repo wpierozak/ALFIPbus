@@ -2,6 +2,7 @@
 #include"IPbusResponse.h"
 #include"Memory.h"
 #include<boost/asio.hpp>
+#include <functional>
 
 #ifndef IPBUS_SLAVE
 #define IPBUS_SLAVE
@@ -10,7 +11,7 @@ namespace ipbus
 {
     class IPbusSlave
     {
-        public:
+       public:
         IPbusSlave(boost::asio::io_context& io, Memory& memory, uint16_t lport);
         bool openSocket();
         void startAsyncRecv();
@@ -19,8 +20,9 @@ namespace ipbus
         const IPbusResponse& getResponse() { return m_response; }
 
         static constexpr uint8_t BufferSize = UINT8_MAX;
-        
-        private:
+    
+        void setRequestCallback(std::function<void(const IPbusRequest& req)> f);
+       private:
 
         void handleRequest(const boost::system::error_code& ec, std::size_t length);
         void sendResponse(const boost::asio::ip::udp::endpoint&);
@@ -51,6 +53,8 @@ namespace ipbus
         uint32_t m_buffer[BufferSize];
 
         Memory& m_memory;
+
+        std::function<void(const IPbusRequest& req)> m_requestCallback;
     };
 }
 

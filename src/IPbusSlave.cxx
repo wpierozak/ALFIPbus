@@ -6,11 +6,11 @@ namespace ipbus
 {
     IPbusSlave::IPbusSlave(boost::asio::io_context& io, Memory& m_memory, uint16_t lport):
         m_ioContext(io),
-        m_memory(m_memory),
-        m_socket(io),
         m_localPort(lport),
+        m_socket(io),
         m_remoteEndpoint(boost::asio::ip::udp::v4(), 0),
-        m_localEndpoint(boost::asio::ip::udp::v4(), lport)
+        m_localEndpoint(boost::asio::ip::udp::v4(), lport),
+        m_memory(m_memory)
     {
         if(openSocket())
         {
@@ -49,6 +49,8 @@ namespace ipbus
 
         m_request.setSize(length/wordSize);
         m_response.reset();
+
+        m_requestCallback(m_request);
 
         uint16_t idx_request = 1;
         
@@ -210,5 +212,9 @@ namespace ipbus
         }
         return Response;
     }
+
+    void IPbusSlave::setRequestCallback(std::function<void(const IPbusRequest& req)> f) {
+        m_requestCallback = f;
+    } 
 } // namespace ipbus
 
