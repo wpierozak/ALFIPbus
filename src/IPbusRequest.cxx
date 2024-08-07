@@ -16,6 +16,7 @@ namespace ipbus
         m_size = 1;
         m_transactionsNumber = 0;
         m_expectedResponseSize = 1;
+        m_isPartialSwt = false;
         m_dataOut.clear();
     }
 
