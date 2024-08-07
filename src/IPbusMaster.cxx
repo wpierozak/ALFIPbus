@@ -14,8 +14,8 @@ IPbusMaster::IPbusMaster(boost::asio::io_context& ioContext, std::string address
                                                                                                                     m_ipAddress(address),
                                                                                                                     m_localEndpoint(boost::asio::ip::udp::v4(), m_localPort),
                                                                                                                     m_remoteEndpoint(boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(m_ipAddress), m_remotePort)),
-                                                                                                                    m_timer(ioContext),
-                                                                                                                    m_socket(ioContext)
+                                                                                                                    m_socket(ioContext),
+                                                                                                                    m_timer(ioContext)
 
 {
   openSocket();

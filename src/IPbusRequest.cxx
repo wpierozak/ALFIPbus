@@ -16,6 +16,7 @@ namespace ipbus
         m_size = 1;
         m_transactionsNumber = 0;
         m_expectedResponseSize = 1;
+        m_isPartialSwt = false;
         m_dataOut.clear();
     }
 
@@ -72,5 +73,13 @@ namespace ipbus
         }
 
         m_dataOut.push_back(dataOut);
+    }
+
+    bool IPbusRequest::isPartialSwt() const {
+        return m_isPartialSwt;
+    }
+
+    void IPbusRequest::markPartialSwt() {
+        m_isPartialSwt = true;
     }
 }
