@@ -45,8 +45,31 @@ There three IPbus packet types: Status, Control and Resend. The last one is used
 | ConfigurationWrite     | 7     |
 
 ### IPbusRequest
+The IPbusRequest purpose is creating control packet containing mutiple transactions. In order to compose a packet, one needs to call `addTransaction` for each transaction.
+```
+void addTransaction(enums::transactions::TransactionType type, \\ transaction type
+            uint32_t address,     \\ memory address on the target device
+            uint32_t* dataIn,     \\ address of the memory block containg input data  (refer to the documentation)
+            uint32_t* dataOut,    \\ address of the memory block where output data should be saved after successful operation (refer to the documentation, for example: read transaction returns values readed from device)
+            uint8_t nWords = 1    \\ number of words to be changed/readed (refer to the documentation)
+            );
+```
+IPbusRequest on initialization creates a header with default ID equals 0, `reset` method clears packet and may be used to set new ID number.
+```
+void reset(int packetID = 0);
+```
 
+### IPbusResponse
+The IPbusResponse class is used within master-side code only as the buffer for the incoming reponse. The packet creation functionality is used only within slave code, which is provided primarily for testing purposes, but it may also be applicable in real-world scenarios. The `addTransaction` method is used to generate a response to a request from the master, with request handling being the responsibility of the IPbusSlave class.
 
+```
+\\ Returns false if provided reponse data is inconsistent, returns true otherwise
+bool addTransaction(enums::transactions::TransactionType type, \\ transaction type
+                uint32_t* dataIn,  \\ address of the memory block containg data that should be included within response
+                uint8_t nWords,    \\ number of words (refer to the documentation)
+                InfoCode infocode  \\ info code ((refer to the documentation)
+                );
+```
 
 ### Example
 You can find an examples within the test directory. Content of the example.cpp file is included below.
