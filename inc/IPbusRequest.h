@@ -13,7 +13,7 @@ namespace ipbus
 
         IPbusRequest();
         void reset(int packetID = 0);
-        void addTransaction(TransactionType type, uint32_t address, uint32_t* dataIn, uint32_t* dataOut, uint8_t nWords = 1);
+        void addTransaction(enums::transactions::TransactionType type, uint32_t address, uint32_t* dataIn, uint32_t* dataOut, uint8_t nWords = 1);
 
         uint16_t getExpectedResponseSize() const { return m_expectedResponseSize; }
         uint32_t* getDataOut(int idx) { return m_dataOut[idx]; }

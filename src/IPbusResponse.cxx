@@ -3,19 +3,19 @@ namespace ipbus
 {
     IPbusResponse::IPbusResponse()
     {
-        m_buffer[0] = PacketHeader(Control, 0);
+        m_buffer[0] = PacketHeader(enums::packets::Control, 0);
         m_transactionsNumber = 0;
         m_size = 1;
     }
 
     void IPbusResponse::reset(int packetID)
     {
-        m_buffer[0] = PacketHeader(Control, packetID);
+        m_buffer[0] = PacketHeader(enums::packets::Control, packetID);
         m_transactionsNumber = 0;
         m_size = 1;
     }
 
-    bool IPbusResponse::addTransaction(TransactionType type, uint32_t* dataIn, uint8_t nWords, InfoCode infoCode)
+    bool IPbusResponse::addTransaction(enums::transactions::TransactionType type, uint32_t* dataIn, uint8_t nWords, InfoCode infoCode)
     {
         if(m_size + nWords + 1 > maxPacket)
         {
@@ -29,18 +29,18 @@ namespace ipbus
         }
         switch(type)
         {
-            case DataRead:
-            case NonIncrementingRead:
-            case ConfigurationRead:
+            case enums::transactions::Read:
+            case enums::transactions::NonIncrementingRead:
+            case enums::transactions::ConfigurationRead:
             {
                 memcpy(m_buffer + m_size, dataIn, nWords*wordSize);
                 m_size += nWords;
             }
             break;
 
-            case DataWrite:
-            case NonIncrementingWrite:
-            case ConfigurationWrite: 
+            case enums::transactions::Write:
+            case enums::transactions::NonIncrementingWrite:
+            case enums::transactions::ConfigurationWrite: 
             {
                 if(nWords != 0 || dataIn != nullptr)
                 {
@@ -49,8 +49,8 @@ namespace ipbus
             }
             break;
 
-            case RMWbits:
-            case RMWsum:
+            case enums::transactions::RMWbits:
+            case enums::transactions::RMWsum:
             {
                 if(nWords != 1)
                 {

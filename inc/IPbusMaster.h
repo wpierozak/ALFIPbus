@@ -10,6 +10,7 @@
 #include "IPbusPacket.h"
 #include "IPbusRequest.h"
 #include "IPbusResponse.h"
+#include "IPbusStatusPacket.h"
 
 /* Should be used instead of simple "return" in every method that locks m_link_mutex */
 #define RETURN_AND_RELEASE(mutex, statement) \

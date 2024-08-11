@@ -20,7 +20,7 @@ int main() {
         uint32_t data[SIZE] = {0x0,0x0};
         uint32_t address = 0x1004;
 
-        request.addTransaction(TransactionType::DataRead, address, data, SIZE);
+        request.addTransaction(TransactionType::Read, address, data, SIZE);
         target.transceive(request, response);
 
         std::cout << "\nRead...\n";

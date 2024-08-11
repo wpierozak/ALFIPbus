@@ -69,50 +69,50 @@ namespace ipbus
             TransactionHeader* headerRequest = (TransactionHeader*) m_request.getBuffer() + (idx_request++);
             if(headerRequest->protocolVersion != 2)
             {
-                m_response.addTransaction((TransactionType) headerRequest->typeID, nullptr, 1, BadHeader);
+                m_response.addTransaction((enums::transactions::TransactionType) headerRequest->typeID, nullptr, 1, BadHeader);
             }
 
             switch(headerRequest->typeID)
             {
-                case DataRead:
+                case enums::transactions::Read:
                 {
                     InfoCode code = read(m_request[idx_request], headerRequest->words, m_buffer);
-                    m_response.addTransaction((TransactionType)headerRequest->typeID, m_buffer, headerRequest->words, code);
+                    m_response.addTransaction((enums::transactions::TransactionType)headerRequest->typeID, m_buffer, headerRequest->words, code);
                     idx_request += 1;
                 }
                 break;
-                case NonIncrementingRead:
+                case enums::transactions::NonIncrementingRead:
                 {
                     InfoCode code = readNonIncrement(m_request[idx_request], headerRequest->words, m_buffer);
-                    m_response.addTransaction((TransactionType)headerRequest->typeID, m_buffer, headerRequest->words, code);
+                    m_response.addTransaction((enums::transactions::TransactionType)headerRequest->typeID, m_buffer, headerRequest->words, code);
                     idx_request += 1;
                 }
                 break;
-                case DataWrite:
+                case enums::transactions::Write:
                 {
                     InfoCode code = write(m_request[idx_request], headerRequest->words, m_request.getBuffer() + idx_request + 1);
-                    m_response.addTransaction((TransactionType)headerRequest->typeID, nullptr, headerRequest->words, code);
+                    m_response.addTransaction((enums::transactions::TransactionType)headerRequest->typeID, nullptr, headerRequest->words, code);
                     idx_request += headerRequest->words + 1;
                 }
                 break;
-                case NonIncrementingWrite:
+                case enums::transactions::NonIncrementingWrite:
                 {
                     InfoCode code = writeNonIncrement(m_request[idx_request], headerRequest->words, m_request.getBuffer() + idx_request + 1);
-                    m_response.addTransaction((TransactionType)headerRequest->typeID, nullptr, headerRequest->words, code);
+                    m_response.addTransaction((enums::transactions::TransactionType)headerRequest->typeID, nullptr, headerRequest->words, code);
                     idx_request += headerRequest->words + 1;
                 }
                 break;
-                case RMWbits:
+                case enums::transactions::RMWbits:
                 {
                     InfoCode code = rmwBits(m_request[idx_request], m_request[idx_request+1], m_request[idx_request+2]);
-                    m_response.addTransaction((TransactionType)headerRequest->typeID, m_buffer, 1, code);
+                    m_response.addTransaction((enums::transactions::TransactionType)headerRequest->typeID, m_buffer, 1, code);
                     idx_request += 3;
                 }
                 break;
-                case RMWsum:
+                case enums::transactions::RMWsum:
                 {
                     InfoCode code = rmwSum(m_request[idx_request], m_request[idx_request+1]);
-                    m_response.addTransaction((TransactionType)headerRequest->typeID, m_buffer, 1, code);
+                    m_response.addTransaction((enums::transactions::TransactionType)headerRequest->typeID, m_buffer, 1, code);
                     idx_request += 2;
                 }
                 break;
@@ -120,7 +120,7 @@ namespace ipbus
                 default:
                 {
                     BOOST_LOG_TRIVIAL(error) << "Invalid request";
-                    m_response.addTransaction((TransactionType)headerRequest->typeID, nullptr, 1, ErrorRead);
+                    m_response.addTransaction((enums::transactions::TransactionType)headerRequest->typeID, nullptr, 1, ErrorRead);
                 }
                 break;
             }

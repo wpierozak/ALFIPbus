@@ -1,5 +1,6 @@
 #include"IPbusRequest.h"
 #include"IPbusResponse.h"
+#include"IPbusStatusPacket.h"
 #include"Memory.h"
 #include<boost/asio.hpp>
 #include <functional>

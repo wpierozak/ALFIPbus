@@ -250,9 +250,9 @@ bool IPbusMaster::processResponse(IPbusRequest& request, IPbusResponse& response
 
     if (headerResponse->words > 0) {
       switch (headerResponse->typeID) {
-        case DataRead:
-        case NonIncrementingRead:
-        case ConfigurationRead: {
+        case enums::transactions::Read:
+        case enums::transactions::NonIncrementingRead:
+        case enums::transactions::ConfigurationRead: {
           if (headerResponse->words != headerRequest->words) {
             BOOST_LOG_TRIVIAL(error) << "Read transaction failed: expected " << headerRequest->words << "words, received: " << headerResponse->words;
             return false;
@@ -265,7 +265,7 @@ bool IPbusMaster::processResponse(IPbusRequest& request, IPbusResponse& response
           }
         } break;
 
-        case RMWbits: {
+        case enums::transactions::RMWbits: {
           if (headerResponse->words != 1) {
             BOOST_LOG_TRIVIAL(error) << "RMWbits transaction no " << idx << " failed";
             return false;
@@ -276,7 +276,7 @@ bool IPbusMaster::processResponse(IPbusRequest& request, IPbusResponse& response
             idxRequest += 3;
           }
         } break;
-        case RMWsum: {
+        case enums::transactions::RMWsum: {
           if (headerResponse->words != 1) {
             BOOST_LOG_TRIVIAL(error) << "RMWsum transaction no " << idx << " failed";
             return false;
@@ -288,9 +288,9 @@ bool IPbusMaster::processResponse(IPbusRequest& request, IPbusResponse& response
           }
         } break;
 
-        case DataWrite:
-        case NonIncrementingWrite:
-        case ConfigurationWrite:
+        case enums::transactions::Write:
+        case enums::transactions::NonIncrementingWrite:
+        case enums::transactions::ConfigurationWrite:
           idxRequest += headerRequest->words + 1;
           break;
 

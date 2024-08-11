@@ -4,7 +4,7 @@ namespace ipbus
 {
     IPbusRequest::IPbusRequest()
     {
-        m_buffer[0] = PacketHeader(Control, 0);
+        m_buffer[0] = PacketHeader(enums::packets::Control, 0);
         m_size = 1;
         m_transactionsNumber = 0;
         m_expectedResponseSize = 1;
@@ -12,14 +12,14 @@ namespace ipbus
 
     void IPbusRequest::reset(int packetID)
     {
-        m_buffer[0] = PacketHeader(Control, packetID);
+        m_buffer[0] = PacketHeader(enums::packets::Control, packetID);
         m_size = 1;
         m_transactionsNumber = 0;
         m_expectedResponseSize = 1;
         m_dataOut.clear();
     }
 
-    void IPbusRequest::addTransaction(TransactionType type, uint32_t address, uint32_t* dataIn, uint32_t* dataOut, uint8_t nWords)
+    void IPbusRequest::addTransaction(enums::transactions::TransactionType type, uint32_t address, uint32_t* dataIn, uint32_t* dataOut, uint8_t nWords)
     {
         if(m_size + nWords + 1 > maxPacket)
         {
@@ -33,28 +33,28 @@ namespace ipbus
 
         switch (type)
         {
-        case DataRead:
-        case NonIncrementingRead:
-        case ConfigurationRead:
+        case enums::transactions::Read:
+        case enums::transactions::NonIncrementingRead:
+        case enums::transactions::ConfigurationRead:
             m_expectedResponseSize += nWords;
             break;
 
-        case DataWrite:
-        case NonIncrementingWrite:
-        case ConfigurationWrite:
+        case enums::transactions::Write:
+        case enums::transactions::NonIncrementingWrite:
+        case enums::transactions::ConfigurationWrite:
             for (uint8_t i = 0; i < nWords; ++i) 
             {
                 m_buffer[m_size++] = dataIn[i];
             }
             break;
 
-        case RMWbits:
+        case enums::transactions::RMWbits:
             m_buffer[m_size++] = dataIn[0];
             m_buffer[m_size++] = dataIn[1];
             m_expectedResponseSize++;
             break;
 
-        case RMWsum:
+        case enums::transactions::RMWsum:
             m_buffer[m_size++] = dataIn[0];
             m_expectedResponseSize++;
             break;

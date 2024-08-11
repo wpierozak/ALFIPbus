@@ -6,11 +6,12 @@
 #include <cstring>
 #include <string>
 #include <climits>
+#include "IPbusEnums.h"
 
 namespace ipbus
 {
 
-enum class IPbusMode {Master, Slave};
+const uint8_t wordSize = sizeof(uint32_t); // 4 bytes
 
 template <typename T>
 T reverseBytes(T u)
@@ -30,14 +31,6 @@ T reverseBytes(T u)
   return dest.u;
 }
 
-const uint8_t wordSize = sizeof(uint32_t); // 4 bytes
-
-
-enum PacketType { Control = 0,
-                  Status = 1,
-                  Resend = 2 };
-
-
 struct PacketHeader {
   uint32_t packetType : 4,
     byteOrder : 4,
@@ -45,8 +38,7 @@ struct PacketHeader {
     rsvd : 4,
     protocolVersion : 4;
 
-  /// @brief Creates a `PacketHeader` for a packet of type `t` and ID = `id`, with byte order `0xf` and protocol version 2
-  PacketHeader(enum PacketType t = Status, uint16_t id = 0)
+  PacketHeader(enum enums::packets::PacketType t = enums::packets::Status, uint16_t id = 0)
   {
     packetType = t;
     byteOrder = 0xf;
@@ -55,22 +47,9 @@ struct PacketHeader {
     protocolVersion = 2;
   }
 
-  /// @brief Constructs the packet header from a raw `uint32_t` value
   PacketHeader(const uint32_t& word) { memcpy(this, &word, wordSize); }
 
-  /// @brief Converts the header to a raw `uint32_t` value
   operator uint32_t() const { return *reinterpret_cast<const uint32_t*>(this); }
-};
-
-enum TransactionType {
-  DataRead = 0,
-  DataWrite = 1,
-  NonIncrementingRead = 2,
-  NonIncrementingWrite = 3,
-  RMWbits = 4,
-  RMWsum = 5,
-  ConfigurationRead = 6,
-  ConfigurationWrite = 7
 };
 
 struct TransactionHeader {
@@ -79,7 +58,7 @@ struct TransactionHeader {
     words : 8,
     transactionID : 12,
     protocolVersion : 4;
-  TransactionHeader(TransactionType t, uint8_t nWords, uint16_t id = 0, uint8_t code = 0xf)
+  TransactionHeader(enums::transactions::TransactionType t, uint8_t nWords, uint16_t id = 0, uint8_t code = 0xf)
   {
     infoCode = code;
     typeID = t;
@@ -112,35 +91,6 @@ struct TransactionHeader {
   }
 };
 
-/** @brief A struct containing full information about a single transaction
- *  @details  is represented within the IPbus packet by three components: transaction header (1 word), Address of the memory location on which the operation will be performed (1 word)
- * and a block of data (if any data is required). Data layout is speficic for each kind of transaction. Transaction stores information about request, also after
- * the response is received pointer to the response header will be stored in field responseHeader.
- */
-struct Transaction {
-  TransactionHeader
-    /** Request transaction header describes  */
-    *requestHeader,
-    /** Address to the response header will be saved here */
-    *responseHeader;
-
-  uint32_t
-    /** Address of the memory location on which the operation will be performed */
-    *address,
-    /** Address of the block of data used in the transaction*/
-    *data;
-};
-
-/** @brief A struct containing definition of the packet used to check the connection
- */
-struct StatusPacket {
-  PacketHeader header = reverseBytes<uint32_t>(uint32_t(PacketHeader(Status))); // 0x200000F1: {0xF1, 0, 0, 0x20} -> {0x20, 0, 0, 0xF1}
-  uint32_t mtu = 0,
-           nResponseBuffers = 0,
-           nextPacketID = 0;
-  uint8_t trafficHistory[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-  uint32_t controlHistory[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-};
 
 } // namespace ipbus
 

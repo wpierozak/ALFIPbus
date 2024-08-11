@@ -22,7 +22,7 @@ try {
         uint32_t data[SIZE] = {0x0,0x0};
         uint32_t address = 0x1004;
 
-        packet.addTransaction(TransactionType::DataRead, address, data, data, SIZE);
+        packet.addTransaction(TransactionType::Read, address, data, data, SIZE);
         target.transceive(packet, response);
         packet.reset();
         response.reset();
@@ -35,7 +35,7 @@ try {
         std::cout << std::hex << data[0] << ' ' << std::hex << data[1] << std::endl;
 
 
-        packet.addTransaction(TransactionType::DataWrite, address, data, data, SIZE);
+        packet.addTransaction(TransactionType::Write, address, data, data, SIZE);
         target.transceive(packet, response);
         
         packet.reset();
@@ -43,7 +43,7 @@ try {
 
         std::cout << "\n\n\tRead after write...\n\n";
         data[0] = 0; data[1] = 0;
-        packet.addTransaction(TransactionType::DataRead, address, data, data, SIZE);
+        packet.addTransaction(TransactionType::Read, address, data, data, SIZE);
         target.transceive(packet, response);
         packet.reset();
         response.reset();
@@ -55,7 +55,7 @@ try {
         for(int i = 0; i < 2; i++)
         {
             std::this_thread::sleep_for(std::chrono::seconds(5));
-            packet.addTransaction(TransactionType::DataRead, address, data, data, SIZE);
+            packet.addTransaction(TransactionType::Read, address, data, data, SIZE);
             target.transceive(packet,response);
             packet.reset();
             response.reset();
