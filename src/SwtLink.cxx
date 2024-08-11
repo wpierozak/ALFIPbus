@@ -97,11 +97,11 @@ bool SwtLink::interpretFrames()
 
     switch (m_frames[i].getTransactionType()) {
       case Swt::TransactionType::Read:
-        m_request.addTransaction(ipbus::enums::transactions::DataRead, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
+        m_request.addTransaction(ipbus::enums::transactions::Read, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
         break;
 
       case Swt::TransactionType::Write:
-        m_request.addTransaction(ipbus::enums::transactions::DataWrite, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
+        m_request.addTransaction(ipbus::enums::transactions::Write, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
         break;
 
       case Swt::TransactionType::RMWbits:
