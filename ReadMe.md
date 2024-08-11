@@ -1,8 +1,15 @@
-# IPbus interface
+# IPbus
+
+## Introduction
+The IPbus protocol facilitates packet-based communication between devices using a master-slave architecture. To minimize network communication overhead, IPbus packets are typically transported within UDP datagrams. Facilitating IPbus communication requires three key components:
+- Master implementation
+- Slave implementation
+- UDP communication layer
+In practice, the slave side is hosted on an FPGA board, while the other components are handled by the software implementation. This repository provides the master implementation along with UDP-based network communication, and it also includes a slave implementation for testing purposes. Both the master and slave implementations handle packet creation and processing internally, so there is no need to understand the exact internal structure of IPbus packets
 
 ## IPbus specification
 
-IPbus is a packet-based protocol. An IPbus packet stacks multiple transactions, with the maximum packet size set to 1500 bytes, though it can be adjusted (const uint16_t maxPacket within IPbusControlPacket.h). Full IPbus documentation is provided  [here](https://ipbus.web.cern.ch/doc/user/html/_downloads/d251e03ea4badd71f62cffb24f110cfa/ipbus_protocol_v2_0.pdf).
+Full IPbus documentation is provided  [here](https://ipbus.web.cern.ch/doc/user/html/_downloads/d251e03ea4badd71f62cffb24f110cfa/ipbus_protocol_v2_0.pdf).
 
 ## Building
 
@@ -12,8 +19,6 @@ IPbus is a packet-based protocol. An IPbus packet stacks multiple transactions, 
 - pthread
 
 ### Step-by-step
-
-If you already pulled repository, then you need to:
 ```
 mkdir build
 cd build
@@ -21,10 +26,26 @@ cmake3 ..
 cmake3 --build .
 ```
 
-## Documentation
+## Packets
+There are two classes designed for handling control packet creation: **IPbusRequest** and **IPbusResponse**. There is also special **StatusPacket** structure for simple creation of IPbus status packet.
 
-### Introduction
-The IPbus library provides both master and slave implementations. The `IPbusMaster` class is a complete master-side implementation, ready for use in IPbus communication. On the other hand, `IPbusSlave` is a software mock of the FPGA implementation and can be used for testing purposes.
+### Packet types
+There three IPbus packet types: Status, Control and Resend. The last one is used in reliability mechanisms, which is not implemented in this repository yet.
+
+### Transaction types
+| Transaction Type       | Value |
+|------------------------|-------|
+| Read                   | 0     |
+| Write                  | 1     |
+| NonIncrementingRead    | 2     |
+| NonIncrementingWrite   | 3     |
+| RMWbits                | 4     |
+| RMWsum                 | 5     |
+| ConfigurationRead      | 6     |
+| ConfigurationWrite     | 7     |
+
+### IPbusRequest
+
 
 
 ### Example
