@@ -71,6 +71,8 @@ bool addTransaction(enums::transactions::TransactionType type, \\ transaction ty
                 );
 ```
 
+## IPbusMaster
+
 ### Example
 You can find an examples within the test directory. Content of the example.cpp file is included below.
 ```
