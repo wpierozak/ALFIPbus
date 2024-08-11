@@ -97,11 +97,11 @@ bool SwtLink::interpretFrames()
 
     switch (m_frames[i].getTransactionType()) {
       case Swt::TransactionType::Read:
-        m_request.addTransaction(ipbus::DataRead, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
+        m_request.addTransaction(ipbus::enums::transactions::DataRead, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
         break;
 
       case Swt::TransactionType::Write:
-        m_request.addTransaction(ipbus::DataWrite, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
+        m_request.addTransaction(ipbus::enums::transactions::DataWrite, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
         break;
 
       case Swt::TransactionType::RMWbits:
@@ -124,7 +124,7 @@ bool SwtLink::interpretFrames()
           }
           buffer[0] = m_frames[i].data;
           buffer[1] = m_frames[i + 2].data;
-          m_request.addTransaction(ipbus::RMWbits, m_frames[i].address, buffer, &m_frames[i].data);
+          m_request.addTransaction(ipbus::enums::transactions::RMWbits, m_frames[i].address, buffer, &m_frames[i].data);
           i += 2;
           m_lineEnd += 2;
         } else {
@@ -134,7 +134,7 @@ bool SwtLink::interpretFrames()
           }
           buffer[0] = m_frames[i].data;
           buffer[1] = m_frames[i + 1].data;
-          m_request.addTransaction(ipbus::RMWbits, m_frames[i].address, buffer, &m_frames[i].data);
+          m_request.addTransaction(ipbus::enums::transactions::RMWbits, m_frames[i].address, buffer, &m_frames[i].data);
           i += 1;
           m_lineEnd += 1;
         }
@@ -142,7 +142,7 @@ bool SwtLink::interpretFrames()
         break;
 
       case Swt::TransactionType::RMWsum:
-        m_request.addTransaction(ipbus::RMWsum, m_frames[i].address, &m_frames[i].data, &m_frames[i].data);
+        m_request.addTransaction(ipbus::enums::transactions::RMWsum, m_frames[i].address, &m_frames[i].data, &m_frames[i].data);
         break;
 
       default:
