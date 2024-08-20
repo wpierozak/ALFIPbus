@@ -15,6 +15,12 @@ void SwtLink::rpcHandler()
 
 void SwtLink::processRequest(const char* swtSequence)
 {
+  if(std::strlen(swtSequence) == 0)
+  {
+    BOOST_LOG_TRIVIAL(warning) << "Received empty request";
+    sendFailure();
+  }
+
   m_fredResponse = "";
   splitLines(swtSequence);
 
