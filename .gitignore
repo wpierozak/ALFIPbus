@@ -6,4 +6,7 @@ lib/*
 
 build/
 
+log/*
+!log/.gitkeep
+
 Makefile
