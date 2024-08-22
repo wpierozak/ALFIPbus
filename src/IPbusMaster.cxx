@@ -19,6 +19,8 @@ IPbusMaster::IPbusMaster(boost::asio::io_context& ioContext, std::string address
 
 {
   openSocket();
+  m_timer.expires_at(boost::posix_time::pos_infin);
+  m_timer.async_wait(boost::bind(&IPbusMaster::handleDeadline, this));
   intializeMutex(m_linkMutex);
   intializeMutex(m_receiveStatusMutex);
   checkStatus();
@@ -52,7 +54,7 @@ size_t IPbusMaster::receive(char* destBuffer, size_t maxSize)
 {
   try {
     BOOST_LOG_TRIVIAL(debug) << "Synchronous receiving...";
-   
+  
     m_receivedSize = 0;
     m_error = boost::asio::error::would_block;
     m_receiveStatus = ReceiveStatus::Wait;
@@ -62,10 +64,19 @@ size_t IPbusMaster::receive(char* destBuffer, size_t maxSize)
     m_timer.expires_from_now(m_timeout);
     m_timer.async_wait(boost::bind(&IPbusMaster::handleDeadline, this));
 
+    int counter = 0;
+    
     do {
       m_ioContext.run_one();
+      counter++;
     } while (m_receiveStatus == ReceiveStatus::Wait);
+    
+    m_socket.cancel();
+    while(m_ioContext.run_one() != 0) {counter++;}
 
+    BOOST_LOG_TRIVIAL(debug) << "IO context called " << counter << " times";
+    m_ioContext.restart();
+    
     return m_receivedSize;
 
   } catch (const boost::system::system_error& e) {
@@ -84,24 +95,25 @@ size_t IPbusMaster::receive(char* destBuffer, size_t maxSize)
 void IPbusMaster::handleReceive(const boost::system::error_code& ec, std::size_t length)
 {
   pthread_mutex_lock(&m_receiveStatusMutex);
+  if (m_receiveStatus == ReceiveStatus::Wait) 
+  {
+    BOOST_LOG_TRIVIAL(debug) << "Message received: " << length << " bytes";
 
-  BOOST_LOG_TRIVIAL(debug) << "Message received: " << length << " bytes";
+    m_error = ec;
+    m_receivedSize = length;
 
-  m_error = ec;
-  m_receivedSize = length;
-
-  m_timer.cancel();
-  m_receiveStatus = ReceiveStatus::Received;
-
+    m_timer.cancel();
+    m_receiveStatus = ReceiveStatus::Received;
+  }
   pthread_mutex_unlock(&m_receiveStatusMutex);
 }
 
 void IPbusMaster::handleDeadline()
 {
-  if (m_timer.expires_at() > boost::asio::deadline_timer::traits_type::now()) {
-    m_timer.async_wait(boost::bind(&IPbusMaster::handleDeadline, this));
-    return;
-  }
+  // if (m_timer.expires_at() > boost::asio::deadline_timer::traits_type::now()) {
+  //   //m_timer.async_wait(boost::bind(&IPbusMaster::handleDeadline, this));
+  //   return;
+  // }
 
   pthread_mutex_lock(&m_receiveStatusMutex);
 
@@ -110,8 +122,10 @@ void IPbusMaster::handleDeadline()
 
     m_receiveStatus = ReceiveStatus::Expired;
     //m_socket.cancel();
-    m_timer.expires_at(boost::posix_time::pos_infin);
   }
+
+  m_timer.expires_at(boost::posix_time::pos_infin);
+  //m_timer.async_wait(boost::bind(&IPbusMaster::handleDeadline, this));
 
   pthread_mutex_unlock(&m_receiveStatusMutex);
 }
