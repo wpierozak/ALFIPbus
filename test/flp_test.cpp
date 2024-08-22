@@ -7,7 +7,7 @@
 #define SIZE 2
 
 using namespace ipbus;
-
+using namespace ipbus::enums::transactions;
 int main() {
 try {
         srand(time(NULL));

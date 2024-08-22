@@ -152,7 +152,7 @@ bool IPbusMaster::transceive(IPbusRequest& request, IPbusResponse& response, boo
 {
   BOOST_LOG_TRIVIAL(debug) << "Transceiving...";
   if (m_isAvailable == false) {
-    BOOST_LOG_TRIVIAL(error) << "Transceive: device at " << m_ipAddress << ":" << m_remotePort << " is not available";
+    BOOST_LOG_TRIVIAL(error) << "Transceive: Transceive: device at " << m_ipAddress << ":" << m_remotePort << " is not available";
   }
 
   pthread_mutex_lock(&m_linkMutex);
@@ -170,7 +170,7 @@ bool IPbusMaster::transceive(IPbusRequest& request, IPbusResponse& response, boo
     BOOST_LOG_TRIVIAL(error) << "Transceive: sending packet to " << m_ipAddress << ":" << m_remotePort << " failed: " << e.what();
     RETURN_AND_RELEASE(m_linkMutex, false);
   }
-  BOOST_LOG_TRIVIAL(debug) << "Send " <<  send_bytes << " bytes";
+  BOOST_LOG_TRIVIAL(debug) << "Transceive: Send " <<  send_bytes << " bytes";
   if (send_bytes < request.getSize() * wordSize) {
     BOOST_LOG_TRIVIAL(error) << "Transceive: Sending packet to " << m_ipAddress << ":" << m_remotePort << " failed: " << send_bytes << " bytes were sent instead of " << request.getSize() * wordSize;
     RETURN_AND_RELEASE(m_linkMutex, false);
