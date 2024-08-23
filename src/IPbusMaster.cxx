@@ -19,8 +19,6 @@ IPbusMaster::IPbusMaster(boost::asio::io_context& ioContext, std::string address
 
 {
   openSocket();
-  m_timer.expires_at(boost::posix_time::pos_infin);
-  m_timer.async_wait(boost::bind(&IPbusMaster::handleDeadline, this));
   intializeMutex(m_linkMutex);
   intializeMutex(m_receiveStatusMutex);
   checkStatus();
