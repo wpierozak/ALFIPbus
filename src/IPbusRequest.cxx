@@ -1,5 +1,5 @@
 #include"IPbusRequest.h"
-
+#include"IPbusStatusPacket.h"
 namespace ipbus
 {
     IPbusRequest::IPbusRequest()
@@ -72,5 +72,10 @@ namespace ipbus
         }
 
         m_dataOut.push_back(dataOut);
+    }
+
+    bool IPbusRequest::isStatusRequest() const
+    {
+        return (m_size == 16 && m_buffer[0] == (ipbus::StatusPacket()).header);
     }
 }

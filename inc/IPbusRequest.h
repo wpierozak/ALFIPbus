@@ -18,6 +18,7 @@ namespace ipbus
         uint16_t getExpectedResponseSize() const { return m_expectedResponseSize; }
         uint32_t* getDataOut(int idx) { return m_dataOut[idx]; }
 
+        bool isStatusRequest() const;
        private:
 
         uint16_t m_expectedResponseSize;
