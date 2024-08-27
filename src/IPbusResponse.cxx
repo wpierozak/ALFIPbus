@@ -42,7 +42,7 @@ namespace ipbus
             case enums::transactions::NonIncrementingWrite:
             case enums::transactions::ConfigurationWrite: 
             {
-                if(nWords != 0 || dataIn != nullptr)
+                if(dataIn != nullptr)
                 {
                     BOOST_LOG_TRIVIAL(warning) << "Write transaction response should contain only header!";
                 }
