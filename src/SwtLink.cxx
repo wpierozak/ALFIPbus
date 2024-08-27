@@ -173,6 +173,7 @@ bool SwtLink::interpretFrames()
 
 void SwtLink::sendResponse()
 {
+  BOOST_LOG_TRIVIAL(debug) << "Request successfuly processed - sending response";
   m_fredResponse = "success\n" + m_fredResponse;
   setData(m_fredResponse.c_str());
 }
