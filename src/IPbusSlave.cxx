@@ -50,8 +50,6 @@ namespace ipbus
         m_request.setSize(length/wordSize);
         m_response.reset();
 
-        m_requestCallback(m_request);
-
         uint16_t idx_request = 1;
         
         if(length == wordSize * 16 && m_request[0] == m_statusRequest.header)
@@ -128,6 +126,9 @@ namespace ipbus
         m_memory.unlock();
 
         sendResponse(endpoint);
+
+        m_requestCallback(m_request);
+        
         startAsyncRecv();
     }
 
