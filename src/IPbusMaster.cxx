@@ -160,7 +160,7 @@ bool IPbusMaster::checkStatus()
   RETURN_AND_RELEASE(m_linkMutex, m_isAvailable);
 }
 
-bool IPbusMaster::transceive(IPbusRequest& request, IPbusResponse& response, bool shouldResponseBeProcessed)
+bool IPbusMaster::transceive(IPbusRequest& request, IPbusResponse& response)
 {
   BOOST_LOG_TRIVIAL(debug) << "Transceiving...";
   if (m_isAvailable == false) {
@@ -211,13 +211,9 @@ bool IPbusMaster::transceive(IPbusRequest& request, IPbusResponse& response, boo
   } else {
     response.setSize(bytes_recevied / wordSize);
 
-    if (shouldResponseBeProcessed) {
-      BOOST_LOG_TRIVIAL(debug) << "Transceive: Processing response";
-    } else {
-      BOOST_LOG_TRIVIAL(debug) << "Transceive: Response will not be processed";
-    }
+    BOOST_LOG_TRIVIAL(debug) << "Transceive: Processing response";
+    bool result =  processResponse(request, response);
 
-    bool result = shouldResponseBeProcessed ? processResponse(request, response) : true;
     if (!result) {
       BOOST_LOG_TRIVIAL(error) << "Transceive: Failed to process response";
 
@@ -234,6 +230,9 @@ bool IPbusMaster::transceive(IPbusRequest& request, IPbusResponse& response, boo
       }
 
       BOOST_LOG_TRIVIAL(debug) << resString;
+    }
+    else{
+      BOOST_LOG_TRIVIAL(debug) << "Transceive: Response processed successfuly";
     }
 
     RETURN_AND_RELEASE(m_linkMutex, result);

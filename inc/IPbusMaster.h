@@ -74,7 +74,7 @@ class IPbusMaster
   bool checkStatus();
   bool reopen();
 
-  bool transceive(IPbusRequest& request, IPbusResponse& response, bool shouldResponseBeProcessed = true);
+  bool transceive(IPbusRequest& request, IPbusResponse& response);
 
   bool isIPbusOK() { return m_isAvailable; }
 
