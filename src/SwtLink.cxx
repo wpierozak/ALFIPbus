@@ -74,7 +74,11 @@ bool SwtLink::parseFrames(const char* request)
     std::memcpy(buffer, request + beg_ptr, size);
     buffer[size] = '\0';
 
-    if(strcmp(buffer, "read") == 0){
+    if(strcmp(buffer, "reset"))
+    {
+
+    }
+    else if(strcmp(buffer, "read") == 0){
       m_frames.emplace_back(Swt{ EmptyData, EmptyAddress, EmptyMode });
       m_reqType.emplace_back(RequestType::Read);
     }
