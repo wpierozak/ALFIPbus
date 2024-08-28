@@ -22,9 +22,9 @@ void SwtLink::processRequest(const char* swtSequence)
   }
 
   m_fredResponse = "";
-  splitLines(swtSequence);
+  //splitLines(swtSequence);
 
-  if (!parseFrames()) {
+  if (!parseFrames(swtSequence)) {
     sendFailure();
     return;
   }
@@ -40,6 +40,61 @@ void SwtLink::splitLines(const char* swtSequence)
 {
   std::string swtStr = swtSequence;
   m_lines = utils::splitString(swtStr, "\n");
+}
+
+bool SwtLink::parseFrames(const char* request)
+{
+  int64_t beg_ptr = 0;
+  int64_t end_ptr = 0;
+  int64_t size = 0;
+
+  char buffer[64];
+
+  try
+  {
+
+  for(int64_t pos = 0; request[pos] != '\0'; pos++)
+  {
+    switch(request[pos])
+    {    
+      case '\0':
+      case '\n':
+      {
+        end_ptr = pos;
+      }
+      break;
+
+      default:
+        continue;
+      break;
+    }
+
+    size = end_ptr - beg_ptr + 1;
+
+    std::memcpy(buffer, request + beg_ptr, size);
+    buffer[size] = '\0';
+
+    if(strcmp(buffer, "read") == 0){
+      m_frames.emplace_back(Swt{ EmptyData, EmptyAddress, EmptyMode });
+      m_reqType.emplace_back(RequestType::Read);
+    }
+    else if(strcmp(buffer + 22, "write") == 0){
+      m_frames.emplace_back(stringToSwt(buffer + 2));
+      m_reqType.emplace_back(RequestType::Write);
+    }
+    else{
+      BOOST_LOG_TRIVIAL(error) << "Invalid sequence received: " << buffer;
+      return false;
+    }
+    beg_ptr = pos + 1;
+  }
+
+  } catch (const std::exception& e) {
+    BOOST_LOG_TRIVIAL(error) << "Sequence parsing failed: " << boost::diagnostic_information(e);
+    return false;
+  }
+
+
 }
 
 bool SwtLink::parseFrames()
@@ -182,11 +237,11 @@ void SwtLink::sendResponse()
 void SwtLink::writeToResponse()
 {
   for (int i = m_lineBeg; i < m_lineEnd; i++) {
-    if (m_lines[i] == "read") {
+    if (m_reqType[i] == Read) {
       writeFrame(m_frames[i - 1]);
       m_fredResponse += "\n";
       continue;
-    } else if (m_lines[i].find("write") != std::string::npos) {
+    } else {
       m_fredResponse += "0\n";
     }
   }
