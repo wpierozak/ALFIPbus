@@ -44,6 +44,9 @@ void SwtLink::splitLines(const char* swtSequence)
 
 bool SwtLink::parseFrames(const char* request)
 {
+  m_frames.clear();
+  m_reqType.clear();
+
   int64_t beg_ptr = 0;
   int64_t end_ptr = 0;
   int64_t size = 0;
@@ -53,7 +56,7 @@ bool SwtLink::parseFrames(const char* request)
   try
   {
 
-  for(int64_t pos = 0; request[pos] != '\0'; pos++)
+  for(int64_t pos = 0; ; pos++)
   {
     switch(request[pos])
     {    
@@ -69,12 +72,14 @@ bool SwtLink::parseFrames(const char* request)
       break;
     }
 
-    size = end_ptr - beg_ptr + 1;
+    size = end_ptr - beg_ptr;
 
     std::memcpy(buffer, request + beg_ptr, size);
     buffer[size] = '\0';
 
-    if(strcmp(buffer, "reset"))
+    //BOOST_LOG_TRIVIAL(info) << buffer;
+
+    if(strcmp(buffer, "reset") == 0)
     {
 
     }
@@ -90,6 +95,7 @@ bool SwtLink::parseFrames(const char* request)
       BOOST_LOG_TRIVIAL(error) << "Invalid sequence received: " << buffer;
       return false;
     }
+    if(request[pos] == '\0') break;
     beg_ptr = pos + 1;
   }
 
@@ -98,7 +104,7 @@ bool SwtLink::parseFrames(const char* request)
     return false;
   }
 
-
+  return true;
 }
 
 bool SwtLink::parseFrames()
@@ -244,7 +250,6 @@ void SwtLink::writeToResponse()
     if (m_reqType[i] == Read) {
       writeFrame(m_frames[i - 1]);
       m_fredResponse += "\n";
-      continue;
     } else {
       m_fredResponse += "0\n";
     }

@@ -57,9 +57,9 @@ Swt::TransactionType Swt::getTransactionType() const
 
 Swt stringToSwt(const char* str)
 {
-  if (std::strlen(str) != 19) {
-    BOOST_THROW_EXCEPTION(std::runtime_error("SWT string is too short - received: " + std::to_string(strlen(str)) + " chars"));
-  }
+ // if (std::strlen(str) != 19) {
+ //   BOOST_THROW_EXCEPTION(std::runtime_error("SWT string is too short - received: " + std::to_string(strlen(str)) + " chars"));
+ // }
 
   Swt frame;
 
