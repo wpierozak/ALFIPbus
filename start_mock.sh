@@ -6,4 +6,5 @@ bin/AlfIPbus \
             -n ALF_MOCK \
             -l 127.0.0.1:50001 \
             -t 1000 \
-            -f $log_filename
+            -f $log_filename \
+            -v

@@ -67,16 +67,16 @@ void init(std::string filename = "", bool verbose = false)
 {
   bl::add_common_attributes();
 
-  if (filename == "") {
-    auto consoleLog = bl::add_console_log(std::cout);
-    consoleLog->set_formatter(&coloring_formatter);
-  } else {
+  auto consoleLog = bl::add_console_log(std::cout);
+  consoleLog->set_formatter(&coloring_formatter);
+
+  if (filename != "") {
     auto fileLog = bl::add_file_log(bl::keywords::file_name = filename, bl::keywords::auto_flush = true);
     fileLog->set_formatter(&non_coloring_formatter);
   }
 
   if(!verbose)
-    bl::core::get()->set_filter(bl::trivial::severity >= bl::trivial::info);
+    consoleLog->set_filter(bl::trivial::severity >= bl::trivial::info);
 
   BOOST_LOG_TRIVIAL(debug) << "Debug log mode enabled";
 }

@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 3.5)
 # Project name and version
 project(AlfIPbus VERSION 1.0 LANGUAGES CXX)
 
+set(CMAKE_DISABLE_SOURCE_CHANGES ON)
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+
 # Set the output directories for binaries and libraries
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
