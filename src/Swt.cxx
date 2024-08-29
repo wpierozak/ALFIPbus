@@ -57,17 +57,13 @@ Swt::TransactionType Swt::getTransactionType() const
 
 Swt stringToSwt(const char* str)
 {
- // if (std::strlen(str) != 19) {
- //   BOOST_THROW_EXCEPTION(std::runtime_error("SWT string is too short - received: " + std::to_string(strlen(str)) + " chars"));
- // }
-
   Swt frame;
 
   frame.data = (static_cast<uint32_t>(utils::stringToByte(str[11], str[12])) << 24) + (static_cast<uint32_t>(utils::stringToByte(str[13], str[14])) << 16) + (static_cast<uint32_t>(utils::stringToByte(str[15], str[16])) << 8) + static_cast<uint32_t>(utils::stringToByte(str[17], str[18]));
 
   frame.address = (static_cast<uint32_t>(utils::stringToByte(str[3], str[4])) << 24) + (static_cast<uint32_t>(utils::stringToByte(str[5], str[6])) << 16) + (static_cast<uint32_t>(utils::stringToByte(str[7], str[8])) << 8) + static_cast<uint32_t>(utils::stringToByte(str[9], str[10]));
 
-  frame.mode = static_cast<uint16_t>(utils::stringToByte(str[1], str[2])) & static_cast<uint16_t>(0x07);
+  frame.mode = static_cast<uint16_t>(utils::stringToByte(str[1], str[2]));
 
   return frame;
 }
