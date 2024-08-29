@@ -37,8 +37,6 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
   void writeFrame(Swt frame);
   void sendFailure();
 
-  void splitLines(const char* swtSequence);
-  bool parseFrames();
   bool parseFrames(const char* request);
   bool interpretFrames();
 
@@ -60,7 +58,6 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
   int m_lineEnd{0};
   int m_packetPadding{8};
 
-  std::vector<std::string> m_lines;
   std::vector<Swt> m_frames;
 
   enum RequestType {Write = 'w', Read = 'r'};

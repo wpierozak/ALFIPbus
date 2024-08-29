@@ -22,7 +22,6 @@ void SwtLink::processRequest(const char* swtSequence)
   }
 
   m_fredResponse = "";
-  //splitLines(swtSequence);
 
   if (!parseFrames(swtSequence)) {
     sendFailure();
@@ -36,12 +35,6 @@ void SwtLink::processRequest(const char* swtSequence)
   }
 }
 
-void SwtLink::splitLines(const char* swtSequence)
-{
-  std::string swtStr = swtSequence;
-  m_lines = utils::splitString(swtStr, "\n");
-}
-
 bool SwtLink::parseFrames(const char* request)
 {
   m_frames.clear();
@@ -50,8 +43,6 @@ bool SwtLink::parseFrames(const char* request)
   int64_t beg_ptr = 0;
   int64_t end_ptr = 0;
   int64_t size = 0;
-
-  char buffer[64];
 
   try
   {
@@ -74,24 +65,22 @@ bool SwtLink::parseFrames(const char* request)
 
     size = end_ptr - beg_ptr;
 
-    std::memcpy(buffer, request + beg_ptr, size);
-    buffer[size] = '\0';
-
-    //BOOST_LOG_TRIVIAL(info) << buffer;
-
-    if(strcmp(buffer, "reset") == 0)
+    if(strncmp(request + beg_ptr, "reset", size) == 0)
     {
 
     }
-    else if(strcmp(buffer, "read") == 0){
+    else if(strncmp(request + beg_ptr, "read", size) == 0){
       m_frames.emplace_back(Swt{ EmptyData, EmptyAddress, EmptyMode });
       m_reqType.emplace_back(RequestType::Read);
     }
-    else if(strcmp(buffer + 22, "write") == 0){
-      m_frames.emplace_back(stringToSwt(buffer + 2));
+    else if(size == 27 && strncmp(request + beg_ptr + 22, "write", 5) == 0){
+      m_frames.emplace_back(stringToSwt(request + beg_ptr + 2));
       m_reqType.emplace_back(RequestType::Write);
     }
     else{
+      char buffer[64];
+      std::memcpy(buffer, request + beg_ptr, size);
+      buffer[size] = '\0';
       BOOST_LOG_TRIVIAL(error) << "Invalid sequence received: " << buffer;
       return false;
     }
@@ -102,35 +91,6 @@ bool SwtLink::parseFrames(const char* request)
   } catch (const std::exception& e) {
     BOOST_LOG_TRIVIAL(error) << "Sequence parsing failed: " << boost::diagnostic_information(e);
     return false;
-  }
-
-  return true;
-}
-
-bool SwtLink::parseFrames()
-{
-  m_frames.clear();
-  if (m_lines[0] != "reset") {
-    BOOST_LOG_TRIVIAL(error) << "Sequence parsing failed: missing reset word";
-    return false;
-  }
-  m_lines.erase(m_lines.begin());
-
-  for (auto line : m_lines) {
-    if (line.find("read") != std::string::npos) {
-      m_frames.push_back({ EmptyData, EmptyAddress, EmptyMode });
-      continue;
-    }
-
-    line = line.substr(line.find("0x") + 2);
-    line = line.substr(0, line.find(','));
-
-    try {
-      m_frames.emplace_back(stringToSwt(line.c_str()));
-    } catch (const std::exception& e) {
-      BOOST_LOG_TRIVIAL(error) << "Sequence parsing failed: " << boost::diagnostic_information(e);
-      return false;
-    }
   }
 
   return true;
