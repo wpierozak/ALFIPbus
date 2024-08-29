@@ -16,7 +16,7 @@ int main(int argc, const char** argv)
 
   AlfConfig cfg(argc, argv);
 
-  logging::init(cfg.logFilename);
+  logging::init(cfg.logFilename, cfg.verbose);
 
   AlfIPbus alf(cfg);
   alf.initLinks();

@@ -22,11 +22,15 @@ AlfConfig::AlfConfig(int argc, const char** argv)
 
   // Declare the supported options.
   po::options_description desc("Allowed options");
-  desc.add_options()("help,h", "see available options")("name,n", po::value<std::string>(&name), "set server name")("link,l", po::value<std::vector<std::string>>(&linkArgs),
-                                                                                                                    "set the IP address and port for consecutive links (can be used multiple times).\n"
-                                                                                                                    "Format: [IP address]:[Port number]")("log_file,f", po::value<std::string>(&logFilename)->default_value(""),
-                                                                                                                                                          "specify file path for the logs. If unspecified, logs get printed to stdout")
-                                                                                                                                                          ("timeout,t", po::value<int>(&timeout)->default_value(2000),"Set timeout [ms]");
+  desc.add_options()("help,h", "see available options")
+                    ("verbose,v", "enable verbose mode")
+                    ("name,n", po::value<std::string>(&name), "set server name")
+                    ("link,l", po::value<std::vector<std::string>>(&linkArgs),
+                    "set the IP address and port for consecutive links (can be used multiple times).\n"
+                    "Format: [IP address]:[Port number]")
+                    ("log_file,f", po::value<std::string>(&logFilename)->default_value(""),
+                    "specify file path for the logs. If unspecified, logs get printed to stdout")
+                    ("timeout,t", po::value<int>(&timeout)->default_value(2000),"Set timeout [ms]");
 
   // Parse the provided arguments
   po::variables_map vm;
@@ -51,6 +55,8 @@ AlfConfig::AlfConfig(int argc, const char** argv)
 
   for (const auto& arg : linkArgs)
     links.push_back(arg);
+  
+  verbose = vm.count("verbose");
 
   std::cout << static_cast<std::string>(*this) << "\n";
 }

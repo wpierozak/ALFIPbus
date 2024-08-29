@@ -25,6 +25,7 @@ struct AlfConfig {
   std::string logFilename;
   int timeout;
   std::vector<Link> links;
+  bool verbose;
 
   AlfConfig(int argc, const char** argv);
 

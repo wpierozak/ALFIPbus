@@ -14,7 +14,7 @@ add_executable(AlfIPbus src/AlfIPbus.cxx src/main.cxx src/AlfConfig.cxx)
 # Include directories
 target_include_directories(AlfIPbus PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc)
 
-# set(CMAKE_BUILD_TYPE "Release")
+set(CMAKE_BUILD_TYPE "Release")
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug")
 endif()
