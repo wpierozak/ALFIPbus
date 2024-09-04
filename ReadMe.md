@@ -12,3 +12,5 @@ cmake3 --build .
 - `name/n [name]`- ALFIPbus server name
 - `log_file/f [filename]` (`f`)- Log file name (if not specified, logs will be sent to std::cout)
 - `link/l [IP address]:[remote port]` (`l`) - set the IP address and port for consecutive links (can be used multiple times)
+- `t [time in miliseconds]` - IPbus request timeout (in miliseconds) 
+- `v` - verbose
