@@ -1,11 +1,13 @@
 from ubuntu
 RUN apt-get update -y
-RUN apt-get install -y cmake git gcc wget unzip g++
+RUN apt-get install -y cmake git gcc wget unzip g++ systemctl
 
 RUN wget https://dim.web.cern.ch/dim_v20r37.zip
 RUN unzip -a dim_v20r37.zip
 RUN mkdir /usr/local/include/dim
-RUN cp dim_v20r37/linux/* /usr/local/lib/
+RUN cp dim_v20r37/linux/*.so /usr/local/lib/
+RUN cp dim_v20r37/linux/*.a /usr/local/lib/
+RUN cp dim_v20r37/linux/dns /usr/local/bin/
 RUN cp dim_v20r37/dim/* /usr/local/include/dim
 RUN rm -rf dim_v20r37
 
@@ -29,3 +31,8 @@ RUN mkdir build
 RUN git submodule update --init --recursive
 RUN cmake -S . -B build/
 RUN cmake --build build
+
+RUN cp bin/AlfIPbus /usr/local/bin
+
+WORKDIR /
+RUN rm -rf /home/AlfIpbus
