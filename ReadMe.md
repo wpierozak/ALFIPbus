@@ -1,6 +1,4 @@
-# IPbus
-
-## Introduction
+## Overview
 The IPbus protocol facilitates packet-based communication between devices using a master-slave architecture. To minimize network communication overhead, IPbus packets are typically transported within UDP datagrams. Facilitating IPbus communication requires three key components:
 - Master implementation
 - Slave implementation
@@ -21,7 +19,6 @@ Full IPbus documentation is provided  [here](https://ipbus.web.cern.ch/doc/user/
 ### Step-by-step
 ```
 mkdir build
-cd build
 cmake3 ..
 cmake3 --build .
 ```
