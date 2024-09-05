@@ -4,10 +4,10 @@ AlfIPbus was developed as a temporary Detector Control System (DCS) solution for
 
 ## Building
 ```
-git submodule update --recursive --init
-mkdir build
-cmake3 -S . -B build
-cmake3 --build build
+git submodule update --recursive --init \
+mkdir build                             \
+cmake3 -S . -B build                    \
+cmake3 --build build                    \
 ```
 
 ## Steps to Configure and Enable alfipbus service
