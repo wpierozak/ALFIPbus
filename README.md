@@ -17,7 +17,7 @@ IpbusSWT project is an integral part of the AlfIPbus project.
 git submodule update --recursive --remote   \
 mkdir build                                 \
 cmake3 -S . -B build                        \
-cmake3 --build build                        \
+cmake3 --build build                        
 ```
 
 ## Example
