@@ -1,15 +1,13 @@
 [Unit]
-Description=ALFIPbus
-After=network.target
+Description=ALF-IPbus
+After=network-online.target
 [Install]
 WantedBy=multi-user.target
 [Service]
 Type=simple
-EnvironmentFile=/etc/sysconfig/alfipbus
-ExecStart=/usr/local/bin/AlfIPbus -n ${NAME} -l ${DEVICE_ADDRESS} -t ${TIMEOUT} -f ${LOG_FILE}
-WorkingDirectory=/home/ALFIPbus
+ExecStart=/usr/local/bin/alf-ipbus-start.sh
 Restart=always
 RestartSec=5
-StandardOutput=syslog
+StandardOutput=null
 StandardError=syslog
 SyslogIdentifier=%n
