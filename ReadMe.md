@@ -34,6 +34,8 @@ cmake3 --build build                    \
     - User: Specify the user that should run the service by setting the User option.
     - WorkingDirectory: Set the directory where the log file will be created by setting the WorkingDirectory option.
 
+    **AlfIPbus** executable file is expected to be located within /usr/local/bin. You may move it there or specify another **ExecStart** path.
+
 3. **Enable the Service**
     Once the service configuration is complete, enable the service to start at boot with this command:
     ```
