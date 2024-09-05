@@ -6,8 +6,8 @@ WantedBy=multi-user.target
 [Service]
 Type=exec
 ExecStart=/usr/local/bin/AlfIPbus -n ${NAME} -l ${DEVICE_ADDRESS} -t ${TIMEOUT} -f ${LOG_FILE} ${FLAGS}
-Restart=no
-RestartSec=5
-StandardOutput=null
+Restart=on-failure
+RestartSec=10
+StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=%n
