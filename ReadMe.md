@@ -44,17 +44,6 @@ cmake3 --build .
     sudo systemctl daemon-reload
     ```
 
-[Service]
-User=flp
-WorkingDirectory=/home/flp/ALFIPbus/log
-Environment=NAME=ALF
-Environment=DEVICE_ADDRESS=172.20.75.175:50001
-Environment=TIMEOUT=1000
-Environment=LOG_FILE=alf-service
-Environment=FLAGS=-v
-Environment=DIM_DNS_NODE=localhost
-```
-
 ## Command line options
 
 - `name/n [name]`- ALFIPbus server name
