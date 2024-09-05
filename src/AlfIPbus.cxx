@@ -18,27 +18,27 @@ void AlfIPbus::initLinks()
 {
   // Only one link is supported currently
   
-  //for (size_t i = 0; i < m_cfg.links.size(); i++) {
-  std::string serviceName = m_cfg.name + "/SERIAL_0/LINK_" + std::to_string(0) + "/SWT_SEQUENCE";
-  BOOST_LOG_TRIVIAL(debug) << "Creating service " + serviceName;
-  m_swtLinks.emplace_back(serviceName, m_ioContext, m_cfg.links[0].address, m_cfg.links[0].rport, 0);
-  m_swtLinks.back().setTimeout(boost::posix_time::milliseconds(m_cfg.timeout));
-  BOOST_LOG_TRIVIAL(info) << "Created service " + serviceName;
-  //}
+  for (size_t i = 0; i < m_cfg.links.size(); i++) {
+    std::string serviceName = m_cfg.name + "/SERIAL_0/LINK_" + std::to_string(i) + "/SWT_SEQUENCE";
+    BOOST_LOG_TRIVIAL(debug) << "Creating service " + serviceName;
+    m_swtLinks.emplace_back(serviceName, m_ioContext, m_cfg.links[i].address, m_cfg.links[i].rport, 0);
+    m_swtLinks.back().setTimeout(boost::posix_time::milliseconds(m_cfg.timeout));
+    BOOST_LOG_TRIVIAL(info) << "Created service " + serviceName;
+  }
 }
 
 void AlfIPbus::startServer()
 {
-  if(m_swtLinks.begin()->isIPbusOK() == false)
+  auto link = m_swtLinks.begin();
+  for(size_t i = 0; i < m_swtLinks.size(); i++)
   {
-    m_swtLinks.erase(m_swtLinks.begin());
+    std::advance(link, 1);
+    if(link->isIPbusOK() == false)
+    {
+       BOOST_LOG_TRIVIAL(fatal) << "Link " << i << " is down - restarting";
+       exit(-1);
+    }
   }
-
-  if(m_swtLinks.size() == 0)
-  {
-     BOOST_LOG_TRIVIAL(fatal) << "All links are down - aborting";
-    exit(-1);
-  } 
 
   BOOST_LOG_TRIVIAL(info) << "Running server...";
   s_running = true;
