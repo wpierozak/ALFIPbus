@@ -40,6 +40,7 @@ void AlfIPbus::startServer()
     exit(-1);
   } 
 
+  BOOST_LOG_TRIVIAL(info) << "Running server...";
   s_running = true;
   DimServer::start(m_cfg.name.c_str());
   mainLoop();
