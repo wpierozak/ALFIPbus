@@ -7,7 +7,7 @@ cmake3 ..
 cmake3 --build .
 ```
 
-## Steps to Configure and Enable `alfipbus.service`
+## Steps to Configure and Enable alfipbus service
 
 1. **Copy the Service File**  
    First, copy the `alfipbus.service` file to the systemd unit file directory (the default is `/etc/systemd/system`). You can do this with the following command:
