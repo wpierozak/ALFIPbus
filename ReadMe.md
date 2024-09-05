@@ -2,18 +2,15 @@
 ```
 git submodule update --recursive --init
 mkdir build
-cd build
-cmake3 ..
-cmake3 --build .
+cmake3 -S . -B build
+cmake3 --build build
 ```
 
 ## Steps to Configure and Enable alfipbus service
 
 1. **Copy the Service File**  
    First, copy the `alfipbus.service` file to the systemd unit file directory (the default is `/etc/systemd/system`). You can do this with the following command:
-   
     ```  
-    bash
     sudo cp alfipbus.service /etc/systemd/system/
     ```
 2. **Edit the Service Configuration**
