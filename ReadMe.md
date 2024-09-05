@@ -18,8 +18,8 @@ Full IPbus documentation is provided  [here](https://ipbus.web.cern.ch/doc/user/
 
 ### Step-by-step
 ```
-mkdir build
-cmake3 ..
+mkdir build         \
+cmake3 ..           \
 cmake3 --build .
 ```
 
