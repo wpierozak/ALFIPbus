@@ -1,12 +1,12 @@
 [Unit]
-Description=ALF-IPbus
-After=network-online.target
+Description=ALFIPbus
+After=network.target
 [Install]
 WantedBy=multi-user.target
 [Service]
-Type=simple
-ExecStart=/usr/local/bin/alf-ipbus-start.sh
-Restart=always
+Type=exec
+ExecStart=/usr/local/bin/AlfIPbus -n ${NAME} -l ${DEVICE_ADDRESS} -t ${TIMEOUT} -f ${LOG_FILE} ${FLAGS}
+Restart=no
 RestartSec=5
 StandardOutput=null
 StandardError=syslog
