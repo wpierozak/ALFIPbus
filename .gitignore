@@ -9,6 +9,4 @@ build/
 log/*
 !log/.gitkeep
 
-start_mock.sh
-
 Makefile
