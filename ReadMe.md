@@ -54,3 +54,6 @@ cmake3 --build build                    \
 - `link/l [IP address]:[remote port]` (`l`) - set the IP address and port for consecutive links (can be used multiple times)
 - `t [time in miliseconds]` - IPbus request timeout (in miliseconds) 
 - `v` - verbose
+
+## Testing
+Testing framework was provided by [frun36](https://github.com/frun36) and is available [here](https://github.com/frun36/alf-ipbus-tester).
