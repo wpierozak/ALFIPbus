@@ -32,13 +32,3 @@ RUN git submodule update --init --recursive
 RUN cmake -S . -B build/
 RUN cmake --build build
 
-RUN cp bin/AlfIPbus /usr/local/bin
-
-WORKDIR /
-RUN rm -rf /home/AlfIpbus
-
-RUN mkdir /var/log/alfipbus
-COPY ./alfipbus.service /etc/systemd/system/alfipbus.service
-COPY /alfipbus /etc/sysconfig/alfipbus
-
-CMD systemctl start alfipbus
