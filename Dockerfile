@@ -22,7 +22,7 @@ RUN ./b2 install
 WORKDIR /
 RUN rm -rf boost_1_83_0
 
-WORKDIR /home
+WORKDIR /
 
 RUN git clone https://github.com/VictorPierozak/ALFIPbus.git
 
