@@ -4,9 +4,6 @@ bin
 lib
 !lib/.gitkeep
 
-build/
-!build/.gitkeep
-
 log
 !log/.gitkeep
 
