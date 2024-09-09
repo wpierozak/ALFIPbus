@@ -40,9 +40,9 @@ void AlfIPbus::startServer()
     }
   }
 
-  BOOST_LOG_TRIVIAL(info) << "Running server...";
   s_running = true;
   DimServer::start(m_cfg.name.c_str());
+  BOOST_LOG_TRIVIAL(info) << "Running server...";
   mainLoop();
 }
 
