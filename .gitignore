@@ -1,12 +1,13 @@
-bin/*
+bin
 !bin/.gitkeep
 
-lib/*
+lib
 !lib/.gitkeep
 
 build/
+!build/.gitkeep
 
-log/*
+log
 !log/.gitkeep
 
 Makefile
