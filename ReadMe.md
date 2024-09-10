@@ -2,6 +2,32 @@
 
 AlfIPbus was developed as a temporary Detector Control System (DCS) solution for the Fast Interaction Trigger (FIT) detector in the ALICE experiment. Its primary purpose is to serve as a software translator between the IPbus protocol, used in the previous DCS setup, and the new custom SWT FIT protocol in the updated system. AlfIPbus provides a fast and reliable translation mechanism and is fully compatible with FRED software.
 
+**Current version is not tested for multiple link within one AlfIPbus (as it is not used within FIT)**
+
+## Benchmarks
+
+### Request Execution Time vs Request Size
+Each request consists of a read operation, and the execution time recorded for each request size represents the average of 100 measurements. This ensures that the results reflect consistent performance for each data size.
+
+| Size (SWT frames) | Request Execution Time - new (µs) |
+|------------------|----------------------------------|
+| 1                | 400.47                           |
+| 2                | 382.26                           |
+| 4                | 416.19                           |
+| 8                | 425.31                           |
+| 16               | 468.96                           |
+| 32               | 664.40                           |
+| 64               | 995.70                           |
+| 128              | 1603.21                          |
+| 256              | 3237.19                          |
+| 512              | 5887.88                          |
+| 1024             | 11315.43                         |
+| 2048             | 22566.75                         |
+| 4096             | 40398.21                         |
+| 8192             | 73048.48                         |
+| 16384            | 280668.40                        |
+
+
 ## Building
 ### Dependencies
 - BOOST 1.83.0
