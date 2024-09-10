@@ -1,7 +1,0 @@
-[2024-Sep-09 21:18:43.222757] [debug] Debug log mode enabled
-[2024-Sep-09 21:18:43.225835] [info] Running mock for test suite "Mock tests"
-[2024-Sep-09 21:18:43.226327] [debug] Attempting to open socket...
-[2024-Sep-09 21:18:43.226433] [info] Socket at 50001 successfully opened
-[2024-Sep-09 21:18:43.226485] [debug] Initalizing async receiving
-[2024-Sep-09 21:18:43.329330] [debug] Processing 64 bytes...
-[2024-Sep-09 21:18:43.329592] [debug] Initalizing async receiving

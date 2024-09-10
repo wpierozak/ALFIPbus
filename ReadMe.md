@@ -57,3 +57,9 @@ cmake3 --build build                    \
 
 ## Testing
 Testing framework was provided by [frun36](https://github.com/frun36) and is available [here](https://github.com/frun36/alf-ipbus-tester).
+
+### In-container-test
+The test for developers is available within the `test/in-container-test` directory and can be executed using the `in-container-test.sh` script. Running this test requires the DIM DNS server to be running on your machine. The script builds the AlfIPbus within a container and subsequently builds a container for the testing framework.
+
+The test is conducted using three containers: ALF, Mock, and Generator. The configuration for the test is stored in `test/in-container-test/common-storage/test-configuration.sh`. Logs from all three containers are output to the `test/in-container-test/common-storage/output` directory. If all tests pass, a message will be displayed at the end of the Generator log file.
+

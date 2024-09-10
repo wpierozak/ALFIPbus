@@ -36,4 +36,3 @@ RUN cp bin/AlfIPbus /usr/local/bin
 
 RUN export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib"
 
-ENTRYPOINT [ "/bin/bash" ]
