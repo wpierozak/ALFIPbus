@@ -9,6 +9,7 @@ log
 
 build/
 
-test/incontainer/common-storage/output
+test/incontainer/common-storage/output/*
+test/incontainer/common-storage/output/.gitkeep
 
 Makefile
