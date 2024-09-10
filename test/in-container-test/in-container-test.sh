@@ -33,7 +33,9 @@ docker exec -d -e LD_LIBRARY_PATH="/usr/lib" -e DIM_HOST_NODE=172.25.75.12 -e DI
 
 # Run generator
 docker run -i -d --name tester-generator --rm --mount type=bind,source=./common-storage,target=/common-storage --network alfipbus-tester-network --ip 172.25.75.11 --add-host host.docker.internal:host-gateway alfipbus-tester 
-docker exec -d -e LD_LIBRARY_PATH="/usr/lib" -e DIM_HOST_NODE=172.25.75.12 -e DIM_DNS_NODE=host.docker.internal tester-generator /bin/bash -c "/home/alf-ipbus-tester/build/bin/generator -c /common-storage/test-configuration.toml -f /common-storage/output/generator-log -v"
+docker exec -e LD_LIBRARY_PATH="/usr/lib" -e DIM_HOST_NODE=172.25.75.12 -e DIM_DNS_NODE=host.docker.internal tester-generator /bin/bash -c "/home/alf-ipbus-tester/build/bin/generator -c /common-storage/test-configuration.toml -f /common-storage/output/generator-log -v"
+
+cat common-storage/output/generator-log
 
 # Stop generator
 docker stop tester-generator
