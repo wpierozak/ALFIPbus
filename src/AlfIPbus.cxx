@@ -32,12 +32,12 @@ void AlfIPbus::startServer()
   auto link = m_swtLinks.begin();
   for(size_t i = 0; i < m_swtLinks.size(); i++)
   {
-    std::advance(link, 1);
     if(link->isIPbusOK() == false)
     {
        BOOST_LOG_TRIVIAL(fatal) << "Link " << i << " is down - restarting";
        exit(-1);
     }
+    std::advance(link, 1);
   }
 
   s_running = true;
