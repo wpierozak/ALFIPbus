@@ -7,4 +7,8 @@ lib
 log
 !log/.gitkeep
 
+build/
+
+test/incontainer/common-storage/output
+
 Makefile

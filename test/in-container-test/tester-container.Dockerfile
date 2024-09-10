@@ -23,16 +23,16 @@ RUN ./b2 install
 WORKDIR /
 RUN rm -rf boost_1_83_0
 
-WORKDIR /
+WORKDIR /home
 
-RUN git clone https://github.com/VictorPierozak/ALFIPbus.git
+RUN git clone https://github.com/frun36/alf-ipbus-tester.git
 
-WORKDIR ALFIPbus
-RUN mkdir build
+WORKDIR /home/alf-ipbus-tester
 RUN git submodule update --init --recursive
+RUN mkdir build
 RUN cmake -S . -B build/
 RUN cmake --build build
-RUN cp bin/AlfIPbus /usr/local/bin
+WORKDIR /home/alf-ipbus/tester/build
 
 RUN export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib"
 
