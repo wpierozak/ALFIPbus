@@ -8,6 +8,7 @@ log
 !log/.gitkeep
 
 build/
+Testing
 
 test/incontainer/common-storage/output/*
 !test/incontainer/common-storage/output/.gitkeep
