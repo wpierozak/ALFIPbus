@@ -21,7 +21,11 @@ jobs:
       uses: docker/setup-buildx-action@v2
 
     - name: Set up DIM
-      run:  source ./test/dim_minmal/install.sh
+      run:  |
+        cp test/dim_minimal/bin/* /usr/local/bin
+        cp test/dim_minimal/lib/* /usr/local/lib
+        export LD_LIBRARY_PATH=/usr/local/lib
+        export PATH=/usr/local/bin
 
     - name: Pull ENV image
       run: docker pull wpierozak/alf-ipbus-env
