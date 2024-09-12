@@ -1,0 +1,60 @@
+name: CMake Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Cache Docker layers
+      id: cache-docker-layers
+      uses: actions/cache@v3
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-docker-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-docker-
+
+    - name: Build Docker image
+      run: |
+        docker build \
+          --cache-from=type=local,src=/tmp/.buildx-cache \
+          --cache-to=type=local,dest=/tmp/.buildx-cache,mode=max \
+          -t my-test-image .
+
+    - name: Start Docker service
+      run: sudo systemctl start docker
+
+    - name: Install DIM
+      run: |
+        wget https://dim.web.cern.ch/dim_v20r37.zip
+        unzip dim_v20r37.zip
+        mkdir -p /usr/local/include/dim
+        sudo cp dim_v20r37/linux/*.so /usr/local/lib/
+        sudo cp dim_v20r37/linux/*.a /usr/local/lib/
+        sudo cp dim_v20r37/linux/dns /usr/local/bin/
+        sudo cp dim_v20r37/dim/* /usr/local/include/dim
+        sudo chmod +x /usr/local/bin/dns
+        rm -rf dim_v20r37
+
+    - name: Configure CMake
+      run: |
+        mkdir -p build
+        cmake -S . -B build
+        
+    - name: Run tests
+      run: ctest --test-dir build --output-on-failure --stop-on-failure
