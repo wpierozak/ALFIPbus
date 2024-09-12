@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
+enable_testing()
 
 # Project name and version
 project(AlfIPbus VERSION 1.0 LANGUAGES CXX)
@@ -31,5 +32,9 @@ endif()
 # Include GNUInstallDirs to use standard directory variables
 include(GNUInstallDirs)
 
-
 target_link_libraries(AlfIPbus ipbus_swt DimRpcParallel dim pthread Boost::system Boost::log_setup Boost::log Boost::program_options)
+
+add_test(NAME in-container-test COMMAND ./test/in-container-test/in-container-test.sh)
+set_tests_properties(in-container-test PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+set_tests_properties(in-container-test PROPERTIES
+    ENVIRONMENT "PATH=/usr/local/bin:${PATH};LD_LIBRARY_PATH=/usr/local/lib")
