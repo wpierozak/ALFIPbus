@@ -37,7 +37,7 @@ jobs:
       run: rm -f ./test/in-container-test/common-storage/output/*-log
 
     - name: Build Docker image (alf-ipbus-bldr) without cache
-      run: docker build --no-cache -f BLDR.Dockerfile -t alf-ipbus-bldr .
+      run: docker build --no-cache -f BLDR_WORKFLOW.Dockerfile -t alf-ipbus-bldr .
 
     - name: Build Docker image (alfipbus) without cache
       run: docker build --no-cache -f ./test/in-container-test/alf-run.Dockerfile -t alfipbus .
@@ -46,7 +46,7 @@ jobs:
       run: docker build -f ./test/in-container-test/tester.Dockerfile -t alfipbus-tester .
 
     - name: Set DIM_HOST_NODE environment variable
-      run: echo "DIM_HOST_NODE=172.25.75.12" >> $GITHUB_ENV
+      run: export DIM_HOST_NODE=172.25.75.12; export DIM_DNS_NODE=localhost
 
     - name: Prepare Docker network
       run: |
