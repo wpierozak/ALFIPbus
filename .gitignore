@@ -10,7 +10,7 @@ log
 build/
 Testing
 
-test/incontainer/common-storage/output/*
-!test/incontainer/common-storage/output/.gitkeep
+test/in-container-test/common-storage/output/*-log
+!test/in-container-test/common-storage/output/.gitkeep
 
 Makefile
