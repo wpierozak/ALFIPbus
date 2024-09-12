@@ -20,21 +20,8 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
 
-    - name: Cache Docker layers
-      id: cache-docker-layers
-      uses: actions/cache@v3
-      with:
-        path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-docker-${{ github.sha }}
-        restore-keys: |
-          ${{ runner.os }}-docker-
-
-    - name: Build Docker image
-      run: |
-        docker build \
-          --cache-from=type=local,src=/tmp/.buildx-cache \
-          --cache-to=type=local,dest=/tmp/.buildx-cache,mode=max \
-          -t my-test-image .
+    - name: Pull ENV image
+      run: docker pull wpierozak/alf-ipbus:env
 
     - name: Start Docker service
       run: sudo systemctl start docker
@@ -50,11 +37,71 @@ jobs:
         sudo cp dim_v20r37/dim/* /usr/local/include/dim
         sudo chmod +x /usr/local/bin/dns
         rm -rf dim_v20r37
-
-    - name: Configure CMake
-      run: |
-        mkdir -p build
-        cmake -S . -B build
         
-    - name: Run tests
-      run: ctest --test-dir build --output-on-failure --stop-on-failure
+    - name: Export library path and start dns
+      run: |
+        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/
+        dns &
+
+    - name: Clear previous logs
+      run: rm -f ./test/in-container-test/common-storage/output/*-log
+
+    - name: Build Docker image (alf-ipbus-bldr) without cache
+      run: docker build --no-cache -f BLDR.Dockerfile -t alf-ipbus-bldr .
+
+    - name: Build Docker image (alfipbus) without cache
+      run: docker build --no-cache -f ./test/in-container-test/alf-run.Dockerfile -t alfipbus .
+
+    - name: Build Docker image (alfipbus-tester)
+      run: docker build -f ./test/in-container-test/tester.Dockerfile -t alfipbus-tester .
+
+    - name: Set DIM_HOST_NODE environment variable
+      run: echo "DIM_HOST_NODE=172.25.75.12" >> $GITHUB_ENV
+
+    - name: Prepare Docker network
+      run: |
+        docker network inspect alfipbus-tester-network >/dev/null 2>&1 || \
+        docker network create --driver=bridge --subnet=172.25.75.0/16 alfipbus-tester-network
+
+    - name: Run Mock container
+      run: |
+        docker run -i -d --name tester-mock --rm \
+          --mount type=bind,source=$(pwd)/test/in-container-test/common-storage,target=/common-storage \
+          --network alfipbus-tester-network \
+          --add-host host.docker.internal:host-gateway \
+          --ip 172.25.75.10 alfipbus-tester
+
+        docker exec -d -e LD_LIBRARY_PATH="/usr/lib" tester-mock /bin/bash -c \
+          "/alf-ipbus-tester/build/bin/mock -c /common-storage/test-configuration.toml -f /common-storage/output/mock-log -v"
+
+    - name: Run ALF container
+      run: |
+        docker run -i -d --name tester-alf --rm \
+          --mount type=bind,source=$(pwd)/test/in-container-test/common-storage,target=/common-storage \
+          --network alfipbus-tester-network \
+          --ip 172.25.75.12 \
+          --add-host host.docker.internal:host-gateway alfipbus
+
+        docker exec -d -e LD_LIBRARY_PATH="/usr/lib" -e DIM_HOST_NODE=172.25.75.12 -e DIM_DNS_NODE=host.docker.internal tester-alf /bin/bash -c \
+          "AlfIPbus -n ALF -l 172.25.75.10:50001 -f /common-storage/output/alf-log -t 1000 -v"
+
+    - name: Run Generator container
+      run: |
+        docker run -i -d --name tester-generator --rm \
+          --mount type=bind,source=$(pwd)/test/in-container-test/common-storage,target=/common-storage \
+          --network alfipbus-tester-network \
+          --ip 172.25.75.11 \
+          --add-host host.docker.internal:host-gateway alfipbus-tester
+
+        docker exec -e LD_LIBRARY_PATH="/usr/lib" -e DIM_HOST_NODE=172.25.75.12 -e DIM_DNS_NODE=host.docker.internal tester-generator /bin/bash -c \
+          "/alf-ipbus-tester/build/bin/generator -c /common-storage/test-configuration.toml -f /common-storage/output/generator-log -v"
+
+    - name: Output Generator log
+      run: cat ./test/in-container-test/common-storage/output/generator-log
+
+    - name: Stop containers
+      run: |
+        echo Stopping containers
+        docker stop tester-generator
+        docker stop tester-alf
+        docker stop tester-mock
