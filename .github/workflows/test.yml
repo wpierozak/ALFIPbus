@@ -22,8 +22,8 @@ jobs:
 
     - name: Set up DIM
       run:  |
-        cp ./test/dim-minimal/bin/* /usr/local/bin
-        cp ./test/dim-minimal/lib/* /usr/local/lib
+        sudo cp ./test/dim-minimal/bin/* /usr/local/bin
+        sudo cp ./test/dim-minimal/lib/* /usr/local/lib
         export LD_LIBRARY_PATH=/usr/local/lib
         export PATH=/usr/local/bin
 
