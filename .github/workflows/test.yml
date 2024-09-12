@@ -51,7 +51,7 @@ jobs:
     - name: Prepare Docker network
       run: |
         docker network inspect alfipbus-tester-network >/dev/null 2>&1 || \
-        docker network create --driver=bridge --subnet=172.25.75.0/16 alfipbus-tester-network
+        docker network create --driver=bridge --subnet=172.25.0.0/16 alfipbus-tester-network
 
     - name: Run Mock container
       run: |
