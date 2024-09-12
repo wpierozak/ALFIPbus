@@ -43,7 +43,7 @@ jobs:
       run: docker build --no-cache -f ./test/in-container-test/alf-run.Dockerfile -t alfipbus .
 
     - name: Build Docker image (alfipbus-tester)
-      run: docker build -f ./test/in-container-test/tester.Dockerfile -t alfipbus-tester .
+      run: docker build -f ./test/in-container-test/tester_WORKFLOW.Dockerfile -t alfipbus-tester .
 
     - name: Set DIM_HOST_NODE environment variable
       run: export DIM_HOST_NODE=172.25.75.12; export DIM_DNS_NODE=localhost
