@@ -11,7 +11,7 @@ on:
 jobs:
   test:
 
-    runs-on: wpierozak/alf-ipbus-env
+    runs-on: ubuntu:latest
 
     steps:
     - name: Checkout source code
@@ -19,6 +19,9 @@ jobs:
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
+
+    - name: Set up DIM
+      run:  source ./test/dim_minmal/install.sh
 
     - name: Pull ENV image
       run: docker pull wpierozak/alf-ipbus-env
