@@ -21,7 +21,7 @@ jobs:
       uses: docker/setup-buildx-action@v2
 
     - name: Pull ENV image
-      run: docker pull wpierozak/alf-ipbus:env
+      run: docker pull wpierozak/alf-ipbus-env
 
     - name: Start Docker service
       run: sudo systemctl start docker
