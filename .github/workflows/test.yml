@@ -3,10 +3,10 @@ name: CMake Test
 on:
   push:
     branches:
-      - workflow-setup
+      - master
   pull_request:
     branches:
-      - workflow-setup
+      - master
 
 jobs:
   test:
