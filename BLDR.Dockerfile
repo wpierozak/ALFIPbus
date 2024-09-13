@@ -1,4 +1,4 @@
-from alf-ipbus-env
+from wpierozak/alf-ipbus-env
 
 WORKDIR /
 

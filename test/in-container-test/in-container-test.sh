@@ -5,25 +5,23 @@ print_failure() {
     exit 1
 }
 
-# Start DNS server in the background
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/
 dns&
 
 # Clear previous output logs
-rm -f ./test/in-container-test/common-storage/output/*-log 
+rm -f $(pwd)/test/in-container-test/common-storage/output/*-log 
 
 # Build docker images
-docker build -f ENV.Dockerfile -t alf-ipbus-env .
-if [ $? -ne 0 ]; then
-    print_failure "alfipbus build"
-fi
+#docker build -f ENV.Dockerfile -t alf-ipbus-env .
+#if [ $? -ne 0 ]; then
+#    print_failure "alfipbus build"
+#fi
 
 docker build --no-cache -f BLDR.Dockerfile -t alf-ipbus-bldr .
 if [ $? -ne 0 ]; then
     print_failure "alfipbus build"
 fi
 
-docker build --no-cache -f  ./test/in-container-test/alf-run.Dockerfile -t alfipbus .
+docker build --no-cache -f  $(pwd)/test/in-container-test/alf-run.Dockerfile -t alfipbus .
 if [ $? -ne 0 ]; then
     print_failure "alfipbus build"
 fi
@@ -42,7 +40,7 @@ docker network create --driver=bridge --subnet=172.25.75.0/16 alfipbus-tester-ne
 
 # Run Mock container
 docker run -i -d --name tester-mock --rm \
-    --mount type=bind,source=./test/in-container-test/common-storage,target=/common-storage \
+    --mount type=bind,source=$(pwd)/test/in-container-test/common-storage,target=/common-storage \
     --network alfipbus-tester-network \
     --add-host host.docker.internal:host-gateway \
     --ip 172.25.75.10 alfipbus-tester
@@ -52,7 +50,7 @@ docker exec -d -e LD_LIBRARY_PATH="/usr/lib" tester-mock /bin/bash -c \
 
 # Run ALF container
 docker run -i -d --name tester-alf --rm \
-    --mount type=bind,source=./test/in-container-test/common-storage,target=/common-storage \
+    --mount type=bind,source=$(pwd)/test/in-container-test/common-storage,target=/common-storage \
     --network alfipbus-tester-network \
     --ip 172.25.75.12 \
     --add-host host.docker.internal:host-gateway alfipbus
@@ -62,7 +60,7 @@ docker exec -d -e LD_LIBRARY_PATH="/usr/lib" -e DIM_HOST_NODE=172.25.75.12 -e DI
 
 # Run Generator container
 docker run -i -d --name tester-generator --rm \
-    --mount type=bind,source=./test/in-container-test/common-storage,target=/common-storage \
+    --mount type=bind,source=$(pwd)/test/in-container-test/common-storage,target=/common-storage \
     --network alfipbus-tester-network \
     --ip 172.25.75.11 \
     --add-host host.docker.internal:host-gateway alfipbus-tester 
@@ -72,6 +70,13 @@ docker exec -e LD_LIBRARY_PATH="/usr/lib" -e DIM_HOST_NODE=172.25.75.12 -e DIM_D
 
 # Output the Generator log
 cat ./test/in-container-test/common-storage/output/generator-log
+
+if [ $EXIT_CODE -ne 0 ]; then
+          echo "Test failed: $EXIT_CODE"
+          cat $(pwd)/test/in-container-test/common-storage/output/generator-log
+        else
+          echo "All tests performed successfully"
+fi
 
 echo Stopping containers
 
