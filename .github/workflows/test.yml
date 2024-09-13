@@ -22,6 +22,7 @@ jobs:
 
     - name: Set up DIM
       run:  |
+        sudo chmod +x ${PWD}/test/dim-minimal/bin/dns
         export LD_LIBRARY_PATH=${PWD}/test/dim-minimal/lib:$LD_LIBRARY_PATH
         export PATH=${PWD}/test/dim-minimal/bin/:$PATH
         dns
