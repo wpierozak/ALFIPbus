@@ -24,7 +24,7 @@ jobs:
       run:  |
 
         wget https://dim.web.cern.ch/dim_v20r37.zip
-        unzip -a dim_v20r37.zip
+        sudo unzip -a dim_v20r37.zip
         mkdir /usr/local/include/dim
         sudo cp dim_v20r37/linux/*.so /usr/local/lib/
         sudo cp dim_v20r37/linux/*.a /usr/local/lib/
