@@ -27,6 +27,12 @@ jobs:
         export PATH=${PWD}/test/dim-minimal/bin/:$PATH
         dns&
         
-    - name: Run in-container-test
-      run: ./test/in-container-test/in-container-test.sh
+    - name: Build ALF
+      run: test/in-container-test/build-alf.sh
+    
+    - name: Build containers for testing framework
+      run: test/in-container-test/build-tester.sh
+    
+    - name: Run test in-container-test
+      run: test/in-container-test/run-test.sh
 
