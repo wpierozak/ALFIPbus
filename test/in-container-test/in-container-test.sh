@@ -5,8 +5,6 @@ print_failure() {
     exit 1
 }
 
-dns&
-
 # Clear previous output logs
 rm -f $(pwd)/test/in-container-test/common-storage/output/*-log 
 
