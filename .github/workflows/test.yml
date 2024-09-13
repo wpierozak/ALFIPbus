@@ -25,11 +25,6 @@ jobs:
         sudo chmod +x ${PWD}/test/dim-minimal/bin/dns
         export LD_LIBRARY_PATH=${PWD}/test/dim-minimal/lib:$LD_LIBRARY_PATH
         export PATH=${PWD}/test/dim-minimal/bin/:$PATH
-
-    - name: Configure CMake cache
-      run: |
-        mkdir build
-        cmake -S . -B build
         
     - name: Run in-container-test
       run: ./test/in-container-test/in-container-test.sh
