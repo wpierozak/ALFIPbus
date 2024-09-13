@@ -36,7 +36,7 @@ export DIM_HOST_NODE=172.25.75.12
 
 # Prepare Docker network
 docker network inspect alfipbus-tester-network >/dev/null 2>&1 || \
-docker network create --driver=bridge --subnet=172.25.75.0/8 alfipbus-tester-network
+docker network create --driver=bridge --subnet=172.25.75.0/24 alfipbus-tester-network
 
 # Run Mock container
 docker run -i -d --name tester-mock --rm \
