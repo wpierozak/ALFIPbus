@@ -10,7 +10,7 @@ on:
 
 jobs:
   test:
-
+    name: Test perofromed within containers
     runs-on: ubuntu-latest
 
     steps:
