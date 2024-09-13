@@ -3,10 +3,10 @@ name: CMake Test
 on:
   push:
     branches:
-      - master
+      - workflow-setup
   pull_request:
     branches:
-      - master
+      - workflow-setup
 
 jobs:
   test:
@@ -22,10 +22,18 @@ jobs:
 
     - name: Set up DIM
       run:  |
-        sudo cp ./test/dim-minimal/bin/* /usr/local/bin
-        sudo cp ./test/dim-minimal/lib/* /usr/local/lib
-        export LD_LIBRARY_PATH=/usr/local/lib
-        export PATH=/usr/local/bin
+
+        wget https://dim.web.cern.ch/dim_v20r37.zip
+        unzip -a dim_v20r37.zip
+        mkdir /usr/local/include/dim
+        sudo cp dim_v20r37/linux/*.so /usr/local/lib/
+        sudo cp dim_v20r37/linux/*.a /usr/local/lib/
+        sudo cp dim_v20r37/linux/dns /usr/local/bin/
+        sudo cp dim_v20r37/dim/* /usr/local/include/dim
+        chmod +x /usr/local/bin/dns
+        rm -rf dim_v20r37
+
+        dns&
 
     - name: Pull ENV image
       run: docker pull wpierozak/alf-ipbus-env
