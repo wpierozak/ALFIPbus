@@ -1,4 +1,4 @@
-#!bin/bash
+#!/bin/bash
 
 # Set DIM_HOST_NODE environment variable
 export DIM_HOST_NODE=172.25.75.12
