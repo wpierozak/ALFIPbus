@@ -10,7 +10,7 @@ on:
 
 jobs:
   test:
-    name: Test perofromed within containers
+    name: Test
     runs-on: ubuntu-latest
 
     steps:
@@ -28,11 +28,17 @@ jobs:
         dns&
         
     - name: Build ALF
-      run: test/in-container-test/build-alf.sh
+      run: |
+        sudo chmod +x test/in-container-test/build-alf.sh
+        test/in-container-test/build-alf.sh
     
     - name: Build containers for testing framework
-      run: test/in-container-test/build-tester.sh
+      run: |
+        sudo chmod +x test/in-container-test/build-tester.sh
+        test/in-container-test/build-tester.sh
     
     - name: Run test in-container-test
-      run: test/in-container-test/run-test.sh
+      run: |
+        sudo chmod +x test/in-container-test/run-test.sh
+        test/in-container-test/run-test.sh
 
