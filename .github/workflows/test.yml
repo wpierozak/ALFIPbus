@@ -22,10 +22,8 @@ jobs:
 
     - name: Set up DIM
       run:  |
-        sudo cp ./test/dim-minimal/bin/* /usr/local/bin
-        sudo cp ./test/dim-minimal/lib/* /usr/local/lib
-        export LD_LIBRARY_PATH=/usr/local/lib
-        export PATH=/usr/local/bin
+        export LD_LIBRARY_PATH=/test/dim-minimal/lib:$LD_LIBRARY_PATH
+        export PATH=/test/dim-minimal/bin/:$PATH
         dns
 
     - name: Pull ENV image
