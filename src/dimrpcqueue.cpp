@@ -56,7 +56,7 @@ void DimRpcQueue::processRequests()
             Request request;
 
             {
-                std::lock_guard<std::mutex>(this->accessMutex);
+                std::lock_guard<std::mutex> lock(this->accessMutex);
                 request = this->requests.front();
                 this->requests.pop_front();
             }
