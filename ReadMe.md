@@ -9,25 +9,24 @@ AlfIPbus was developed as a temporary Detector Control System (DCS) solution for
 ### Request Execution Time vs Request Size
 Each request consists of a read operation, and the execution time recorded for each request size represents the average of 100 measurements. This ensures that the results reflect consistent performance for each data size.
 
-| Size (SWT frames) | Request Execution Time (µs) |
-|------------------|----------------------------------|
-| 1                | 203.98                           |
-| 2                | 232.12                           |
-| 4                | 232.48                           |
-| 8                | 275.94                           |
-| 16               | 318.31                           |
-| 32               | 458.70                         |
-| 64               | 683.47                           |
-| 128              | 1088.61                          |
-| 256              | 2069.85                          |
-| 512              | 3577.77                          |
-| 1024             | 7292.00                         |
-| 2048             | 14477.00                         |
-| 4096             | 28393.39                         |
-| 8192             | 55849.51                         |
-| 16384            | 110797.40                        |
-| 32768            | 220195.37
-
+| Size (SWT frames) | Request Execution Time (µs) | Coefficient of Variation |
+|-------------------|-----------------------------|--------------------------|
+| 1                 | 203.98                      | 17.20%                   |
+| 2                 | 232.12                      | 18.65%                   |
+| 4                 | 232.48                      | 20.96%                   |
+| 8                 | 275.94                      | 15.69%                   |
+| 16                | 318.31                      | 15.50%                   |
+| 32                | 458.70                      | 11.00%                   |
+| 64                | 683.47                      | 8.71%                    |
+| 128               | 1088.61                     | 3.06%                    |
+| 256               | 2069.85                     | 4.46%                    |
+| 512               | 3577.77                     | 2.83%                    |
+| 1024              | 7292.00                     | 1.78%                    |
+| 2048              | 14477.00                    | 1.79%                    |
+| 4096              | 28393.39                    | 5.88%                    |
+| 8192              | 55849.51                    | 2.23%                    |
+| 16384             | 110797.40                   | 2.65%                    |
+| 32768             | 220195.37                   | 2.24%                    |
 
 ## Building
 ### Dependencies
