@@ -9,23 +9,24 @@ AlfIPbus was developed as a temporary Detector Control System (DCS) solution for
 ### Request Execution Time vs Request Size
 Each request consists of a read operation, and the execution time recorded for each request size represents the average of 100 measurements. This ensures that the results reflect consistent performance for each data size.
 
-| Size (SWT frames) | Request Execution Time - new (µs) |
+| Size (SWT frames) | Request Execution Time (µs) |
 |------------------|----------------------------------|
-| 1                | 400.47                           |
-| 2                | 382.26                           |
-| 4                | 416.19                           |
-| 8                | 425.31                           |
-| 16               | 468.96                           |
-| 32               | 664.40                           |
-| 64               | 995.70                           |
-| 128              | 1603.21                          |
-| 256              | 3237.19                          |
-| 512              | 5887.88                          |
-| 1024             | 11315.43                         |
-| 2048             | 22566.75                         |
-| 4096             | 40398.21                         |
-| 8192             | 73048.48                         |
-| 16384            | 280668.40                        |
+| 1                | 203.98                           |
+| 2                | 232.12                           |
+| 4                | 232.48                           |
+| 8                | 275.94                           |
+| 16               | 318.31                           |
+| 32               | 458.70                         |
+| 64               | 683.47                           |
+| 128              | 1088.61                          |
+| 256              | 2069.85                          |
+| 512              | 3577.77                          |
+| 1024             | 7292.00                         |
+| 2048             | 14477.00                         |
+| 4096             | 28393.39                         |
+| 8192             | 55849.51                         |
+| 16384            | 110797.40                        |
+| 32768            | 220195.37
 
 
 ## Building
