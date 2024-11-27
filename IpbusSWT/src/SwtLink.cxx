@@ -65,7 +65,7 @@ bool SwtLink::parseFrames(const char* request)
 
     size = end_ptr - beg_ptr;
 
-    if(strncmp(request + beg_ptr, "reset", size) == 0)
+    if(strncmp(request + beg_ptr, "sc_reset", size) == 0)
     {
 
     }
