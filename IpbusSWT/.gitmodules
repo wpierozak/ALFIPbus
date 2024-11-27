@@ -1,0 +1,3 @@
+[submodule "DimRpcParallel"]
+	path = DimRpcParallel
+	url = https://gitlab.cern.ch/alialfred/DimRpcParallel.git

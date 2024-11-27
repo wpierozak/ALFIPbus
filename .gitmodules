@@ -1,6 +1,7 @@
-[submodule "IpbusSWT"]
-	path = IpbusSWT
-	url = https://github.com/VictorPierozak/IpbusSWT.git
+[submodule "DimRpcParallel"]
+	path = IpbusSWT/DimRpcParallel
+	url = https://gitlab.cern.ch/alialfred/DimRpcParallel.git
+
 [submodule "InfoLogger"]
 	path = InfoLogger
 	url = https://github.com/AliceO2Group/InfoLogger.git
