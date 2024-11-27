@@ -1,6 +1,3 @@
-[submodule "IpbusSWT"]
-	path = IpbusSWT
-	url = https://github.com/VictorPierozak/IpbusSWT.git
 [submodule "InfoLogger"]
 	path = InfoLogger
 	url = https://github.com/AliceO2Group/InfoLogger.git

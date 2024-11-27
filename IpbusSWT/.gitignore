@@ -1,0 +1,10 @@
+build
+!build/.gitkeep
+
+bin
+!bin/.gitkeep
+
+lib
+!lib/.gitkeep
+
+Makefile
