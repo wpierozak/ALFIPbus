@@ -73,10 +73,14 @@ void init(std::string filename = "", bool verbose = false)
   if (filename != "") {
     auto fileLog = bl::add_file_log(bl::keywords::file_name = filename, bl::keywords::auto_flush = true, bl::keywords::open_mode = std::ios_base::app);
     fileLog->set_formatter(&non_coloring_formatter);
+    if(!verbose){
+      fileLog->set_filter(bl::trivial::severity >= bl::trivial::info);
+    }
   }
 
-  if(!verbose)
+  if(!verbose){
     consoleLog->set_filter(bl::trivial::severity >= bl::trivial::info);
+  }
 
   BOOST_LOG_TRIVIAL(debug) << "Debug log mode enabled";
 }

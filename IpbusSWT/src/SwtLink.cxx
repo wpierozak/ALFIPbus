@@ -9,7 +9,7 @@ namespace fit_swt
 
 void SwtLink::rpcHandler()
 {
-  BOOST_LOG_TRIVIAL(info) << "Received request";
+  BOOST_LOG_TRIVIAL(debug) << "Received request";
   processRequest(getString());
 }
 
@@ -198,7 +198,7 @@ bool SwtLink::interpretFrames()
 
 void SwtLink::sendResponse()
 {
-  BOOST_LOG_TRIVIAL(info) << "Request successfully processed - sending response";
+  BOOST_LOG_TRIVIAL(debug) << "Request successfully processed - sending response";
   m_fredResponse = "success\n" + m_fredResponse;
   setData(m_fredResponse.c_str());
 }
