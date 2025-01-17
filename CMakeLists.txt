@@ -38,3 +38,6 @@ add_test(NAME in-container-test COMMAND ./test/in-container-test/in-container-te
 set_tests_properties(in-container-test PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 set_tests_properties(in-container-test PROPERTIES
     ENVIRONMENT "PATH=/usr/local/bin:${PATH};LD_LIBRARY_PATH=/usr/local/lib")
+
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
