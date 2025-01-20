@@ -231,7 +231,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
     uint32_t offset = frame.data % ipbus::maxPacket;
 
     if(offset > 0){
-      uint32_t sizeA = (offset>255) ? ipbus::maxPacket/2: offset;
+      uint32_t sizeA = (offset>255) ? (ipbus::maxPacket-3)/2: offset;
       uint32_t sizeB = offset - sizeA;
       m_request.addTransaction(transactionType, frame.address, nullptr,  ipbusOutputBuffer, sizeA);
       if(offset > 255){
@@ -256,8 +256,8 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
     }
 
     while(wordRead < frame.data){
-      uint32_t sizeA = ipbus::maxPacket/2;
-      uint32_t sizeB = ipbus::maxPacket - sizeA;
+      uint32_t sizeA = (ipbus::maxPacket-3)/2;
+      uint32_t sizeB = (ipbus::maxPacket-3) - sizeA;
       m_request.addTransaction(transactionType, currentAddress, nullptr,  ipbusOutputBuffer, sizeA);
       m_request.addTransaction(transactionType, currentAddress + sizeA*increment, nullptr, ipbusOutputBuffer+sizeA, sizeB);
       if(transceive(m_request, m_response))
