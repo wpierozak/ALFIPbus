@@ -39,6 +39,7 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
 
   bool parseFrames(const char* request);
   bool interpretFrames();
+  bool readBlock(const Swt& frame, uint32_t frameIdx);
 
   void writeToResponse();
   void sendResponse();

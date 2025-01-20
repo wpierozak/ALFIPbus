@@ -176,8 +176,15 @@ bool SwtLink::interpretFrames()
         m_request.addTransaction(ipbus::enums::transactions::RMWsum, m_frames[i].address, &m_frames[i].data, &m_frames[i].data);
         break;
 
-      default:
+      case Swt::TransactionType::BlockReadIncrement:
+      case Swt::TransactionType::BlockReadIncrement:
+        bool success = readBlock(m_frames[i], i);
+        if(!success){
+          return false;
+        }
         break;
+      default:
+      break;
     }
   }
 
@@ -195,6 +202,83 @@ bool SwtLink::interpretFrames()
 
 }
 
+bool SwtLink::readBlockIncrement(const Swt& frame, uint32_t frameIdx)
+{
+    if(transceive(m_request, m_response))
+    {
+        writeToResponse();
+        m_request.reset();
+        m_lineBeg = frameIdx + 1;
+    }
+    else
+    {
+      m_request.reset();
+      return false;
+    }
+
+    bool increment = (frame.getTransactionType() == Swt::TransactionType::BlockReadIncrement);
+    auto transactionType = (increment) ? ipbus::enums::transactions::Read ? ipbus::enums::transactions::NonIncrementingRead;
+    uint32_t currentAddress = 0;
+    uint32_t wordRead = 0;
+
+    std::vector<Swt> outputFrames;
+    outputFrames.reserve(frame.data);
+    uint32_t ipbusOutputBuffer[ipbus::maxPacket];
+
+    uint32_t offset = frame.data % ipbus::maxPacket;
+
+    if(offset > 0){
+      uint32_t sizeA = (offset>255) ? ipbus::maxPacket/2: offset;
+      uint32_t sizeB = offset - sizeA;
+      m_request.addTransaction(transactionType, frame.address, nullptr,  ipbusOutputBuffer, sizeA);
+      if(offset > 255){
+        m_request.addTransaction(transactionType, frame.address + sizeA*increment, nullptr, ipbusOutputBuffer+sizeA, sizeB);
+      }
+      if(transceive(m_request, m_response))
+      {
+        for( uint32_t idx = 0; idx < offset; idx++){
+          outputFrames.emplace_back(Swt{.address = currentAddress, .data = ipbusOutputBuffer[idx], .mode = frame.mode});
+          if(increment){
+            currentAddress++;
+          }
+          wordRead++;
+        }
+      }
+      else
+      {
+        m_request.reset();
+        return false;
+      }
+    }
+
+    while(wordRead < frame.data){
+      uint32_t sizeA = ipbus::maxPacket/2;
+      uint32_t sizeB = offset - sizeA;
+      m_request.addTransaction(transactionType, currentAddress, nullptr,  ipbusOutputBuffer, sizeA);
+      m_request.addTransaction(transactionType, currentAddress + sizeA*increment, nullptr, ipbusOutputBuffer+sizeA, sizeB);
+      if(transceive(m_request, m_response))
+      {
+        for( uint32_t idx = 0; idx < ipbus::maxPacket; idx++){
+          outputFrames.emplace_back(Swt{.address = currentAddress, .data = ipbusOutputBuffer[idx], .mode = frame.mode});
+          if(increment){
+            currentAddress++;
+          }
+          wordRead++;
+        }
+      }
+      else
+      {
+        m_request.reset();
+        return false;
+      }
+    }
+
+    for(const auto& frame: outputFrames){
+      writeFrame(frame);
+    }
+
+    return true;
+}
 
 void SwtLink::sendResponse()
 {
@@ -236,7 +320,8 @@ void SwtLink::writeFrame(Swt frame)
 void SwtLink::sendFailure()
 {
   BOOST_LOG_TRIVIAL(error) << "Request execution failed";
-  setData("failure");
+  m_fredResponse = "failure\n" + m_fredResponse;
+  setData(m_fredResponse);
 }
 
 void SwtLink::setPacketPadding(int padding)
