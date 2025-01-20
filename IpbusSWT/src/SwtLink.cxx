@@ -257,7 +257,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
 
     while(wordRead < frame.data){
       uint32_t sizeA = ipbus::maxPacket/2;
-      uint32_t sizeB = ipbus::maxPacket/2 - sizeA;
+      uint32_t sizeB = ipbus::maxPacket - sizeA;
       m_request.addTransaction(transactionType, currentAddress, nullptr,  ipbusOutputBuffer, sizeA);
       m_request.addTransaction(transactionType, currentAddress + sizeA*increment, nullptr, ipbusOutputBuffer+sizeA, sizeB);
       if(transceive(m_request, m_response))
