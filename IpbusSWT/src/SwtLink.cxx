@@ -221,7 +221,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
 
     bool increment = (frame.getTransactionType() == Swt::TransactionType::BlockReadIncrement);
     auto transactionType = (increment) ? ipbus::enums::transactions::Read : ipbus::enums::transactions::NonIncrementingRead;
-    uint32_t currentAddress = 0;
+    uint32_t currentAddress = frame.address;
     uint32_t wordRead = 0;
 
     std::vector<Swt> outputFrames;
