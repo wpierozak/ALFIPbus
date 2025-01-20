@@ -34,7 +34,9 @@ struct Swt {
   enum class TransactionType { Read,
                                Write,
                                RMWbits,
-                               RMWsum };
+                               RMWsum,
+                               BlockReadIncrement,
+                               BlockReadNonIncrement };
   TransactionType getTransactionType() const;
 };
 

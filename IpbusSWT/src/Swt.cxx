@@ -50,6 +50,10 @@ Swt::TransactionType Swt::getTransactionType() const
       return TransactionType::RMWbits;
     case 4:
       return TransactionType::RMWsum;
+    case 8:
+      return TransactionType::BlockReadIncrement;
+    case 9:
+      return TransactionType::BlockReadNonIncrement;
     default:
       BOOST_THROW_EXCEPTION(std::runtime_error("Unknown transaction type " + std::to_string(mode)));
   }
