@@ -177,11 +177,13 @@ bool SwtLink::interpretFrames()
         break;
 
       case Swt::TransactionType::BlockReadIncrement:
-      case Swt::TransactionType::BlockReadIncrement:
+      case Swt::TransactionType::BlockReadNonIncrement:
+      {
         bool success = readBlock(m_frames[i], i);
         if(!success){
           return false;
         }
+      }
         break;
       default:
       break;
@@ -202,7 +204,7 @@ bool SwtLink::interpretFrames()
 
 }
 
-bool SwtLink::readBlockIncrement(const Swt& frame, uint32_t frameIdx)
+bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
 {
     if(transceive(m_request, m_response))
     {
@@ -217,7 +219,7 @@ bool SwtLink::readBlockIncrement(const Swt& frame, uint32_t frameIdx)
     }
 
     bool increment = (frame.getTransactionType() == Swt::TransactionType::BlockReadIncrement);
-    auto transactionType = (increment) ? ipbus::enums::transactions::Read ? ipbus::enums::transactions::NonIncrementingRead;
+    auto transactionType = (increment) ? ipbus::enums::transactions::Read : ipbus::enums::transactions::NonIncrementingRead;
     uint32_t currentAddress = 0;
     uint32_t wordRead = 0;
 
@@ -237,7 +239,7 @@ bool SwtLink::readBlockIncrement(const Swt& frame, uint32_t frameIdx)
       if(transceive(m_request, m_response))
       {
         for( uint32_t idx = 0; idx < offset; idx++){
-          outputFrames.emplace_back(Swt{.address = currentAddress, .data = ipbusOutputBuffer[idx], .mode = frame.mode});
+          outputFrames.emplace_back(Swt{.data = ipbusOutputBuffer[idx], .address = currentAddress, .mode = frame.mode});
           if(increment){
             currentAddress++;
           }
@@ -259,7 +261,7 @@ bool SwtLink::readBlockIncrement(const Swt& frame, uint32_t frameIdx)
       if(transceive(m_request, m_response))
       {
         for( uint32_t idx = 0; idx < ipbus::maxPacket; idx++){
-          outputFrames.emplace_back(Swt{.address = currentAddress, .data = ipbusOutputBuffer[idx], .mode = frame.mode});
+          outputFrames.emplace_back(Swt{.data = ipbusOutputBuffer[idx], .address = currentAddress, .mode = frame.mode});
           if(increment){
             currentAddress++;
           }
@@ -321,7 +323,7 @@ void SwtLink::sendFailure()
 {
   BOOST_LOG_TRIVIAL(error) << "Request execution failed";
   m_fredResponse = "failure\n" + m_fredResponse;
-  setData(m_fredResponse);
+  setData(m_fredResponse.c_str());
 }
 
 void SwtLink::setPacketPadding(int padding)
