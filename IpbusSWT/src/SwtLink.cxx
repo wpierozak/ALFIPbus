@@ -275,10 +275,14 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
       }
     }
 
-    for(const auto& frame: outputFrames){
-      writeFrame(frame);
+    m_lineEnd = m_lineBeg + frame.data;
+    
+    uint32_t readWords = writeToResponse();
+    if(readWords < frame.data){
+      return false;
     }
 
+    m_lineBeg = m_lineEnd;
     return true;
 }
 
@@ -290,16 +294,23 @@ void SwtLink::sendResponse()
 }
 
 
-void SwtLink::writeToResponse()
+uint32_t SwtLink::writeToResponse(bool readOnly)
 {
-  for (int i = m_lineBeg; i < m_lineEnd; i++) {
+  uint32_t wroteFrames = 0;
+  for (int i = m_lineBeg; i < m_lineEnd && i < m_frames.size(); i++) {
     if (m_reqType[i] == Read) {
       writeFrame(m_frames[i - 1]);
       m_fredResponse += "\n";
+    } else if(readOnly){
+      return wroteFrames;
     } else {
       m_fredResponse += "0\n";
     }
+
+    wroteFrames;
   }
+
+  return wroteFrames;
 }
 
 void SwtLink::writeFrame(Swt frame)
