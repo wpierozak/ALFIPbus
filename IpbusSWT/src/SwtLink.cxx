@@ -183,6 +183,7 @@ bool SwtLink::interpretFrames()
         if(!success){
           return false;
         }
+        i += m_frames[i].data;
       }
         break;
       default:
@@ -245,6 +246,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
           }
           wordRead++;
         }
+        m_request.reset();
       }
       else
       {
@@ -255,7 +257,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
 
     while(wordRead < frame.data){
       uint32_t sizeA = ipbus::maxPacket/2;
-      uint32_t sizeB = offset - sizeA;
+      uint32_t sizeB = ipbus::maxPacket/2 - sizeA;
       m_request.addTransaction(transactionType, currentAddress, nullptr,  ipbusOutputBuffer, sizeA);
       m_request.addTransaction(transactionType, currentAddress + sizeA*increment, nullptr, ipbusOutputBuffer+sizeA, sizeB);
       if(transceive(m_request, m_response))
@@ -267,6 +269,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
           }
           wordRead++;
         }
+        m_request.reset();
       }
       else
       {
