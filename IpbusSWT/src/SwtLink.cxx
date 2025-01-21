@@ -343,15 +343,17 @@ uint32_t SwtLink::writeBlockReadResponse(const std::vector<Swt> &blockResponse, 
   return wroteFrames;
 }
 
-void SwtLink::writeFrame(Swt frame)
+void SwtLink::writeFrame(const Swt& frame)
 {
   m_fredResponse += "0x";
-  m_fredResponse += utils::hexToChar((frame.mode>>8) & 0xF);
-  m_fredResponse += utils::hexToChar((frame.mode>>4) & 0xF);
-  m_fredResponse += utils::hexToChar(frame.mode & 0xF);
-  m_fredResponse += wordToString(frame.address);
-  m_fredResponse += wordToString(frame.data);
+  const uint8_t* buffer = (const uint8_t*)&frame;
+  m_fredResponse.push_back(utils::hexToChar(buffer[9] & 0x0F));
+  for(int idx = 8; idx >= 0; idx--){
+    m_fredResponse.push_back(utils::hexToChar(buffer[idx] >> 4));
+    m_fredResponse.push_back(utils::hexToChar(buffer[idx] & 0x0F));
+  }
 }
+
 
 void SwtLink::sendFailure()
 {
