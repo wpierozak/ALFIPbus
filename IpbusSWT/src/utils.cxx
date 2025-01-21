@@ -122,7 +122,7 @@ ErrorMessage::ErrorMessage(std::string message):mess(std::move(message))
 
 }
 
-ErrorMessage::ErrorMessage(uint32_t frameIdx, Swt frame, std::string message, bool invalidFrame = false)
+ErrorMessage::ErrorMessage(uint32_t frameIdx, Swt frame, std::string message)
 {
   mess += "Frame index: " + std::to_string(frameIdx) + ";";
   switch(frame.getTransactionType())
@@ -137,7 +137,7 @@ ErrorMessage::ErrorMessage(uint32_t frameIdx, Swt frame, std::string message, bo
       mess += "Operation: RMW bits;";
       break;
     case Swt::TransactionType::BlockReadIncrement:
-      mess += "Operation: Block read increment;"
+      mess += "Operation: Block read increment;";
       break;
     case Swt::TransactionType::BlockReadNonIncrement:
       mess += "Operation: Block read non-increment;";
