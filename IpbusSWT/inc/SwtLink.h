@@ -42,7 +42,7 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
   bool readBlock(const Swt& frame, uint32_t frameIdx);
 
   void writeToResponse();
-  uint32_t writeBlockReadResponse(const std::vector<Swt> &blockResponse);
+  uint32_t writeBlockReadResponse(const std::vector<Swt> &blockResponse, uint32_t endFrameIdxOffset = 0);
   void sendResponse();
 
   void setPacketPadding(int);
@@ -72,7 +72,7 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
   void reportError(utils::ErrorMessage&& errorMessage)
   {
     BOOST_LOG_TRIVIAL(error) << (std::string) errorMessage;
-    m_errorMessage(std::move(errorMessage));
+    m_errorMessage = utils::ErrorMessage(std::move(errorMessage));
   }
 };
 

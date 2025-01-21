@@ -319,7 +319,7 @@ void SwtLink::writeToResponse()
   }
 }
 
-uint32_t SwtLink::writeBlockReadResponse(const std::vector<Swt> &blockResponse, uint32_t endFrameIdxOffset = 0)
+uint32_t SwtLink::writeBlockReadResponse(const std::vector<Swt> &blockResponse, uint32_t endFrameIdxOffset)
 {
   if(endFrameIdxOffset){
     m_lineEnd += endFrameIdxOffset;
@@ -346,8 +346,8 @@ uint32_t SwtLink::writeBlockReadResponse(const std::vector<Swt> &blockResponse, 
 void SwtLink::writeFrame(Swt frame)
 {
   m_fredResponse += "0x";
-  m_fredResponse += hexToChar((mode>>8) & 0xF);
-  m_fredResponse += hexToChar((mode>>4) & 0xF);
+  m_fredResponse += hexToChar((frame.mode>>8) & 0xF);
+  m_fredResponse += hexToChar((frame.mode>>4) & 0xF);
   m_fredResponse += hexToChar(mode & 0xF);
   m_fredResponse += wordToString(frame.address);
   m_fredResponse += wordToString(frame.data);

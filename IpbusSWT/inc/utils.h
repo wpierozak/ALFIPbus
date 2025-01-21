@@ -22,7 +22,7 @@ class ErrorMessage
   {
     public:
     ErrorMessage(uint32_t frameIdx, fit_swt::Swt frame, std::string message);
-    ErrorMessage(std::string message);
+    ErrorMessage(std::string message="");
     operator std::string() const{
       return mess;
     }

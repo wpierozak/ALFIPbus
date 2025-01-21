@@ -8,6 +8,7 @@ namespace fit_swt
 {
 
 union HalfWord {
+  HalfWord(uint32_t dd): data(dd) { }
   struct fields {
     uint8_t bytes[2];
   } bytes;
@@ -15,6 +16,7 @@ union HalfWord {
 };
 
 union Word {
+  Word(uint32_t dd): data(dd) {}
   struct
   {
     uint8_t bytes[4];
