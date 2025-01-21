@@ -207,14 +207,12 @@ bool SwtLink::interpretFrames()
 
 bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
 {
-    if(transceive(m_request, m_response))
-    {
+    if(transceive(m_request, m_response)){
         writeToResponse();
         m_request.reset();
         m_lineBeg = frameIdx + 1;
     }
-    else
-    {
+    else{
       m_request.reset();
       return false;
     }
@@ -223,9 +221,10 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
     auto transactionType = (increment) ? ipbus::enums::transactions::Read : ipbus::enums::transactions::NonIncrementingRead;
     uint32_t currentAddress = frame.address;
     uint32_t wordRead = 0;
+    uint32_t readCommands = 0;
 
     std::vector<Swt> outputFrames;
-    outputFrames.reserve(frame.data);
+    outputFrames.reserve(ipbus::maxPacket-3);
     uint32_t ipbusOutputBuffer[ipbus::maxPacket];
 
     uint32_t offset = frame.data % ipbus::maxPacket;
@@ -239,7 +238,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
       }
       if(transceive(m_request, m_response))
       {
-        for( uint32_t idx = 0; idx < offset; idx++){
+        for(uint32_t idx = 0; idx < offset; idx++){
           outputFrames.emplace_back(Swt{.data = ipbusOutputBuffer[idx], .address = currentAddress, .mode = frame.mode});
           if(increment){
             currentAddress++;
@@ -248,11 +247,20 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
         }
         m_request.reset();
       }
-      else
-      {
+      else{
         m_request.reset();
         return false;
       }
+
+      readCommands += writeBlockReadResponse(outputFrames,offset);
+      if(readCommands < wordRead){
+          utils::ErrorMessage mess;
+          mess << "Unsufficient numeber of read command to retrieve block read results; read " << wordRead << " words;";
+          mess << " received " << readCommands << " read commands";
+          reportError(mess);
+          return false;
+      }
+      outputFrames.clear();
     }
 
     while(wordRead < frame.data){
@@ -276,15 +284,18 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
         m_request.reset();
         return false;
       }
+
+      readCommands += writeBlockReadResponse(outputFrames, ipbus::maxPacket-3);
+      if(readCommands < wordRead){
+          utils::ErrorMessage mess;
+          mess << "Unsufficient numeber of read command to retrieve block read results; read " << wordRead << " words;";
+          mess << " received " << readCommands << " read commands";
+          reportError(mess);
+          return false;
+      }
+      outputFrames.clear();
     }
 
-    m_lineEnd = m_lineBeg + frame.data;
-
-    if(writeToResponse(outputFrames) < frame.data){
-      return false;
-    }
-
-    m_lineBeg = m_lineEnd;
     return true;
 }
 
@@ -308,9 +319,14 @@ void SwtLink::writeToResponse()
   }
 }
 
-uint32_t SwtLink::writeToResponse(const std::vector<Swt> &blockResponse)
+uint32_t SwtLink::writeBlockReadResponse(const std::vector<Swt> &blockResponse, uint32_t endFrameIdxOffset = 0)
 {
+  if(endFrameIdxOffset){
+    m_lineEnd += endFrameIdxOffset;
+  }
+
   uint32_t wroteFrames = 0;
+
   for (int i = m_lineBeg; i < m_lineEnd && i < m_frames.size(); i++) {
     if (m_reqType[i] == Read) {
       writeFrame(blockResponse[i-m_lineBeg]);
@@ -321,24 +337,20 @@ uint32_t SwtLink::writeToResponse(const std::vector<Swt> &blockResponse)
     wroteFrames++;
   }
 
+  m_lineBeg += wroteFrames;
+  m_lineEnd = m_lineBeg;
+
   return wroteFrames;
 }
 
 void SwtLink::writeFrame(Swt frame)
 {
   m_fredResponse += "0x";
-  HalfWord h;
-  h.data = frame.mode;
-
-  std::string mode = halfWordToString(h);
-  mode = mode.substr(1);
-  m_fredResponse += mode;
-
-  Word w;
-  w.data = frame.address;
-  m_fredResponse += wordToString(w);
-  w.data = frame.data;
-  m_fredResponse += wordToString(w);
+  m_fredResponse += hexToChar((mode>>8) & 0xF);
+  m_fredResponse += hexToChar((mode>>4) & 0xF);
+  m_fredResponse += hexToChar(mode & 0xF);
+  m_fredResponse += wordToString(frame.address);
+  m_fredResponse += wordToString(frame.data);
 }
 
 void SwtLink::sendFailure()
@@ -357,5 +369,7 @@ int SwtLink::getPacketPadding() const
 {
   return m_packetPadding;
 }
+
+
 
 } // namespace fit_swt

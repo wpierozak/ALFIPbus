@@ -42,7 +42,7 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
   bool readBlock(const Swt& frame, uint32_t frameIdx);
 
   void writeToResponse();
-  uint32_t writeToResponse(const std::vector<Swt> &blockResponse);
+  uint32_t writeBlockReadResponse(const std::vector<Swt> &blockResponse);
   void sendResponse();
 
   void setPacketPadding(int);
@@ -66,6 +66,14 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
   std::vector<char> m_reqType;
   
   std::string m_fredResponse;
+  
+  utils::ErrorMessage m_errorMessage;
+
+  void reportError(utils::ErrorMessage&& errorMessage)
+  {
+    BOOST_LOG_TRIVIAL(error) << (std::string) errorMessage;
+    m_errorMessage(std::move(errorMessage));
+  }
 };
 
 } // namespace fit_swt
