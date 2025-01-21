@@ -348,7 +348,7 @@ void SwtLink::writeFrame(Swt frame)
   m_fredResponse += "0x";
   m_fredResponse += utils::hexToChar((frame.mode>>8) & 0xF);
   m_fredResponse += utils::hexToChar((frame.mode>>4) & 0xF);
-  m_fredResponse += utils::hexToChar(mode & 0xF);
+  m_fredResponse += utils::hexToChar(frame.mode & 0xF);
   m_fredResponse += wordToString(frame.address);
   m_fredResponse += wordToString(frame.data);
 }
