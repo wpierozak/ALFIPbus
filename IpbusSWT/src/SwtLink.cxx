@@ -257,7 +257,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
           utils::ErrorMessage mess;
           mess << "Unsufficient numeber of read command to retrieve block read results; read " << wordRead << " words;";
           mess << " received " << readCommands << " read commands";
-          reportError(mess);
+          reportError(std::move(mess));
           return false;
       }
       outputFrames.clear();
@@ -349,8 +349,8 @@ void SwtLink::writeFrame(Swt frame)
   m_fredResponse += utils::hexToChar((frame.mode>>8) & 0xF);
   m_fredResponse += utils::hexToChar((frame.mode>>4) & 0xF);
   m_fredResponse += utils::hexToChar(mode & 0xF);
-  m_fredResponse += utils::wordToString(frame.address);
-  m_fredResponse += utils::wordToString(frame.data);
+  m_fredResponse += wordToString(frame.address);
+  m_fredResponse += wordToString(frame.data);
 }
 
 void SwtLink::sendFailure()
