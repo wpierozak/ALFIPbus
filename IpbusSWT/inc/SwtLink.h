@@ -10,6 +10,7 @@
 #include <boost/asio.hpp>
 #include <map>
 #include <boost/log/trivial.hpp>
+#include"utils.h"
 
 namespace fit_swt
 {
