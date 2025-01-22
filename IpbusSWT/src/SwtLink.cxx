@@ -74,7 +74,7 @@ bool SwtLink::parseFrames(const char* request)
       m_reqType.emplace_back(RequestType::Read);
     }
     else if(size == 27 && strncmp(request + beg_ptr + 22, "write", 5) == 0){
-      m_frames.emplace_back(stringToSwt(request + beg_ptr + 2));
+      m_frames.emplace_back(request + beg_ptr + 2);
       m_reqType.emplace_back(RequestType::Write);
     }
     else{

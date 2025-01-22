@@ -7,31 +7,14 @@
 namespace fit_swt
 {
 
-union HalfWord {
-  HalfWord(uint32_t dd): data(dd) { }
-  struct fields {
-    uint8_t bytes[2];
-  } bytes;
-  uint16_t data;
-};
-
-union Word {
-  Word(uint32_t dd): data(dd) {}
-  struct
-  {
-    uint8_t bytes[4];
-    /* data */
-  } bytes;
-  uint32_t data;
-};
-
-std::string wordToString(Word w);
-std::string halfWordToString(HalfWord);
-
 struct Swt {
   uint32_t data;
   uint32_t address;
   uint16_t mode;
+
+  Swt() = default;
+  Swt(uint32_t data_, uint32_t address_, uint16_t mode_):data(data_), address(address_), mode(mode_) {}
+  Swt(const char* str);
 
   enum class TransactionType { Read,
                                Write,
@@ -41,9 +24,6 @@ struct Swt {
                                BlockReadNonIncrement };
   TransactionType getTransactionType() const;
 };
-
-Swt stringToSwt(const char* str);
-
 } // namespace fit_swt
 
 #endif
