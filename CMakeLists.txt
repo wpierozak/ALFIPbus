@@ -13,10 +13,13 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
 find_package(Boost REQUIRED COMPONENTS system log log_setup program_options)
 
-add_subdirectory(IpbusSWT)
-add_executable(AlfIPbus src/AlfIPbus.cxx src/main.cxx src/AlfConfig.cxx)
+#add_subdirectory(IpbusSWT)
+file(GLOB_RECURSE SOURCES "src/*.cxx")
+add_executable(AlfIPbus src/AlfIPbus.cxx src/main.cxx src/AlfConfig.cxx ${SOURCES})
 # Include directories
 target_include_directories(AlfIPbus PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc)
+target_link_libraries(AlfIPbus DimRpcParallel dim pthread Boost::system Boost::log_setup Boost::log Boost::program_options)
+target_include_directories(AlfIPbus PUBLIC ${CMAKE_SOURCE_DIR}/IpbusSWT/DimRpcParallel/include/DimRpcParallel)
 
 set(CMAKE_BUILD_TYPE "Release")
 if(NOT CMAKE_BUILD_TYPE)
@@ -32,7 +35,9 @@ endif()
 # Include GNUInstallDirs to use standard directory variables
 include(GNUInstallDirs)
 
-target_link_libraries(AlfIPbus ipbus_swt DimRpcParallel dim pthread Boost::system Boost::log_setup Boost::log Boost::program_options)
+
+add_subdirectory(IpbusSWT/DimRpcParallel)
+
 
 add_test(NAME in-container-test COMMAND ./test/in-container-test/in-container-test.sh)
 set_tests_properties(in-container-test PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
