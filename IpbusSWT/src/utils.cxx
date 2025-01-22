@@ -144,8 +144,8 @@ ErrorMessage::ErrorMessage(uint32_t frameIdx, Swt frame, std::string message)
       break;
   }
 
-  mess += "Address: " + wordToString(frame.address) + ";";
-  mess += "Data: " + wordToString(frame.data) + ";";
+  mess += "Address: " + toASCII(frame.address) + ";";
+  mess += "Data: " + toASCII(frame.data) + ";";
   mess += "Error message: " + message;
 }
 

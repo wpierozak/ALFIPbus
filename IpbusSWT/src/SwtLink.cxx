@@ -70,7 +70,7 @@ bool SwtLink::parseFrames(const char* request)
 
     }
     else if(strncmp(request + beg_ptr, "read", size) == 0){
-      m_frames.emplace_back(Swt{ EmptyData, EmptyAddress, EmptyMode });
+      m_frames.emplace_back(Swt{EmptyMode, EmptyAddress, EmptyData});
       m_reqType.emplace_back(RequestType::Read);
     }
     else if(size == 27 && strncmp(request + beg_ptr + 22, "write", 5) == 0){
@@ -239,7 +239,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
       if(transceive(m_request, m_response))
       {
         for(uint32_t idx = 0; idx < offset; idx++){
-          outputFrames.emplace_back(Swt{.data = ipbusOutputBuffer[idx], .address = currentAddress, .mode = frame.mode});
+          outputFrames.emplace_back(Swt{frame.mode, currentAddress, ipbusOutputBuffer[idx]});
           if(increment){
             currentAddress++;
           }
@@ -271,7 +271,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
       if(transceive(m_request, m_response))
       {
         for( uint32_t idx = 0; idx < ipbus::maxPacket; idx++){
-          outputFrames.emplace_back(Swt{.data = ipbusOutputBuffer[idx], .address = currentAddress, .mode = frame.mode});
+          outputFrames.emplace_back(Swt{frame.mode, currentAddress, ipbusOutputBuffer[idx]});
           if(increment){
             currentAddress++;
           }

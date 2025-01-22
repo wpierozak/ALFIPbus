@@ -18,12 +18,24 @@ char hexToChar(uint8_t hex);
 uint8_t charToHex(char ch);
 uint8_t stringToByte(char c1, char c2);
 
+template<typename T>
+std::string toASCII(const T& integer)
+{
+    const uint8_t* buffer = (const uint8_t*) &buffer;
+    std::string result;
+    for(int i = sizeof(T)-1; i >= 0; i--){
+        result.push_back(hexToChar(buffer[i] >> 4));
+        result.push_back(hexToChar(buffer[i] & 0xF));
+    }
+    return result;
+}
+
 class ErrorMessage
   {
     public:
     ErrorMessage(uint32_t frameIdx, fit_swt::Swt frame, std::string message);
     ErrorMessage(std::string message="");
-    
+
     operator std::string() const{
       return mess;
     }
