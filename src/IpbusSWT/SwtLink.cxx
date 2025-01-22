@@ -347,9 +347,17 @@ uint32_t SwtLink::writeBlockReadResponse(const std::vector<Swt> &blockResponse, 
 void SwtLink::writeFrame(const Swt& frame)
 {
   m_fredResponse += "0x";
-  const uint8_t* buffer = (const uint8_t*)&frame;
-  m_fredResponse.push_back(utils::hexToChar(buffer[9] & 0x0F));
-  for(int idx = 8; idx >= 0; idx--){
+  const uint8_t* buffer = (const uint8_t*)&frame.mode;
+  m_fredResponse.push_back(utils::hexToChar(buffer[1] & 0x0F));
+  m_fredResponse.push_back(utils::hexToChar(buffer[0] >> 4));
+  m_fredResponse.push_back(utils::hexToChar(buffer[0] & 0x0F));
+  buffer = (const uint8_t*)&frame.address;
+  for(int idx = 3; idx >= 0; idx--){
+    m_fredResponse.push_back(utils::hexToChar(buffer[idx] >> 4));
+    m_fredResponse.push_back(utils::hexToChar(buffer[idx] & 0x0F));
+  }
+  buffer = (const uint8_t*)&frame.data;
+  for(int idx = 3; idx >= 0; idx--){
     m_fredResponse.push_back(utils::hexToChar(buffer[idx] >> 4));
     m_fredResponse.push_back(utils::hexToChar(buffer[idx] & 0x0F));
   }
