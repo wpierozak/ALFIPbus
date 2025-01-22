@@ -8,9 +8,9 @@ namespace fit_swt
 {
 
 struct Swt {
-  uint16_t mode;
-  uint32_t address;
   uint32_t data;
+  uint32_t address;
+  uint16_t mode;
 
   Swt() = default;
   Swt(uint16_t mode_, uint32_t address_, uint32_t data_ ):data(data_), address(address_), mode(mode_) {}
