@@ -35,7 +35,7 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
 
   void rpcHandler();
   void processRequest(const char* swtSequence);
-  void writeFrame(Swt frame);
+  void writeFrame(const Swt& frame);
   void sendFailure();
 
   bool parseFrames(const char* request);
