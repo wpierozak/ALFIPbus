@@ -226,9 +226,9 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
 
     std::vector<Swt> outputFrames;
     outputFrames.reserve(maxPacketPayload);
-    uint32_t ipbusOutputBuffer[ipbus::maxPacket];
+    uint32_t ipbusOutputBuffer[maxPacketPayload];
 
-    uint32_t offset = frame.data % ipbus::maxPacket;
+    uint32_t offset = frame.data % maxPacketPayload;
 
     if(offset > 0){
       uint32_t sizeA = (offset>255) ? maxPacketPayload/2: offset;
