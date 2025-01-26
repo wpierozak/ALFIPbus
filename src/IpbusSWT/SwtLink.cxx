@@ -207,6 +207,10 @@ bool SwtLink::interpretFrames()
 
 bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
 {
+  if(frame.data > 1024){
+    BOOST_LOG_TRIVIAL(error) << "Exceeded maximum block size (1024); received request for " << frame.data << " words";
+    return false;
+  }
   constexpr uint32_t maxPacketPayload = ipbus::maxPacket - 3;
     if(transceive(m_request, m_response)){
         writeToResponse();
