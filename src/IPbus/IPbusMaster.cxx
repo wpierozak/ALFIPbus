@@ -170,7 +170,7 @@ bool IPbusMaster::transceive(IPbusRequest& request, IPbusResponse& response)
   pthread_mutex_lock(&m_linkMutex);
 
   if (request.getSize() <= 1) {
-    BOOST_LOG_TRIVIAL(warning) << "Transceive: empty request";
+    BOOST_LOG_TRIVIAL(debug) << "Transceive: empty request";
     RETURN_AND_RELEASE(m_linkMutex, true);
   }
 
