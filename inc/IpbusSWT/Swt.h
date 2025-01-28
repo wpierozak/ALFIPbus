@@ -22,6 +22,7 @@ struct Swt {
                                RMWsum,
                                BlockReadIncrement,
                                BlockReadNonIncrement };
+  uint32_t getResponseSize();
   TransactionType getTransactionType() const;
 };
 } // namespace fit_swt

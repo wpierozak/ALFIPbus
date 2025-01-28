@@ -11,6 +11,7 @@
 #include <map>
 #include <boost/log/trivial.hpp>
 #include"utils.h"
+#include"CruCommand.h"
 
 namespace fit_swt
 {
@@ -40,10 +41,11 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
 
   bool parseFrames(const char* request);
   bool interpretFrames();
+
   bool readBlock(const Swt& frame, uint32_t frameIdx);
 
   void writeToResponse();
-  uint32_t writeBlockReadResponse(const std::vector<Swt> &blockResponse, uint32_t endFrameIdxOffset = 0);
+  uint32_t writeBlockReadResponse(const Swt* blockResponse, uint32_t endFrameIdxOffset = 0);
   void sendResponse();
 
   void setPacketPadding(int);
@@ -66,15 +68,18 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
   enum RequestType {Write = 'w', Read = 'r'};
   std::vector<char> m_reqType;
   
+  std::vector<CruCommand> m_commands;
   std::string m_fredResponse;
   
   utils::ErrorMessage m_errorMessage;
+  size_t m_sequenceLen;
 
   void reportError(utils::ErrorMessage&& errorMessage)
   {
     BOOST_LOG_TRIVIAL(error) << (std::string) errorMessage;
     m_errorMessage = utils::ErrorMessage(std::move(errorMessage));
   }
+
 };
 
 } // namespace fit_swt

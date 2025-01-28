@@ -1,6 +1,7 @@
 #include <string>
 #include <boost/exception/diagnostic_information.hpp>
-
+#include<algorithm>
+#include<iterator>
 #include "IpbusSWT/SwtLink.h"
 #include "IpbusSWT/utils.h"
 
@@ -15,7 +16,8 @@ void SwtLink::rpcHandler()
 
 void SwtLink::processRequest(const char* swtSequence)
 {
-  if(std::strlen(swtSequence) == 0)
+  m_sequenceLen = getSize() - 1;
+  if(m_sequenceLen == 0)
   {
     BOOST_LOG_TRIVIAL(warning) << "Received empty request";
     sendFailure();
@@ -40,61 +42,32 @@ bool SwtLink::parseFrames(const char* request)
   m_frames.clear();
   m_reqType.clear();
 
-  int64_t beg_ptr = 0;
-  int64_t end_ptr = 0;
-  int64_t size = 0;
+  const char* currentLine = request;
+  const char* end = request + m_sequenceLen;
 
   try
   {
-
-  for(int64_t pos = 0; ; pos++)
-  {
-    switch(request[pos])
-    {    
-      case '\0':
-      case '\n':
-      {
-        end_ptr = pos;
-      }
-      break;
-
-      default:
-        continue;
-      break;
-    }
-
-    size = end_ptr - beg_ptr;
-
-    if(strncmp(request + beg_ptr, "sc_reset", size) == 0)
+    for(; currentLine < end; )
     {
-
+      m_commands.emplace_back(currentLine);
+      if(m_commands.back().type == CruCommand::Type::Invalid){
+        const char* delimiter = std::find(currentLine, end,'\n');
+        std::string message;
+        std:copy(currentLine, delimiter, std::back_inserter(message));
+        BOOST_LOG_TRIVIAL(error) << "Sequence parsing failed: Invalid line:" << message;
+        return false;
+      }
+      currentLine += m_commands.back().commandStrLen()+1;      
     }
-    else if(strncmp(request + beg_ptr, "read", size) == 0){
-      m_frames.emplace_back(Swt{EmptyMode, EmptyAddress, EmptyData});
-      m_reqType.emplace_back(RequestType::Read);
-    }
-    else if(size == 27 && strncmp(request + beg_ptr + 22, "write", 5) == 0){
-      m_frames.emplace_back(request + beg_ptr + 2);
-      m_reqType.emplace_back(RequestType::Write);
-    }
-    else{
-      char buffer[64];
-      std::memcpy(buffer, request + beg_ptr, size);
-      buffer[size] = '\0';
-      BOOST_LOG_TRIVIAL(error) << "Invalid sequence received: " << buffer;
-      return false;
-    }
-    if(request[pos] == '\0') break;
-    beg_ptr = pos + 1;
   }
-
-  } catch (const std::exception& e) {
+   catch (const std::exception& e) {
     BOOST_LOG_TRIVIAL(error) << "Sequence parsing failed: " << boost::diagnostic_information(e);
     return false;
   }
 
   return true;
 }
+
 
 bool SwtLink::interpretFrames()
 {
@@ -104,8 +77,8 @@ bool SwtLink::interpretFrames()
 
   m_request.reset();
 
-  for (int i = 0; i < m_frames.size(); i++) {
-  
+  for (int i = 0; i < m_commands.size(); i++) {
+    
     if (m_request.getSize() + m_packetPadding >= ipbus::maxPacket) {
       if(transceive(m_request, m_response))
       {
@@ -122,21 +95,23 @@ bool SwtLink::interpretFrames()
 
     m_lineEnd++;
 
-    if (m_frames[i].data == EmptyData && m_frames[i].address == EmptyAddress && m_frames[i].mode == EmptyMode) {
+    if (m_commands[i].type == CruCommand::Type::Read) {
       continue;
     }
 
-    switch (m_frames[i].getTransactionType()) {
+    Swt& frame = m_commands[i].frame;
+
+    switch (frame.getTransactionType()) {
       case Swt::TransactionType::Read:
-        m_request.addTransaction(ipbus::enums::transactions::Read, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
+        m_request.addTransaction(ipbus::enums::transactions::Read, frame.address, &frame.data, &frame.data, 1);
         break;
 
       case Swt::TransactionType::Write:
-        m_request.addTransaction(ipbus::enums::transactions::Write, m_frames[i].address, &m_frames[i].data, &m_frames[i].data, 1);
+        m_request.addTransaction(ipbus::enums::transactions::Write, frame.address, &frame.data, &frame.data, 1);
         break;
 
       case Swt::TransactionType::RMWbits:
-        if (m_frames[i].mode != 2) {
+        if (frame.mode != 2) {
           BOOST_LOG_TRIVIAL(error) << "SWT sequence failed (" << i << "): " << "RMWbits failed: first frame is not the AND frame" << std::endl;
           return false;
         }
@@ -144,28 +119,28 @@ bool SwtLink::interpretFrames()
           BOOST_LOG_TRIVIAL(error) << "SWT sequence failed (" << i << "): " << "RMWbits failed: second frame has been not received" << std::endl;
           return false;
         }
-        if (m_frames[i + 1].data == EmptyData && m_frames[i + 1].address == EmptyAddress && m_frames[i + 1].mode == EmptyMode) {
+        if (m_commands[i + 1].frame.data == EmptyData && m_commands[i + 1].frame.address == EmptyAddress && m_commands[i + 1].frame.mode == EmptyMode) {
           if (i + 2 >= m_frames.size()) {
             BOOST_LOG_TRIVIAL(error) << "SWT sequence failed (" << i << "): "<< "RMWbits failed: second frame has been not received" << std::endl;
             return false;
           }
-          if ((m_frames[i + 2].mode) != 3) {
-            BOOST_LOG_TRIVIAL(error) << "SWT sequence failed (" << i << "): " << "RMWbits failed: invalid second frame - mode: " << m_frames[i + 2].mode << std::endl;
+          if ((m_commands[i + 2].frame.mode) != 3) {
+            BOOST_LOG_TRIVIAL(error) << "SWT sequence failed (" << i << "): " << "RMWbits failed: invalid second frame - mode: " << m_commands[i + 2].frame.mode << std::endl;
             return false;
           }
-          buffer[0] = m_frames[i].data;
-          buffer[1] = m_frames[i + 2].data;
-          m_request.addTransaction(ipbus::enums::transactions::RMWbits, m_frames[i].address, buffer, &m_frames[i].data);
+          buffer[0] = frame.data;
+          buffer[1] = m_commands[i + 2].frame.data;
+          m_request.addTransaction(ipbus::enums::transactions::RMWbits, frame.address, buffer, &frame.data);
           i += 2;
           m_lineEnd += 2;
         } else {
-          if ((m_frames[i + 1].mode) != 3) {
-            BOOST_LOG_TRIVIAL(error) << "SWT sequence failed (" << i << "): " << "RMWbits failed: invalid second frame - mode: " << m_frames[i + 1].mode << std::endl;
+          if ((m_commands[i + 1].frame.mode) != 3) {
+            BOOST_LOG_TRIVIAL(error) << "SWT sequence failed (" << i << "): " << "RMWbits failed: invalid second frame - mode: " << m_commands[i + 1].frame.mode << std::endl;
             return false;
           }
-          buffer[0] = m_frames[i].data;
-          buffer[1] = m_frames[i + 1].data;
-          m_request.addTransaction(ipbus::enums::transactions::RMWbits, m_frames[i].address, buffer, &m_frames[i].data);
+          buffer[0] = frame.data;
+          buffer[1] = m_commands[i + 1].frame.data;
+          m_request.addTransaction(ipbus::enums::transactions::RMWbits, frame.address, buffer, &frame.data);
           i += 1;
           m_lineEnd += 1;
         }
@@ -173,17 +148,17 @@ bool SwtLink::interpretFrames()
         break;
 
       case Swt::TransactionType::RMWsum:
-        m_request.addTransaction(ipbus::enums::transactions::RMWsum, m_frames[i].address, &m_frames[i].data, &m_frames[i].data);
+        m_request.addTransaction(ipbus::enums::transactions::RMWsum, frame.address, &frame.data, &frame.data);
         break;
 
       case Swt::TransactionType::BlockReadIncrement:
       case Swt::TransactionType::BlockReadNonIncrement:
       {
-        bool success = readBlock(m_frames[i], i);
+        bool success = readBlock(frame, i);
         if(!success){
           return false;
         }
-        i += m_frames[i].data;
+        i += frame.data;
       }
         break;
       default:
@@ -207,11 +182,13 @@ bool SwtLink::interpretFrames()
 
 bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
 {
+  constexpr uint32_t maxPacketPayload = ipbus::maxPacket - 3;
+
   if(frame.data > 1024){
     BOOST_LOG_TRIVIAL(error) << "Exceeded maximum block size (1024); received request for " << frame.data << " words";
     return false;
   }
-  constexpr uint32_t maxPacketPayload = ipbus::maxPacket - 3;
+  
     if(transceive(m_request, m_response)){
         writeToResponse();
         m_request.reset();
@@ -228,8 +205,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
     uint32_t wordRead = 0;
     uint32_t readCommands = 0;
 
-    std::vector<Swt> outputFrames;
-    outputFrames.reserve(maxPacketPayload);
+    std::array<Swt,maxPacketPayload> outputFrames;
     uint32_t ipbusOutputBuffer[maxPacketPayload];
 
     uint32_t offset = frame.data % maxPacketPayload;
@@ -244,7 +220,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
       if(transceive(m_request, m_response))
       {
         for(uint32_t idx = 0; idx < offset; idx++){
-          outputFrames.emplace_back(Swt{frame.mode, currentAddress, ipbusOutputBuffer[idx]});
+          outputFrames[idx] = Swt{frame.mode, currentAddress, ipbusOutputBuffer[idx]};
           if(increment){
             currentAddress++;
           }
@@ -257,7 +233,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
         return false;
       }
 
-      readCommands += writeBlockReadResponse(outputFrames,offset);
+      readCommands += writeBlockReadResponse(outputFrames.data(),offset);
       if(readCommands < wordRead){
           utils::ErrorMessage mess;
           mess << "Unsufficient numeber of read command to retrieve block read results; read " << wordRead << " words;";
@@ -265,7 +241,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
           reportError(std::move(mess));
           return false;
       }
-      outputFrames.clear();
+
     }
 
     while(wordRead < frame.data){
@@ -276,7 +252,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
       if(transceive(m_request, m_response))
       {
         for( uint32_t idx = 0; idx < maxPacketPayload; idx++){
-          outputFrames.emplace_back(Swt{frame.mode, currentAddress, ipbusOutputBuffer[idx]});
+          outputFrames[idx] = Swt{frame.mode, currentAddress, ipbusOutputBuffer[idx]};
           if(increment){
             currentAddress++;
           }
@@ -290,7 +266,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
         return false;
       }
 
-      readCommands += writeBlockReadResponse(outputFrames, ipbus::maxPacket-3);
+      readCommands += writeBlockReadResponse(outputFrames.data(), ipbus::maxPacket-3);
       if(readCommands < wordRead){
           utils::ErrorMessage mess;
           mess << "Unsufficient numeber of read command to retrieve block read results; read " << wordRead << " words;";
@@ -298,7 +274,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
           reportError(std::move(mess));
           return false;
       }
-      outputFrames.clear();
+
     }
 
     return true;
@@ -315,8 +291,8 @@ void SwtLink::sendResponse()
 void SwtLink::writeToResponse()
 {
   for (int i = m_lineBeg; i < m_lineEnd && i < m_frames.size(); i++) {
-    if (m_reqType[i] == Read) {
-      writeFrame(m_frames[i - 1]);
+    if (m_commands[i].type == CruCommand::Type::Read) {
+      writeFrame(m_commands[i - 1].frame);
       m_fredResponse += "\n";
     } else {
       m_fredResponse += "0\n";
@@ -324,7 +300,7 @@ void SwtLink::writeToResponse()
   }
 }
 
-uint32_t SwtLink::writeBlockReadResponse(const std::vector<Swt> &blockResponse, uint32_t endFrameIdxOffset)
+uint32_t SwtLink::writeBlockReadResponse(const Swt* blockResponse, uint32_t endFrameIdxOffset)
 {
   if(endFrameIdxOffset){
     m_lineEnd += endFrameIdxOffset;
@@ -333,7 +309,7 @@ uint32_t SwtLink::writeBlockReadResponse(const std::vector<Swt> &blockResponse, 
   uint32_t wroteFrames = 0;
 
   for (int i = m_lineBeg; i < m_lineEnd && i < m_frames.size(); i++) {
-    if (m_reqType[i] == Read) {
+    if (m_commands[i].type == CruCommand::Type::Read) {
       writeFrame(blockResponse[i-m_lineBeg]);
       m_fredResponse += "\n";
     } else {
@@ -384,7 +360,6 @@ int SwtLink::getPacketPadding() const
 {
   return m_packetPadding;
 }
-
 
 
 } // namespace fit_swt

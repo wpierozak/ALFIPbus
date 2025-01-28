@@ -30,6 +30,12 @@ std::string toASCII(const T& integer)
     return result;
 }
 
+template< size_t N >
+constexpr size_t length( char const (&)[N] )
+{
+  return N-1;
+}
+
 class ErrorMessage
   {
     public:
