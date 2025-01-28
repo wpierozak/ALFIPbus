@@ -10,9 +10,11 @@ struct CruCommand
         if(strncmp(str, ScReset, ScResetLen) == 0)
         {
             type = Type::ScReset;
+            frame.mode = 0xFFFF;
         }
         else if(strncmp(str, Read, ReadLen) == 0){
             type = Type::Read;
+            frame.mode = 0xFFFF;
         }
         else if(strncmp(str + fit_swt::Swt::SwtStrLen + 1, Write, WriteLen) == 0){
             frame = fit_swt::Swt(str+2);

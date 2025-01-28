@@ -44,7 +44,7 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
 
   bool readBlock(const Swt& frame, uint32_t frameIdx);
 
-  uint32_t writeToResponse(uint32_t cmdToProceed, bool readOnly=false);
+  uint32_t writeToResponse(bool readOnly=false);
   uint32_t writeBlockReadResponse(const Swt* blockResponse, uint32_t endFrameIdxOffset = 0);
   void sendResponse();
 
@@ -61,6 +61,9 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
 
   int m_lineBeg{0};
   int m_lineEnd{0};
+  int m_current{0};
+  int m_lastWritten{0};
+  
   int m_packetPadding{8};
 
   //std::vector<Swt> m_frames;
