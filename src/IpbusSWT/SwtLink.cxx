@@ -96,7 +96,7 @@ bool SwtLink::interpretFrames()
 
     m_lineEnd++;
 
-    if (m_commands[i].type == CruCommand::Type::Read) {
+    if (m_commands[i].type != CruCommand::Type::Write) {
       continue;
     }
 
@@ -295,7 +295,7 @@ void SwtLink::writeToResponse()
     if (m_commands[i].type == CruCommand::Type::Read) {
       writeFrame(m_commands[i - 1].frame);
       m_fredResponse += "\n";
-    } else {
+    } else if(m_commands[i].type == CruCommand::Type::Write){
       m_fredResponse += "0\n";
     }
   }
