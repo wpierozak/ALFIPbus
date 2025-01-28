@@ -222,7 +222,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
       {
         uint32_t curr = m_current;
         for( ; m_current < curr + size; m_current++){
-          m_commands[m_current].frame = Swt{frame.mode, currentAddress, ipbusOutputBuffer[m_current - curr]};
+          m_commands[m_current-1].frame = Swt{frame.mode, currentAddress, ipbusOutputBuffer[m_current - curr]};
           if(increment){
             currentAddress++;
           }
