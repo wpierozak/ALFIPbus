@@ -81,9 +81,10 @@ bool SwtLink::interpretFrames()
 
   for (int i = 0; i < m_commands.size(); i++) {
     
-    if (m_request.getSize() + m_packetPadding >= ipbus::maxPacket) {
+    if ((m_request.getSize() + m_packetPadding >= ipbus::maxPacket) || m_commands[i].frame.isBlock()) {
       if(transceive(m_request, m_response))
       {
+        cmdToProceed = 0;
         writeToResponse(cmdToProceed);
         m_request.reset();
         //m_lineBeg = i;
@@ -163,6 +164,7 @@ bool SwtLink::interpretFrames()
           return false;
         }
         i = m_lineEnd-1;
+        cmdToProceed = 0;
       }
         break;
       default:
@@ -192,15 +194,6 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
     BOOST_LOG_TRIVIAL(error) << "Exceeded maximum block size (1024); received request for " << frame.data << " words";
     return false;
   }
-  
-    if(transceive(m_request, m_response)){
-        writeToResponse();
-        m_request.reset();
-    }
-    else{
-      m_request.reset();
-      return false;
-    }
 
     writeToResponse(1);
 

@@ -23,7 +23,10 @@ struct Swt {
                                BlockReadIncrement,
                                BlockReadNonIncrement };
   TransactionType getTransactionType() const;
-
+  bool isBlock() const
+  {
+    return mode == 8 || mode == 9;
+  }
   void appendToString(std::string& dest);
   static constexpr uint32_t SwtStrLen = 21;
 };
