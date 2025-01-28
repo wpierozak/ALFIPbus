@@ -193,7 +193,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
     if(transceive(m_request, m_response)){
         writeToResponse();
         m_request.reset();
-        m_lineBeg = frameIdx + 1;
+        m_lineBeg = frameIdx;
     }
     else{
       m_request.reset();
@@ -233,7 +233,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
         return false;
       }
 
-      m_lineEnd += wordRead;
+      m_lineEnd += offset;
       readCommands += writeToResponse(true);
       if(readCommands != wordRead){
           utils::ErrorMessage mess;
@@ -243,7 +243,6 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
           return false;
       }
       m_lineBeg = m_lineEnd;
-      m_lineEnd += 1;
     }
 
     while(wordRead < frame.data){
@@ -268,6 +267,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
         return false;
       }
 
+      m_lineEnd += ipbus::maxPacket-3;
       readCommands += writeToResponse(true);
       if(readCommands != wordRead){
           utils::ErrorMessage mess;
@@ -277,7 +277,6 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
           return false;
       }
       m_lineBeg = m_lineEnd;
-      m_lineEnd += 1;
     }
 
     return true;
@@ -295,7 +294,7 @@ uint32_t SwtLink::writeToResponse(bool readOnly)
 {
   uint32_t proceeded = 0;
   if(!readOnly){
-    for (int i = m_lineBeg; i < m_lineEnd && i < m_commandsNumber; i++) {
+    for (int i = m_lineBeg; (i < m_lineEnd) && (i < m_commandsNumber); i++) {
       if (m_commands[i].type == CruCommand::Type::Read) {
         m_commands[i-1].frame.appendToString(m_fredResponse);// writeFrame(m_commands[i - 1].frame);
         m_fredResponse += "\n";
@@ -306,7 +305,7 @@ uint32_t SwtLink::writeToResponse(bool readOnly)
     }
   }
   else{
-      for (int i = m_lineBeg; i < m_lineEnd && i < m_commandsNumber; i++) {
+      for (int i = m_lineBeg; (i < m_lineEnd) && (i < m_commandsNumber); i++) {
       if (m_commands[i].type == CruCommand::Type::Read) {
         m_commands[i-1].frame.appendToString(m_fredResponse);
         m_fredResponse += "\n";
