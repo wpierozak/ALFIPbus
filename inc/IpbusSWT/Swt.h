@@ -22,9 +22,9 @@ struct Swt {
                                RMWsum,
                                BlockReadIncrement,
                                BlockReadNonIncrement };
-  uint32_t getResponseSize();
   TransactionType getTransactionType() const;
 
+  void appendToString(std::string& dest);
   static constexpr uint32_t SwtStrLen = 21;
 };
 } // namespace fit_swt

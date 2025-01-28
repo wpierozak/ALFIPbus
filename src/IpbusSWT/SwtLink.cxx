@@ -206,7 +206,6 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
     uint32_t wordRead = 0;
     uint32_t readCommands = 0;
 
-    std::array<Swt,maxPacketPayload> outputFrames;
     uint32_t ipbusOutputBuffer[maxPacketPayload];
 
     uint32_t offset = frame.data % maxPacketPayload;
@@ -221,7 +220,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
       if(transceive(m_request, m_response))
       {
         for(uint32_t idx = 0; idx < offset; idx++){
-          outputFrames[idx] = Swt{frame.mode, currentAddress, ipbusOutputBuffer[idx]};
+          m_commands[frameIdx+wordRead].frame = Swt{frame.mode, currentAddress, ipbusOutputBuffer[idx]};
           if(increment){
             currentAddress++;
           }
@@ -234,7 +233,8 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
         return false;
       }
 
-      readCommands += writeBlockReadResponse(outputFrames.data(),offset);
+      m_lineEnd += wordRead;
+      readCommands += writeToResponse(true);
       if(readCommands < wordRead){
           utils::ErrorMessage mess;
           mess << "Unsufficient numeber of read command to retrieve block read results; read " << wordRead << " words;";
@@ -242,7 +242,8 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
           reportError(std::move(mess));
           return false;
       }
-
+      m_lineBeg = m_lineEnd;
+      m_lineEnd += 1;
     }
 
     while(wordRead < frame.data){
@@ -253,7 +254,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
       if(transceive(m_request, m_response))
       {
         for( uint32_t idx = 0; idx < maxPacketPayload; idx++){
-          outputFrames[idx] = Swt{frame.mode, currentAddress, ipbusOutputBuffer[idx]};
+          m_commands[frameIdx+wordRead].frame = Swt{frame.mode, currentAddress, ipbusOutputBuffer[idx]};
           if(increment){
             currentAddress++;
           }
@@ -267,7 +268,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
         return false;
       }
 
-      readCommands += writeBlockReadResponse(outputFrames.data(), ipbus::maxPacket-3);
+      readCommands += writeToResponse(true);
       if(readCommands < wordRead){
           utils::ErrorMessage mess;
           mess << "Unsufficient numeber of read command to retrieve block read results; read " << wordRead << " words;";
@@ -275,7 +276,8 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
           reportError(std::move(mess));
           return false;
       }
-
+      m_lineBeg = m_lineEnd;
+      m_lineEnd += 1;
     }
 
     return true;
@@ -289,61 +291,33 @@ void SwtLink::sendResponse()
 }
 
 
-void SwtLink::writeToResponse()
+uint32_t SwtLink::writeToResponse(bool readOnly)
 {
-  for (int i = m_lineBeg; i < m_lineEnd && i < m_commandsNumber; i++) {
-    if (m_commands[i].type == CruCommand::Type::Read) {
-      writeFrame(m_commands[i - 1].frame);
-      m_fredResponse += "\n";
-    } else if(m_commands[i].type == CruCommand::Type::Write){
-      m_fredResponse += "0\n";
+  uint32_t proceeded = 0;
+  if(!readOnly){
+    for (int i = m_lineBeg; i < m_lineEnd && i < m_commandsNumber; i++) {
+      if (m_commands[i].type == CruCommand::Type::Read) {
+        m_commands[i-1].frame.appendToString(m_fredResponse);// writeFrame(m_commands[i - 1].frame);
+        m_fredResponse += "\n";
+      } else if(m_commands[i].type == CruCommand::Type::Write){
+        m_fredResponse += "0\n";
+      }
+      proceeded++;
     }
   }
+  else{
+      for (int i = m_lineBeg; i < m_lineEnd && i < m_commandsNumber; i++) {
+      if (m_commands[i].type == CruCommand::Type::Read) {
+        m_commands[i-1].frame.appendToString(m_fredResponse);
+        m_fredResponse += "\n";
+      } else {
+        break;
+      }
+      proceeded++;
+    }
+  }
+  return proceeded;
 }
-
-uint32_t SwtLink::writeBlockReadResponse(const Swt* blockResponse, uint32_t endFrameIdxOffset)
-{
-  if(endFrameIdxOffset){
-    m_lineEnd += endFrameIdxOffset;
-  }
-
-  uint32_t wroteFrames = 0;
-
-  for (int i = m_lineBeg; i < m_lineEnd && i < m_commandsNumber; i++) {
-    if (m_commands[i].type == CruCommand::Type::Read) {
-      writeFrame(blockResponse[i-m_lineBeg]);
-      m_fredResponse += "\n";
-    } else {
-      return wroteFrames;
-    } 
-    wroteFrames++;
-  }
-
-  m_lineBeg += wroteFrames;
-  m_lineEnd = m_lineBeg;
-
-  return wroteFrames;
-}
-
-void SwtLink::writeFrame(const Swt& frame)
-{
-  m_fredResponse += "0x";
-  const uint8_t* buffer = (const uint8_t*)&frame.mode;
-  m_fredResponse.push_back(utils::hexToChar(buffer[1] & 0x0F));
-  m_fredResponse.push_back(utils::hexToChar(buffer[0] >> 4));
-  m_fredResponse.push_back(utils::hexToChar(buffer[0] & 0x0F));
-  buffer = (const uint8_t*)&frame.address;
-  for(int idx = 3; idx >= 0; idx--){
-    m_fredResponse.push_back(utils::hexToChar(buffer[idx] >> 4));
-    m_fredResponse.push_back(utils::hexToChar(buffer[idx] & 0x0F));
-  }
-  buffer = (const uint8_t*)&frame.data;
-  for(int idx = 3; idx >= 0; idx--){
-    m_fredResponse.push_back(utils::hexToChar(buffer[idx] >> 4));
-    m_fredResponse.push_back(utils::hexToChar(buffer[idx] & 0x0F));
-  }
-}
-
 
 void SwtLink::sendFailure()
 {

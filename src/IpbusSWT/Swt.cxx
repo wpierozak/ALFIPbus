@@ -48,4 +48,23 @@ Swt::Swt(const char* str)
   mode = static_cast<uint16_t>(utils::stringToByte(str[1], str[2]));
 }
 
+void Swt::appendToString(std::string& dest)
+{
+  dest += "0x";
+  const uint8_t* buffer = (const uint8_t*)&mode;
+  dest.push_back(utils::hexToChar(buffer[1] & 0x0F));
+  dest.push_back(utils::hexToChar(buffer[0] >> 4));
+  dest.push_back(utils::hexToChar(buffer[0] & 0x0F));
+  buffer = (const uint8_t*)&address;
+  for(int idx = 3; idx >= 0; idx--){
+    dest.push_back(utils::hexToChar(buffer[idx] >> 4));
+    dest.push_back(utils::hexToChar(buffer[idx] & 0x0F));
+  }
+  buffer = (const uint8_t*)&data;
+  for(int idx = 3; idx >= 0; idx--){
+    dest.push_back(utils::hexToChar(buffer[idx] >> 4));
+    dest.push_back(utils::hexToChar(buffer[idx] & 0x0F));
+  }
+}
+
 } // namespace fit_swt
