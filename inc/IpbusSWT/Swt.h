@@ -24,6 +24,8 @@ struct Swt {
                                BlockReadNonIncrement };
   uint32_t getResponseSize();
   TransactionType getTransactionType() const;
+
+  static constexpr uint32_t SwtStrLen = 21;
 };
 } // namespace fit_swt
 

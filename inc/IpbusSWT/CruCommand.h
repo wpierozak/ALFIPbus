@@ -14,7 +14,7 @@ struct CruCommand
         else if(strncmp(str, Read, ReadLen) == 0){
             type = Type::Read;
         }
-        else if(strncmp(str + 22, Write, WriteLen) == 0){
+        else if(strncmp(str + fit_swt::Swt::SwtStrLen + 1, Write, WriteLen) == 0){
             frame = fit_swt::Swt(str+2);
             type = Type::Write;
         }
@@ -35,7 +35,7 @@ struct CruCommand
             case Type::Read:
                 return ReadLen;
             case Type::Write:
-                return WriteLen;
+                return WriteLen + fit_swt::Swt::SwtStrLen + 1;
         }
     }
 
