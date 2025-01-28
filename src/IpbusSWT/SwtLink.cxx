@@ -235,7 +235,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
 
       m_lineEnd += wordRead;
       readCommands += writeToResponse(true);
-      if(readCommands < wordRead){
+      if(readCommands != wordRead){
           utils::ErrorMessage mess;
           mess << "Unsufficient numeber of read command to retrieve block read results; read " << wordRead << " words;";
           mess << " received " << readCommands << " read commands";
@@ -269,7 +269,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
       }
 
       readCommands += writeToResponse(true);
-      if(readCommands < wordRead){
+      if(readCommands != wordRead){
           utils::ErrorMessage mess;
           mess << "Unsufficient numeber of read command to retrieve block read results; read " << wordRead << " words;";
           mess << " received " << readCommands << " read commands";
