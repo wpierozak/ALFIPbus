@@ -119,7 +119,7 @@ bool SwtLink::interpretFrames()
           BOOST_LOG_TRIVIAL(error) << "SWT sequence failed (" << i << "): " << "RMWbits failed: second frame has been not received" << std::endl;
           return false;
         }
-        if (m_commands[i + 1].frame.data == EmptyData && m_commands[i + 1].frame.address == EmptyAddress && m_commands[i + 1].frame.mode == EmptyMode) {
+        if (m_commands[i + 1].type == CruCommand::Type::Read) {
           if (i + 2 >= m_frames.size()) {
             BOOST_LOG_TRIVIAL(error) << "SWT sequence failed (" << i << "): "<< "RMWbits failed: second frame has been not received" << std::endl;
             return false;
