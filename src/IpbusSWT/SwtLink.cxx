@@ -211,52 +211,62 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
 
     uint32_t ipbusOutputBuffer[maxPacketPayload];
 
-    uint32_t offset = frame.data % maxPacketPayload;
+    // uint32_t offset = frame.data % maxPacketPayload;
 
-    if(offset > 0){
-      uint32_t sizeA = (offset>255) ? maxPacketPayload/2: offset;
-      uint32_t sizeB = offset - sizeA;
-      m_request.addTransaction(transactionType, frame.address, nullptr,  ipbusOutputBuffer, sizeA);
-      if(offset > 255){
-        m_request.addTransaction(transactionType, frame.address + sizeA*increment, nullptr, ipbusOutputBuffer+sizeA, sizeB);
-      }
-      if(transceive(m_request, m_response))
-      {
-        for(uint32_t idx = 0; idx < offset; idx++){
-          m_commands[frameIdx+wordRead].frame = Swt{frame.mode, currentAddress, ipbusOutputBuffer[idx]};
-          if(increment){
-            currentAddress++;
-          }
-          wordRead++;
-        }
-        m_request.reset();
-      }
-      else{
-        m_request.reset();
-        return false;
-      }
+    // if(offset > 0){
+    //   uint32_t sizeA = (offset>255) ? maxPacketPayload/2: offset;
+    //   uint32_t sizeB = offset - sizeA;
+    //   m_request.addTransaction(transactionType, frame.address, nullptr,  ipbusOutputBuffer, sizeA);
+    //   if(offset > 255){
+    //     m_request.addTransaction(transactionType, frame.address + sizeA*increment, nullptr, ipbusOutputBuffer+sizeA, sizeB);
+    //   }
+    //   if(transceive(m_request, m_response))
+    //   {
+    //     for(uint32_t idx = 0; idx < offset; idx++){
+    //       m_commands[frameIdx+wordRead].frame = Swt{frame.mode, currentAddress, ipbusOutputBuffer[idx]};
+    //       if(increment){
+    //         currentAddress++;
+    //       }
+    //       wordRead++;
+    //     }
+    //     m_request.reset();
+    //   }
+    //   else{
+    //     m_request.reset();
+    //     return false;
+    //   }
 
-      m_lineEnd += offset;
+    //   m_lineEnd += offset;
     
-      readCommands += writeToResponse(true);
-      if(readCommands != wordRead){
-          utils::ErrorMessage mess;
-          mess << "Unsufficient numeber of read command to retrieve block read results; read " << wordRead << " words;";
-          mess << " received " << readCommands << " read commands";
-          reportError(std::move(mess));
-          return false;
-      }
-      m_lineBeg = m_lineEnd;
-    }
+    //   readCommands += writeToResponse(true);
+    //   if(readCommands != wordRead){
+    //       utils::ErrorMessage mess;
+    //       mess << "Unsufficient numeber of read command to retrieve block read results; read " << wordRead << " words;";
+    //       mess << " received " << readCommands << " read commands";
+    //       reportError(std::move(mess));
+    //       return false;
+    //   }
+    //   m_lineBeg = m_lineEnd;
+    // }
 
     while(wordRead < frame.data){
-      uint32_t sizeA = maxPacketPayload/2;
-      uint32_t sizeB = maxPacketPayload - sizeA;
+      uint32_t wordLeft = frame.data - wordRead;
+      uint32_t sizeA = ( (wordLeft > maxPacketPayload/2) ? maxPacketPayload/2 : wordLeft );
+      uint32_t size = sizeA;
       m_request.addTransaction(transactionType, currentAddress, nullptr,  ipbusOutputBuffer, sizeA);
-      m_request.addTransaction(transactionType, currentAddress + sizeA*increment, nullptr, ipbusOutputBuffer+sizeA, sizeB);
+      if(sizeA < wordLeft && wordLeft < maxPacketPayload){
+        uint32_t sizeB = wordLeft - sizeA;
+        m_request.addTransaction(transactionType, currentAddress + sizeA*increment, nullptr, ipbusOutputBuffer+sizeA, sizeB);
+        size += sizeB;
+      } else if(sizeA < wordLeft){
+        uint32_t sizeB = maxPacketPayload - sizeA;
+        m_request.addTransaction(transactionType, currentAddress + sizeA*increment, nullptr, ipbusOutputBuffer+sizeA, sizeB);
+        size += sizeB;
+      }
+
       if(transceive(m_request, m_response))
       {
-        for( uint32_t idx = 0; idx < maxPacketPayload; idx++){
+        for( uint32_t idx = 0; idx < size; idx++){
           m_commands[frameIdx+wordRead].frame = Swt{frame.mode, currentAddress, ipbusOutputBuffer[idx]};
           if(increment){
             currentAddress++;
@@ -271,7 +281,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
         return false;
       }
 
-      m_lineEnd += maxPacketPayload;
+      m_lineEnd += size;
       readCommands += writeToResponse(true);
       if(readCommands != wordRead){
           utils::ErrorMessage mess;
