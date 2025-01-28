@@ -41,7 +41,7 @@ bool SwtLink::parseFrames(const char* request)
 {
   //m_frames.clear();
   //m_reqType.clear();
-
+  m_commands.clear();
   const char* currentLine = request;
   const char* end = request + m_sequenceLen;
 
