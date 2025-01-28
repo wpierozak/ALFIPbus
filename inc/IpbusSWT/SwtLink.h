@@ -63,16 +63,17 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
   int m_lineEnd{0};
   int m_packetPadding{8};
 
-  std::vector<Swt> m_frames;
+  //std::vector<Swt> m_frames;
 
   enum RequestType {Write = 'w', Read = 'r'};
-  std::vector<char> m_reqType;
+  //std::vector<char> m_reqType;
   
   std::vector<CruCommand> m_commands;
   std::string m_fredResponse;
   
   utils::ErrorMessage m_errorMessage;
   size_t m_sequenceLen;
+  uint32_t m_commandsNumber;
 
   void reportError(utils::ErrorMessage&& errorMessage)
   {

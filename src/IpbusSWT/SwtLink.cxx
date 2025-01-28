@@ -39,8 +39,8 @@ void SwtLink::processRequest(const char* swtSequence)
 
 bool SwtLink::parseFrames(const char* request)
 {
-  m_frames.clear();
-  m_reqType.clear();
+  //m_frames.clear();
+  //m_reqType.clear();
 
   const char* currentLine = request;
   const char* end = request + m_sequenceLen;
@@ -65,6 +65,7 @@ bool SwtLink::parseFrames(const char* request)
     return false;
   }
 
+  m_commandsNumber = m_commands.size();
   return true;
 }
 
@@ -115,12 +116,12 @@ bool SwtLink::interpretFrames()
           BOOST_LOG_TRIVIAL(error) << "SWT sequence failed (" << i << "): " << "RMWbits failed: first frame is not the AND frame" << std::endl;
           return false;
         }
-        if (i + 1 >= m_frames.size()) {
+        if (i + 1 >= m_commandsNumber) {
           BOOST_LOG_TRIVIAL(error) << "SWT sequence failed (" << i << "): " << "RMWbits failed: second frame has been not received" << std::endl;
           return false;
         }
         if (m_commands[i + 1].type == CruCommand::Type::Read) {
-          if (i + 2 >= m_frames.size()) {
+          if (i + 2 >= m_commandsNumber) {
             BOOST_LOG_TRIVIAL(error) << "SWT sequence failed (" << i << "): "<< "RMWbits failed: second frame has been not received" << std::endl;
             return false;
           }
@@ -290,7 +291,7 @@ void SwtLink::sendResponse()
 
 void SwtLink::writeToResponse()
 {
-  for (int i = m_lineBeg; i < m_lineEnd && i < m_frames.size(); i++) {
+  for (int i = m_lineBeg; i < m_lineEnd && i < m_commandsNumber; i++) {
     if (m_commands[i].type == CruCommand::Type::Read) {
       writeFrame(m_commands[i - 1].frame);
       m_fredResponse += "\n";
@@ -308,7 +309,7 @@ uint32_t SwtLink::writeBlockReadResponse(const Swt* blockResponse, uint32_t endF
 
   uint32_t wroteFrames = 0;
 
-  for (int i = m_lineBeg; i < m_lineEnd && i < m_frames.size(); i++) {
+  for (int i = m_lineBeg; i < m_lineEnd && i < m_commandsNumber; i++) {
     if (m_commands[i].type == CruCommand::Type::Read) {
       writeFrame(blockResponse[i-m_lineBeg]);
       m_fredResponse += "\n";
