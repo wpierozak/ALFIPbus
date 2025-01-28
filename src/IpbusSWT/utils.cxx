@@ -117,38 +117,5 @@ uint8_t stringToByte(char c1, char c2)
   return 16 * utils::charToHex(c1) + utils::charToHex(c2);
 }
 
-ErrorMessage::ErrorMessage(std::string message):mess(std::move(message))
-{
-
-}
-
-ErrorMessage::ErrorMessage(uint32_t frameIdx, Swt frame, std::string message)
-{
-  mess += "Frame index: " + std::to_string(frameIdx) + ";";
-  switch(frame.getTransactionType())
-  {
-    case Swt::TransactionType::Read:
-      mess += "Operation: Read;";
-      break;
-    case Swt::TransactionType::Write:
-      mess += "Operation: Write;";
-      break;
-    case Swt::TransactionType::RMWbits:
-      mess += "Operation: RMW bits;";
-      break;
-    case Swt::TransactionType::BlockReadIncrement:
-      mess += "Operation: Block read increment;";
-      break;
-    case Swt::TransactionType::BlockReadNonIncrement:
-      mess += "Operation: Block read non-increment;";
-      break;
-  }
-
-  mess += "Address: " + toASCII(frame.address) + ";";
-  mess += "Data: " + toASCII(frame.data) + ";";
-  mess += "Error message: " + message;
-}
-
-
 } // namespace utils
 } // namespace fit_swt

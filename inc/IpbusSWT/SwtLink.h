@@ -41,6 +41,8 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
 
   bool parseFrames(const char* request);
   bool interpretFrames();
+  bool executeTransactions();
+  void resetState();
 
   bool readBlock(const Swt& frame, uint32_t frameIdx);
 
@@ -48,42 +50,20 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
   uint32_t writeBlockReadResponse(const Swt* blockResponse, uint32_t endFrameIdxOffset = 0);
   void sendResponse();
 
-  void setPacketPadding(int);
-  int getPacketPadding() const;
-
-  static constexpr uint16_t EmptyMode = 0xFFFF;
-  static constexpr uint16_t EmptyAddress = 0x0;
-  static constexpr uint16_t EmptyData = 0x0;
-
  private:
   ipbus::IPbusRequest m_request;
   ipbus::IPbusResponse m_response;
 
-  int m_lineBeg{0};
-  int m_lineEnd{0};
   int m_current{0};
   int m_lastWritten{0};
   
-  int m_packetPadding{8};
-
-  //std::vector<Swt> m_frames;
-
-  enum RequestType {Write = 'w', Read = 'r'};
-  //std::vector<char> m_reqType;
+  static constexpr uint32_t PacketPadding = 4;
   
   std::vector<CruCommand> m_commands;
   std::string m_fredResponse;
   
-  utils::ErrorMessage m_errorMessage;
   size_t m_sequenceLen;
   uint32_t m_commandsNumber;
-
-  void reportError(utils::ErrorMessage&& errorMessage)
-  {
-    BOOST_LOG_TRIVIAL(error) << (std::string) errorMessage;
-    m_errorMessage = utils::ErrorMessage(std::move(errorMessage));
-  }
-
 };
 
 } // namespace fit_swt

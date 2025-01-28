@@ -11,6 +11,7 @@ namespace fit_swt
 void SwtLink::rpcHandler()
 {
   BOOST_LOG_TRIVIAL(debug) << "Received request";
+  resetState();
   processRequest(getString());
 }
 
@@ -22,8 +23,6 @@ void SwtLink::processRequest(const char* swtSequence)
     BOOST_LOG_TRIVIAL(warning) << "Received empty request";
     sendFailure();
   }
-
-  m_fredResponse = "";
 
   if (!parseFrames(swtSequence)) {
     sendFailure();
@@ -39,9 +38,6 @@ void SwtLink::processRequest(const char* swtSequence)
 
 bool SwtLink::parseFrames(const char* request)
 {
-  //m_frames.clear();
-  //m_reqType.clear();
-  m_commands.clear();
   const char* currentLine = request;
   const char* end = request + m_sequenceLen;
 
@@ -69,34 +65,26 @@ bool SwtLink::parseFrames(const char* request)
   return true;
 }
 
+void SwtLink::resetState()
+{
+  m_fredResponse.clear();
+  m_request.reset();
+  m_commands.clear();
+  m_current = m_lastWritten = 0;
+}
+
 
 bool SwtLink::interpretFrames()
 {
   uint32_t buffer[2];
-  uint32_t cmdToProceed = 1;
-  m_lineBeg = 0;
-  m_lineEnd = 0;
-  m_lastWritten = 0;
 
-  m_request.reset();
-
-  for (m_current = 0; m_current < m_commandsNumber; m_current++) {
+  for (; m_current < m_commandsNumber; m_current++) {
     
-    if ((m_request.getSize() + m_packetPadding >= ipbus::maxPacket) || m_commands[m_current].frame.isBlock()) {
-      if(transceive(m_request, m_response))
-      {
-        cmdToProceed = 0;
-        writeToResponse();
-        m_request.reset();
-        //m_lineBeg = m_current;
-      }
-      else
-      {
-        m_request.reset();
+    if ((m_request.getSize() + PacketPadding >= ipbus::maxPacket) || m_commands[m_current].frame.isBlock()) {
+      if(executeTransactions() == false){
         return false;
       }
     }
-    //BOOST_LOG_TRIVIAL(info) << "IDX: " << cmdToProceed << " " << m_current << " " << m_commandsNumber;
 
     if (m_commands[m_current].type != CruCommand::Type::Write) {
       continue;
@@ -135,7 +123,6 @@ bool SwtLink::interpretFrames()
           buffer[1] = m_commands[m_current + 2].frame.data;
           m_request.addTransaction(ipbus::enums::transactions::RMWbits, frame.address, buffer, &frame.data);
           m_current += 2;
-          //m_lineEnd += 2;
         } else {
           if ((m_commands[m_current + 1].frame.mode) != 3) {
             BOOST_LOG_TRIVIAL(error) << "SWT sequence failed (" << m_current << "): " << "RMWbits failed: invalid second frame - mode: " << m_commands[m_current + 1].frame.mode << std::endl;
@@ -145,7 +132,6 @@ bool SwtLink::interpretFrames()
           buffer[1] = m_commands[m_current + 1].frame.data;
           m_request.addTransaction(ipbus::enums::transactions::RMWbits, frame.address, buffer, &frame.data);
           m_current += 1;
-          //m_lineEnd += 1;
         }
 
         break;
@@ -161,26 +147,23 @@ bool SwtLink::interpretFrames()
         if(!success){
           return false;
         }
-        //m_current = m_lineEnd-1;
       }
         break;
       default:
       break;
     }
   }
+  return executeTransactions();
+}
 
-  if(transceive(m_request, m_response))
-  {
+bool SwtLink::executeTransactions()
+{
+  bool success = transceive(m_request, m_response);
+  if(success){
     writeToResponse();
-    m_request.reset();
-    return true;
   }
-  else
-  {
-    m_request.reset();
-    return false;
-  }
-
+  m_request.reset();
+  return success;
 }
 
 bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
@@ -237,10 +220,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
       }
       readCommands += writeToResponse(true);
       if(readCommands != wordRead){
-          utils::ErrorMessage mess;
-          mess << "Unsufficient numeber of read command to retrieve block read results; read " << wordRead << " words;";
-          mess << " received " << readCommands << " read commands";
-          reportError(std::move(mess));
+          BOOST_LOG_TRIVIAL(error) << "Unsufficient numeber of read command to retrieve block read results; read " << wordRead << " words;";
           return false;
       }
     }
@@ -292,16 +272,5 @@ void SwtLink::sendFailure()
   m_fredResponse = "failure\n" + m_fredResponse;
   setData(m_fredResponse.c_str());
 }
-
-void SwtLink::setPacketPadding(int padding)
-{
-  m_packetPadding = padding;
-}
-
-int SwtLink::getPacketPadding() const
-{
-  return m_packetPadding;
-}
-
 
 } // namespace fit_swt
