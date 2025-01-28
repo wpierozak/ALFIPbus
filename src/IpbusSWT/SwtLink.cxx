@@ -92,7 +92,7 @@ bool SwtLink::interpretFrames()
 
     Swt& frame = m_commands[m_current].frame;
 
-    switch (frame.getTransactionType()) {
+    switch (frame.type()) {
       case Swt::TransactionType::Read:
         m_request.addTransaction(ipbus::enums::transactions::Read, frame.address, &frame.data, &frame.data, 1);
         break;
@@ -178,7 +178,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
     m_current++;
     writeToResponse();
 
-    bool increment = (frame.getTransactionType() == Swt::TransactionType::BlockReadIncrement);
+    bool increment = (frame.type() == Swt::TransactionType::BlockReadIncrement);
     auto transactionType = (increment) ? ipbus::enums::transactions::Read : ipbus::enums::transactions::NonIncrementingRead;
     uint32_t currentAddress = frame.address;
     uint32_t wordRead = 0;

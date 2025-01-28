@@ -12,7 +12,7 @@ namespace fit_swt
 
 /*      SWT     */
 
-Swt::TransactionType Swt::getTransactionType() const
+Swt::TransactionType Swt::type() const
 {
   switch (mode) {
     case 0:
@@ -50,20 +50,24 @@ Swt::Swt(const char* str)
 
 void Swt::appendToString(std::string& dest)
 {
-  dest += "0x";
+  size_t pos = dest.size();
+  dest.resize(pos + SwtStrLen);
+  dest[pos++] = '0';
+  dest[pos++] = 'x';
+  //dest += "0x";
   const uint8_t* buffer = (const uint8_t*)&mode;
-  dest.push_back(utils::hexToChar(buffer[1] & 0x0F));
-  dest.push_back(utils::hexToChar(buffer[0] >> 4));
-  dest.push_back(utils::hexToChar(buffer[0] & 0x0F));
+  dest[pos++] = utils::hexToChar(buffer[1] & 0x0F); // dest.push_back(utils::hexToChar(buffer[1] & 0x0F));
+  dest[pos++] = utils::hexToChar(buffer[0] >> 4);// dest.push_back(utils::hexToChar(buffer[0] >> 4));
+  dest[pos++] = utils::hexToChar(buffer[0] & 0x0F); //dest.push_back(utils::hexToChar(buffer[0] & 0x0F));
   buffer = (const uint8_t*)&address;
   for(int idx = 3; idx >= 0; idx--){
-    dest.push_back(utils::hexToChar(buffer[idx] >> 4));
-    dest.push_back(utils::hexToChar(buffer[idx] & 0x0F));
+    dest[pos++] = utils::hexToChar(buffer[idx] >> 4); //dest.push_back(utils::hexToChar(buffer[idx] >> 4));
+    dest[pos++] = utils::hexToChar(buffer[idx] & 0x0F); //dest.push_back(utils::hexToChar(buffer[idx] & 0x0F));
   }
   buffer = (const uint8_t*)&data;
   for(int idx = 3; idx >= 0; idx--){
-    dest.push_back(utils::hexToChar(buffer[idx] >> 4));
-    dest.push_back(utils::hexToChar(buffer[idx] & 0x0F));
+    dest[pos++] = utils::hexToChar(buffer[idx] >> 4); // dest.push_back(utils::hexToChar(buffer[idx] >> 4));
+    dest[pos++] = utils::hexToChar(buffer[idx] & 0x0F); //dest.push_back(utils::hexToChar(buffer[idx] & 0x0F));
   }
 }
 

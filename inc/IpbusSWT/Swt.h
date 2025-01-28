@@ -22,7 +22,7 @@ struct Swt {
                                RMWsum,
                                BlockReadIncrement,
                                BlockReadNonIncrement };
-  TransactionType getTransactionType() const;
+  TransactionType type() const;
   bool isBlock() const
   {
     return mode == 8 || mode == 9;
