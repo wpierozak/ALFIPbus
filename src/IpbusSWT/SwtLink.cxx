@@ -94,7 +94,7 @@ bool SwtLink::interpretFrames()
       }
     }
 
-    m_lineEnd++;
+    m_lineEnd=i+1;
 
     if (m_commands[i].type != CruCommand::Type::Write) {
       continue;
@@ -159,7 +159,7 @@ bool SwtLink::interpretFrames()
         if(!success){
           return false;
         }
-        i += frame.data;
+        i = m_lineEnd-1;
       }
         break;
       default:
@@ -193,12 +193,15 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
     if(transceive(m_request, m_response)){
         writeToResponse();
         m_request.reset();
-        m_lineBeg = frameIdx;
     }
     else{
       m_request.reset();
       return false;
     }
+
+    
+    m_fredResponse += "0\n";
+    m_lineBeg = frameIdx+1;
 
     bool increment = (frame.getTransactionType() == Swt::TransactionType::BlockReadIncrement);
     auto transactionType = (increment) ? ipbus::enums::transactions::Read : ipbus::enums::transactions::NonIncrementingRead;
@@ -234,6 +237,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
       }
 
       m_lineEnd += offset;
+    
       readCommands += writeToResponse(true);
       if(readCommands != wordRead){
           utils::ErrorMessage mess;
@@ -267,7 +271,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
         return false;
       }
 
-      m_lineEnd += ipbus::maxPacket-3;
+      m_lineEnd += maxPacketPayload;
       readCommands += writeToResponse(true);
       if(readCommands != wordRead){
           utils::ErrorMessage mess;
