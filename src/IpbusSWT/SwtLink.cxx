@@ -28,8 +28,16 @@ void SwtLink::processRequest(const char* swtSequence)
     sendFailure();
     return;
   }
+  
+  bool success = false;
+  try{
+    success = interpretFrames();
+  }
+  catch(std::exception& e){
+    BOOST_LOG_TRIVIAL(error) << e.what();
+  }
 
-  if (interpretFrames()) {
+  if (success) {
     sendResponse();
   } else {
     sendFailure();
