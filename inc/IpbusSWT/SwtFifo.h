@@ -36,6 +36,9 @@ public:
     uint32_t size(){
         return m_currentBack;
     }
+    void clear(){
+        m_currentBack = 0;
+    }
 
 private:
     std::array<Swt,FifoLimit> m_buffer;

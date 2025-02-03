@@ -94,11 +94,11 @@ bool SwtLink::interpretFrames()
 
     switch (frame.type()) {
       case Swt::TransactionType::Read:
-        m_request.addTransaction(ipbus::enums::transactions::Read, frame.address, &frame.data, m_fifo.prepareResponseFrame(frame), 1);
+        m_request.addTransaction(ipbus::enums::transactions::Read, frame.address, &frame.data, &frame.data, 1);
         break;
 
       case Swt::TransactionType::Write:
-        m_request.addTransaction(ipbus::enums::transactions::Write, frame.address, &frame.data, nullptr, 1);
+        m_request.addTransaction(ipbus::enums::transactions::Write, frame.address, &frame.data, &frame.data, 1);
         break;
 
       case Swt::TransactionType::RMWbits:
@@ -121,7 +121,7 @@ bool SwtLink::interpretFrames()
           }
           buffer[0] = frame.data;
           buffer[1] = m_commands[m_current + 2].frame.data;
-          m_request.addTransaction(ipbus::enums::transactions::RMWbits, frame.address, buffer, m_fifo.prepareResponseFrame(frame));
+          m_request.addTransaction(ipbus::enums::transactions::RMWbits, frame.address, buffer, &frame.data);
           m_current += 2;
         } else {
           if ((m_commands[m_current + 1].frame.mode) != 3) {
@@ -160,7 +160,7 @@ bool SwtLink::executeTransactions()
 {
   bool success = transceive(m_request, m_response);
   if(success){
-    writeToResponse();
+    processExecutedCommands();
   }
   m_request.reset();
   return success;
@@ -176,7 +176,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
   }
 
     m_current++;
-    writeToResponse();
+    processExecutedCommands();
 
     bool increment = (frame.type() == Swt::TransactionType::BlockReadIncrement);
     auto transactionType = (increment) ? ipbus::enums::transactions::Read : ipbus::enums::transactions::NonIncrementingRead;
@@ -204,13 +204,11 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
       if(transceive(m_request, m_response))
       {
         uint32_t curr = m_current;
-        for( ; m_current < curr + size; m_current++){
-          m_fifo.push(Swt{frame.mode, currentAddress, ipbusOutputBuffer[m_current - curr]});
-          //m_commands[m_current-1].frame = Swt{frame.mode, currentAddress, ipbusOutputBuffer[m_current - curr]};
+        for( uint32_t idx = 0 ; idx < size; idx++){
+          m_fifo.push(Swt{frame.mode, currentAddress, ipbusOutputBuffer[idx]});
           if(increment){
             currentAddress++;
           }
-          wordRead++;
         }
         m_request.reset();
       }
@@ -219,11 +217,7 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
         m_request.reset();
         return false;
       }
-      readCommands += writeToResponse(true);
-      if(readCommands != wordRead){
-          BOOST_LOG_TRIVIAL(error) << "Unsufficient numeber of read command to retrieve block read results; read " << wordRead << " words;";
-          return false;
-      }
+      processExecutedCommands();
     }
 
     return true;
@@ -237,41 +231,53 @@ void SwtLink::sendResponse()
 }
 
 
-uint32_t SwtLink::writeToResponse(bool readOnly)
+void SwtLink::processExecutedCommands()
 {
-  uint32_t proceeded = 0;
-
-  if(!readOnly){
-    for (;m_lastWritten < m_current; m_lastWritten++) {
+  for (;m_lastWritten < m_current; m_lastWritten++) {
       if (m_commands[m_lastWritten].type == CruCommand::Type::Read) {
         while(m_fifo.empty() == false){
           m_fifo.pop().appendToString(m_fredResponse);
           m_fredResponse += "\n";
-          proceeded++;// writeFrame(m_commands[i - 1].frame);
         }
         
-      } else if(m_commands[m_lastWritten].type == CruCommand::Type::Write){
+    } else if(m_commands[m_lastWritten].type == CruCommand::Type::Write){
+        updateFifoState(m_commands[m_lastWritten].frame);
         m_fredResponse += "0\n";
-        proceeded++;
-      }
+    } else if(m_commands[m_lastWritten].type == CruCommand::Type::ScReset){
+      m_fifo.clear();
     }
   }
-  else{
-      for (; m_lastWritten < m_current ; m_lastWritten++) {
-      if (m_commands[m_lastWritten].type == CruCommand::Type::Read) {
-        while(m_fifo.empty() == false){
-          m_fifo.pop().appendToString(m_fredResponse);
-          m_fredResponse += "\n";
-          proceeded++;// writeFrame(m_commands[i - 1].frame);
-        }
-      } else {
-        break;
-      }
-      
-    }
-  }
+}
 
-  return proceeded;
+void SwtLink::updateFifoState(const Swt& frame)
+{
+  switch(frame.mode)
+  {
+    case 0:
+    case 2:
+    m_fifo.push(frame);
+    break;
+    default:
+    break;
+  }
+}
+
+void SwtLink::updateFifoState(const Swt& frame, std::span<Swt> response)
+{
+  switch(frame.mode)
+  {
+    case 0:
+    case 2:
+    m_fifo.push(frame);
+    break;
+    case 8:
+    case 9:
+    for(uint32_t idx = 0; idx < frame.data; idx++){
+      m_fifo.push(response[idx]);
+    }
+    default:
+    break;
+  }
 }
 
 void SwtLink::sendFailure()

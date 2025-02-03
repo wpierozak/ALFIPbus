@@ -13,7 +13,7 @@
 #include"utils.h"
 #include"CruCommand.h"
 #include"SwtFifo.h"
-
+#include<span>
 namespace fit_swt
 {
 
@@ -47,11 +47,13 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
 
   bool readBlock(const Swt& frame, uint32_t frameIdx);
 
-  uint32_t writeToResponse(bool readOnly=false);
-  uint32_t writeBlockReadResponse(const Swt* blockResponse, uint32_t endFrameIdxOffset = 0);
+  void processExecutedCommands();
   void sendResponse();
 
  private:
+  void updateFifoState(const Swt& frame);
+  void updateFifoState(const Swt& frame, std::span<Swt> response);
+
   ipbus::IPbusRequest m_request;
   ipbus::IPbusResponse m_response;
 
