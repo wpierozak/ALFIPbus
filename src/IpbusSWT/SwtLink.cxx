@@ -255,26 +255,9 @@ void SwtLink::updateFifoState(const Swt& frame)
   {
     case 0:
     case 2:
+    case 4:
     m_fifo.push(frame);
     break;
-    default:
-    break;
-  }
-}
-
-void SwtLink::updateFifoState(const Swt& frame, std::array<Swt>& response)
-{
-  switch(frame.mode)
-  {
-    case 0:
-    case 2:
-    m_fifo.push(frame);
-    break;
-    case 8:
-    case 9:
-    for(uint32_t idx = 0; idx < frame.data; idx++){
-      m_fifo.push(response[idx]);
-    }
     default:
     break;
   }

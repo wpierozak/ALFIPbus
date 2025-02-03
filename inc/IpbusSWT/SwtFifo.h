@@ -28,7 +28,7 @@ public:
         if(m_currentBack == 0){
             throw std::out_of_range("Swt fifo is empty!");
         }
-        return m_buffer[m_currentBack--];
+        return m_buffer[--m_currentBack];
     }
     bool empty(){
         return m_currentBack == 0;
