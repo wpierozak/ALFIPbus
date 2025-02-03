@@ -262,7 +262,7 @@ void SwtLink::updateFifoState(const Swt& frame)
   }
 }
 
-void SwtLink::updateFifoState(const Swt& frame, std::span<Swt> response)
+void SwtLink::updateFifoState(const Swt& frame, std::array<Swt>& response)
 {
   switch(frame.mode)
   {

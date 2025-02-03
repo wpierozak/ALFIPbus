@@ -52,7 +52,7 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
 
  private:
   void updateFifoState(const Swt& frame);
-  void updateFifoState(const Swt& frame, std::span<Swt> response);
+  void updateFifoState(const Swt& frame, std::array<Swt>& response);
 
   ipbus::IPbusRequest m_request;
   ipbus::IPbusResponse m_response;
