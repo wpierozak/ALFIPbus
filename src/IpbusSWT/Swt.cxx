@@ -48,7 +48,7 @@ Swt::Swt(const char* str)
   mode = static_cast<uint16_t>(utils::stringToByte(str[1], str[2]));
 }
 
-void Swt::appendToString(std::string& dest)
+void Swt::appendToString(std::string& dest) const
 {
   size_t pos = dest.size();
   dest.resize(pos + SwtStrLen);

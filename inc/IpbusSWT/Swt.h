@@ -27,7 +27,7 @@ struct Swt {
   {
     return mode == 8 || mode == 9;
   }
-  void appendToString(std::string& dest);
+  void appendToString(std::string& dest) const;
   static constexpr uint32_t SwtStrLen = 21;
 };
 } // namespace fit_swt

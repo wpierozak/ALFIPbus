@@ -94,11 +94,11 @@ bool SwtLink::interpretFrames()
 
     switch (frame.type()) {
       case Swt::TransactionType::Read:
-        m_request.addTransaction(ipbus::enums::transactions::Read, frame.address, &frame.data, &frame.data, 1);
+        m_request.addTransaction(ipbus::enums::transactions::Read, frame.address, &frame.data, m_fifo.prepareResponseFrame(frame), 1);
         break;
 
       case Swt::TransactionType::Write:
-        m_request.addTransaction(ipbus::enums::transactions::Write, frame.address, &frame.data, &frame.data, 1);
+        m_request.addTransaction(ipbus::enums::transactions::Write, frame.address, &frame.data, nullptr, 1);
         break;
 
       case Swt::TransactionType::RMWbits:
@@ -121,7 +121,7 @@ bool SwtLink::interpretFrames()
           }
           buffer[0] = frame.data;
           buffer[1] = m_commands[m_current + 2].frame.data;
-          m_request.addTransaction(ipbus::enums::transactions::RMWbits, frame.address, buffer, &frame.data);
+          m_request.addTransaction(ipbus::enums::transactions::RMWbits, frame.address, buffer, m_fifo.prepareResponseFrame(frame));
           m_current += 2;
         } else {
           if ((m_commands[m_current + 1].frame.mode) != 3) {
@@ -205,7 +205,8 @@ bool SwtLink::readBlock(const Swt& frame, uint32_t frameIdx)
       {
         uint32_t curr = m_current;
         for( ; m_current < curr + size; m_current++){
-          m_commands[m_current-1].frame = Swt{frame.mode, currentAddress, ipbusOutputBuffer[m_current - curr]};
+          m_fifo.push(Swt{frame.mode, currentAddress, ipbusOutputBuffer[m_current - curr]});
+          //m_commands[m_current-1].frame = Swt{frame.mode, currentAddress, ipbusOutputBuffer[m_current - curr]};
           if(increment){
             currentAddress++;
           }
@@ -243,23 +244,30 @@ uint32_t SwtLink::writeToResponse(bool readOnly)
   if(!readOnly){
     for (;m_lastWritten < m_current; m_lastWritten++) {
       if (m_commands[m_lastWritten].type == CruCommand::Type::Read) {
-        m_commands[m_lastWritten-1].frame.appendToString(m_fredResponse);// writeFrame(m_commands[i - 1].frame);
-        m_fredResponse += "\n";
+        while(m_fifo.empty() == false){
+          m_fifo.pop().appendToString(m_fredResponse);
+          m_fredResponse += "\n";
+          proceeded++;// writeFrame(m_commands[i - 1].frame);
+        }
+        
       } else if(m_commands[m_lastWritten].type == CruCommand::Type::Write){
         m_fredResponse += "0\n";
+        proceeded++;
       }
-      proceeded++;
     }
   }
   else{
       for (; m_lastWritten < m_current ; m_lastWritten++) {
       if (m_commands[m_lastWritten].type == CruCommand::Type::Read) {
-        m_commands[m_lastWritten-1].frame.appendToString(m_fredResponse);
-        m_fredResponse += "\n";
+        while(m_fifo.empty() == false){
+          m_fifo.pop().appendToString(m_fredResponse);
+          m_fredResponse += "\n";
+          proceeded++;// writeFrame(m_commands[i - 1].frame);
+        }
       } else {
         break;
       }
-      proceeded++;
+      
     }
   }
 

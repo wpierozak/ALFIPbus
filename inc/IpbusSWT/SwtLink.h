@@ -12,6 +12,7 @@
 #include <boost/log/trivial.hpp>
 #include"utils.h"
 #include"CruCommand.h"
+#include"SwtFifo.h"
 
 namespace fit_swt
 {
@@ -64,6 +65,7 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
   
   size_t m_sequenceLen;
   uint32_t m_commandsNumber;
+  SwtFifo m_fifo;
 };
 
 } // namespace fit_swt
