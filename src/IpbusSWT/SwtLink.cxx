@@ -88,9 +88,9 @@ bool SwtLink::readBlock(const Swt& frame)
       size += sizeB;
     }
 
+    
     if(transceive(m_request, m_response))
     {
-      uint32_t curr = m_current;
       for( uint32_t idx = 0 ; idx < size; idx++){
         m_fifo.push(Swt{frame.mode, currentAddress, ipbusOutputBuffer[idx]});
         if(increment){
@@ -106,8 +106,7 @@ bool SwtLink::readBlock(const Swt& frame)
       return false;
     }
   }
-
-    return true;
+  return true;
 }
 
 void SwtLink::sendResponse()
@@ -120,17 +119,18 @@ void SwtLink::sendResponse()
 
 void SwtLink::processExecutedCommands()
 {
-  for(;m_cmdFifoSize > 0; m_cmdFifoSize--) {
-    if (m_commands[m_cmdFifoSize].type == CruCommand::Type::Read) {
+  for(uint32_t idx = 0; idx < m_cmdFifoSize; idx++) {
+    if (m_commands[idx].type == CruCommand::Type::Read) {
         while(m_fifo.empty() == false){
           m_fifo.pop().appendToString(m_fredResponse);
           m_fredResponse += "\n";
         }
-    } else if(m_commands[m_cmdFifoSize].type == CruCommand::Type::Write){
-      updateFifoState(m_commands[m_cmdFifoSize].frame);
+    } else if(m_commands[idx].type == CruCommand::Type::Write){
+      updateFifoState(m_commands[idx].frame);
       m_fredResponse += "0\n";
     } 
   }
+  m_cmdFifoSize = 0;
 }
 
 void SwtLink::updateFifoState(const Swt& frame)
@@ -158,12 +158,12 @@ CruCommand& SwtLink::parseNextCommand(const char* &currentLine)
 {
   m_commands[m_cmdFifoSize++] = CruCommand(currentLine);
 
-  if(m_commands.back().type == CruCommand::Type::Invalid){
-    return m_commands.back();
+  if(m_commands[m_cmdFifoSize-1].type == CruCommand::Type::Invalid){
+    return m_commands[m_cmdFifoSize-1];
   }
 
-  currentLine += m_commands.back().commandStrLen()+1;      
-  return m_commands.back();
+  currentLine += m_commands[m_cmdFifoSize-1].commandStrLen()+1;      
+  return m_commands[m_cmdFifoSize-1];
 }
 
 std::string SwtLink::parseInvalidLine(const char* currentLine, const char*end)
@@ -235,17 +235,18 @@ bool SwtLink::parseSequence(const char* request)
           if(expectRmwOr == false){
             BOOST_LOG_TRIVIAL(error) << "Received RMW OR before RMW AND!";
             failure = true;
-          } else if(m_commands.back().type == CruCommand::Type::Read){
-            buffer[0] = m_commands[m_commands.size()-2].frame.data;
+          } else if(m_commands[m_cmdFifoSize-1].type == CruCommand::Type::Read){
+            buffer[0] = m_commands[m_cmdFifoSize-2].frame.data;
             buffer[1] = cmd.frame.data;
-            m_request.addTransaction(ipbus::enums::transactions::RMWbits, cmd.frame.address, buffer, &m_commands[m_commands.size()-2].frame.data);
+            m_request.addTransaction(ipbus::enums::transactions::RMWbits, cmd.frame.address, buffer, &m_commands[m_cmdFifoSize-2].frame.data);
           }else{
-            buffer[0] = m_commands.back().frame.data;
+            buffer[0] = m_commands[m_cmdFifoSize-1].frame.data;
             buffer[1] = cmd.frame.data;
-            m_request.addTransaction(ipbus::enums::transactions::RMWbits, cmd.frame.address, buffer, &m_commands.back().frame.data);
+            m_request.addTransaction(ipbus::enums::transactions::RMWbits, cmd.frame.address, buffer, &m_commands[m_cmdFifoSize-1].frame.data);
           }
           expectRmwOr = false; 
         }
+        break;
         case Swt::TransactionType::BlockReadIncrement:
         case Swt::TransactionType::BlockReadNonIncrement:
         {
