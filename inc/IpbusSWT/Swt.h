@@ -16,12 +16,13 @@ struct Swt {
   Swt(uint16_t mode_, uint32_t address_, uint32_t data_ ):data(data_), address(address_), mode(mode_) {}
   Swt(const char* str);
 
-  enum class TransactionType { Read,
-                               Write,
-                               RMWbits,
-                               RMWsum,
-                               BlockReadIncrement,
-                               BlockReadNonIncrement };
+  enum class TransactionType { Read = 0,
+                               Write = 1,
+                               RMWbitsAnd = 2,
+                               RMWbitsOr = 3,
+                               RMWsum = 4,
+                               BlockReadIncrement = 8,
+                               BlockReadNonIncrement = 9 };
   TransactionType type() const;
   bool isBlock() const
   {

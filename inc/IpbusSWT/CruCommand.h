@@ -5,6 +5,11 @@
 struct CruCommand
 {
     enum class Type {ScReset = 0, Read,Write,Invalid};
+    CruCommand(): type(Type::Invalid)
+    {
+
+    }
+    
     CruCommand(const char* str)
     {
         if(strncmp(str, ScReset, ScResetLen) == 0)

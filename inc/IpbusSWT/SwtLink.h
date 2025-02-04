@@ -35,23 +35,29 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
     BOOST_LOG_TRIVIAL(info) << "SWT-IPbus link initialization - " << address << ":" << rport;
   }
 
-  void rpcHandler();
   void processRequest(const char* swtSequence);
-  void writeFrame(const Swt& frame);
+  void rpcHandler();
   void sendFailure();
 
-  bool parseFrames(const char* request);
   bool interpretFrames();
   bool executeTransactions();
   void resetState();
 
-  bool readBlock(const Swt& frame, uint32_t frameIdx);
+  bool readBlock(const Swt& frame);
 
   void processExecutedCommands();
   void sendResponse();
 
  private:
   void updateFifoState(const Swt& frame);
+
+  CruCommand& parseNextCommand(const char* &currentLine);
+  std::string parseInvalidLine(const char* currentLine, const char*end);
+
+  bool parseSequence(const char* request);
+  bool isIPbusPacketFull(){
+    return (m_request.getSize() + PacketPadding >= ipbus::maxPacket);
+  }
 
   ipbus::IPbusRequest m_request;
   ipbus::IPbusResponse m_response;
@@ -61,11 +67,9 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
   
   static constexpr uint32_t PacketPadding = 4;
   
-  std::vector<CruCommand> m_commands;
+  std::array<CruCommand,1024> m_commands;
+  uint32_t m_cmdFifoSize{0};
   std::string m_fredResponse;
-  
-  size_t m_sequenceLen;
-  uint32_t m_commandsNumber;
   SwtFifo m_fifo;
 };
 

@@ -16,18 +16,13 @@ Swt::TransactionType Swt::type() const
 {
   switch (mode) {
     case 0:
-      return TransactionType::Read;
     case 1:
-      return TransactionType::Write;
     case 2:
     case 3:
-      return TransactionType::RMWbits;
     case 4:
-      return TransactionType::RMWsum;
-    case 8:
-      return TransactionType::BlockReadIncrement;
+    case 8: 
     case 9:
-      return TransactionType::BlockReadNonIncrement;
+      return TransactionType(mode);
     default:
       BOOST_THROW_EXCEPTION(std::runtime_error("Unknown transaction type " + std::to_string(mode)));
   }
