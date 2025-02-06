@@ -1,16 +1,19 @@
 #ifndef SWTELECTRONICS_H
 #define SWTELECTRONICS_H
 
-#include "IPbusMaster.h"
-#include"IPbusRequest.h"
-#include"IPbusResponse.h"
+#include "IPbus/IPbusMaster.h"
+#include "IPbus/IPbusRequest.h"
+#include "IPbus/IPbusResponse.h"
 #include "Swt.h"
 #include "dimrpcparallel.h"
 #include <string>
 #include <boost/asio.hpp>
 #include <map>
 #include <boost/log/trivial.hpp>
-
+#include"utils.h"
+#include"CruCommand.h"
+#include"SwtFifo.h"
+#include<span>
 namespace fit_swt
 {
 
@@ -32,38 +35,42 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
     BOOST_LOG_TRIVIAL(info) << "SWT-IPbus link initialization - " << address << ":" << rport;
   }
 
-  void rpcHandler();
   void processRequest(const char* swtSequence);
-  void writeFrame(Swt frame);
+  void rpcHandler();
   void sendFailure();
 
-  bool parseFrames(const char* request);
   bool interpretFrames();
+  bool executeTransactions();
+  void resetState();
 
-  void writeToResponse();
+  bool readBlock(const Swt& frame);
+
+  void processExecutedCommands();
   void sendResponse();
 
-  void setPacketPadding(int);
-  int getPacketPadding() const;
-
-  static constexpr uint16_t EmptyMode = 0xFFFF;
-  static constexpr uint16_t EmptyAddress = 0x0;
-  static constexpr uint16_t EmptyData = 0x0;
-
  private:
+  void updateFifoState(const Swt& frame);
+
+  CruCommand& parseNextCommand(const char* &currentLine);
+  std::string parseInvalidLine(const char* currentLine, const char*end);
+
+  bool parseSequence(const char* request);
+  bool isIPbusPacketFull(){
+    return (m_request.getSize() + PacketPadding >= ipbus::maxPacket);
+  }
+
   ipbus::IPbusRequest m_request;
   ipbus::IPbusResponse m_response;
 
-  int m_lineBeg{0};
-  int m_lineEnd{0};
-  int m_packetPadding{8};
-
-  std::vector<Swt> m_frames;
-
-  enum RequestType {Write = 'w', Read = 'r'};
-  std::vector<char> m_reqType;
+  int m_current{0};
+  int m_lastWritten{0};
   
+  static constexpr uint32_t PacketPadding = 4;
+  
+  std::array<CruCommand,1024> m_commands;
+  uint32_t m_cmdFifoSize{0};
   std::string m_fredResponse;
+  SwtFifo m_fifo;
 };
 
 } // namespace fit_swt

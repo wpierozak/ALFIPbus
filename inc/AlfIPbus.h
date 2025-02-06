@@ -2,7 +2,7 @@
 #define ALF_IPBUS_H
 
 #include "AlfConfig.h"
-#include "../IpbusSWT/inc/SwtLink.h"
+#include "IpbusSWT/SwtLink.h"
 #include <list>
 #include <atomic>
 

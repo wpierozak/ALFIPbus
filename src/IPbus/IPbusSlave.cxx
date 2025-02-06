@@ -1,4 +1,4 @@
-#include"IPbusSlave.h"
+#include"IPbus/IPbusSlave.h"
 #include <boost/bind.hpp>
 #include <boost/log/trivial.hpp>
 

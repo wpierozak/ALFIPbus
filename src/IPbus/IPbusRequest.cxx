@@ -1,5 +1,5 @@
-#include"IPbusRequest.h"
-#include"IPbusStatusPacket.h"
+#include"IPbus/IPbusRequest.h"
+#include"IPbus/IPbusStatusPacket.h"
 namespace ipbus
 {
     IPbusRequest::IPbusRequest()
