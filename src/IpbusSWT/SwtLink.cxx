@@ -124,6 +124,7 @@ void SwtLink::processExecutedCommands()
         while(m_fifo.empty() == false){
           m_fifo.pop().appendToString(m_fredResponse);
           m_fredResponse += "\n";
+          m_fifo.clear();
         }
     } else if(m_commands[idx].type == CruCommand::Type::Write){
       updateFifoState(m_commands[idx].frame);
