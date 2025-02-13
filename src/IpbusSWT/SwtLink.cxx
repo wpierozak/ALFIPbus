@@ -236,12 +236,8 @@ bool SwtLink::parseSequence(const char* request)
           if(expectRmwOr == false){
             BOOST_LOG_TRIVIAL(error) << "Received RMW OR before RMW AND!";
             failure = true;
-          } else if(m_commands[m_cmdFifoSize-1].type == CruCommand::Type::Read){
-            buffer[0] = m_commands[m_cmdFifoSize-2].frame.data;
-            buffer[1] = cmd.frame.data;
-            m_request.addTransaction(ipbus::enums::transactions::RMWbits, cmd.frame.address, buffer, &m_commands[m_cmdFifoSize-2].frame.data);
           }else{
-            buffer[0] = m_commands[m_cmdFifoSize-1].frame.data;
+            buffer[0] = m_commands[m_cmdFifoSize-2].frame.data;
             buffer[1] = cmd.frame.data;
             m_request.addTransaction(ipbus::enums::transactions::RMWbits, cmd.frame.address, buffer, &m_commands[m_cmdFifoSize-1].frame.data);
           }
