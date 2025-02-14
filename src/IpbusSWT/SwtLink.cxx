@@ -236,7 +236,11 @@ bool SwtLink::parseSequence(const char* request)
           if(expectRmwOr == false){
             BOOST_LOG_TRIVIAL(error) << "Received RMW OR before RMW AND!";
             failure = true;
-          }else{
+          } else if(cmd.frame.address != m_commands[m_cmdFifoSize-2].frame.address){
+            BOOST_LOG_TRIVIAL(error) << "RMW OR address mismatch!";
+            failure = true;
+          }
+          else{
             buffer[0] = m_commands[m_cmdFifoSize-2].frame.data;
             buffer[1] = cmd.frame.data;
             m_request.addTransaction(ipbus::enums::transactions::RMWbits, cmd.frame.address, buffer, &m_commands[m_cmdFifoSize-1].frame.data);
