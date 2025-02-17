@@ -142,7 +142,15 @@ void SwtLink::updateFifoState(const Swt& frame)
     case 0:
     case 2:
     case 4:
-    m_fifo.push(frame);
+    try
+    {  
+      m_fifo.push(frame);
+    }
+    catch(const std::exception& e)
+    {
+      BOOST_LOG_TRIVIAL(warning) << "Fifo is full!";
+    }
+    
     break;
     default:
     break;
@@ -197,6 +205,10 @@ bool SwtLink::parseSequence(const char* request)
         failure = true;
       }
       if(cmd.type == CruCommand::Type::Read){
+        if(expectRmwOr == true){
+          BOOST_LOG_TRIVIAL(error) << "Missing RMW OR after RMW AND!";
+          failure = true;
+        }
         if(m_fifo.empty()){
           continue;
         } else{
