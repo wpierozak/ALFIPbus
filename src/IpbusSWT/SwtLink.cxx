@@ -19,8 +19,8 @@ void SwtLink::processRequest(const char* swtSequence)
 {
   if(getSize() <= 1)
   {
-    BOOST_LOG_TRIVIAL(warning) << "Received empty request";
-    sendFailure();
+    BOOST_LOG_TRIVIAL(debug) << "Received empty request";
+    sendResponse();
     return;
   }
 
