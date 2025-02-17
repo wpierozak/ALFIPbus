@@ -253,7 +253,9 @@ bool SwtLink::parseSequence(const char* request)
           if(executeTransactions() == false){
             failure = true;
           }else{
-            readBlock(cmd.frame);
+            if(readBlock(cmd.frame) == false){
+              failure = true;
+            }
           }
         }
         break;
