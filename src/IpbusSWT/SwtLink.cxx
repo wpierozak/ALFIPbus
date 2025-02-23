@@ -281,8 +281,10 @@ bool SwtLink::parseSequence(const char* request)
         }  
       } 
   }
-  if(executeTransactions() == false){
+  if(failure == false){
+    if(executeTransactions() == false){
       failure = true;
+    }
   }
   return !failure;
 }
