@@ -2,32 +2,6 @@
 
 AlfIPbus was developed as a temporary Detector Control System (DCS) solution for the Fast Interaction Trigger (FIT) detector in the ALICE experiment. Its primary purpose is to serve as a software translator between the IPbus protocol, used in the previous DCS setup, and the new custom SWT FIT protocol in the updated system. AlfIPbus provides a fast and reliable translation mechanism and is fully compatible with FRED software.
 
-**Current version is not tested for multiple link within one AlfIPbus (as it is not used within FIT)**
-
-## Benchmarks
-
-### Request Execution Time vs Request Size
-Each request consists of a read operation, and the execution time recorded for each request size represents the average of 100 measurements. This ensures that the results reflect consistent performance for each data size.
-
-| Size (SWT frames) | Request Execution Time (µs) | Coefficient of Variation |
-|-------------------|-----------------------------|--------------------------|
-| 1                 | 203.98                      | 17.20%                   |
-| 2                 | 232.12                      | 18.65%                   |
-| 4                 | 232.48                      | 20.96%                   |
-| 8                 | 275.94                      | 15.69%                   |
-| 16                | 318.31                      | 15.50%                   |
-| 32                | 458.70                      | 11.00%                   |
-| 64                | 683.47                      | 8.71%                    |
-| 128               | 1088.61                     | 3.06%                    |
-| 256               | 2069.85                     | 4.46%                    |
-| 512               | 3577.77                     | 2.83%                    |
-| 1024              | 7292.00                     | 1.78%                    |
-| 2048              | 14477.00                    | 1.79%                    |
-| 4096              | 28393.39                    | 5.88%                    |
-| 8192              | 55849.51                    | 2.23%                    |
-| 16384             | 110797.40                   | 2.65%                    |
-| 32768             | 220195.37                   | 2.24%                    |
-
 ## Building
 ### Dependencies
 - BOOST 1.83.0
@@ -85,6 +59,76 @@ cmake3 --build build                    \
 - `link/l [IP address]:[remote port]` (`l`) - set the IP address and port for consecutive links (can be used multiple times)
 - `t [time in miliseconds]` - IPbus request timeout (in miliseconds) 
 - `v` - verbose
+
+## SWT Frame
+
+SwtLink is compatible with SWT frame designed for ALICE's FIT detector.
+
+| SWT ID (4b) | NOT USED (8b) | Transaction type (4b) | ADDRESS (32b) | DATA (32b) |
+
+|Transaction type code | Transaction |
+|----------------|--------------------|
+|0x0 | read |
+|0x1 | write |
+|0x2 | RMWbits AND |
+|0x3 | RMWbits OR |
+|0x4 | RMW sum |
+|0x8 | block read |
+|0x9 | block read non-increment |
+
+### IPbus operations in SWT
+```
+MM | R/W | ADDRESS | DATA |  ->  RESPONSE
+2b | 1b  | 32b     | 32b  |  ->  ... + 32b
+```
+
+#### READ (non-incrementing) (FIFO)
+```
+MM | R/W | ADDRESS | DATA     |  ->  RESPONSE
+---------------------------------------------
+00 | 0   | ADDRESS | DONTCARE |  ->  DATA
+00 | 0   | ADDRESS | DONTCARE |  ->  DATA
+```
+
+#### READ (incrementing)
+```
+MM | R/W | ADDRESS   | DATA     |  ->  RESPONSE
+-----------------------------------------------
+00 | 0   | ADDRESS   | DONTCARE |  ->  DATA
+00 | 0   | ADDRESS+1 | DONTCARE |  ->  DATA
+```
+
+#### WRITE (non-incrementing) (FIFO)
+```
+MM | R/W | ADDRESS | DATA |  ->  RESPONSE
+-----------------------------------------
+00 | 1   | ADDRESS | DATA |  ->  OK
+00 | 1   | ADDRESS | DATA |  ->  OK
+```
+
+#### WRITE (incrementing)
+```
+MM | R/W | ADDRESS   | DATA |  ->  RESPONSE
+-------------------------------------------
+00 | 1   | ADDRESS   | DATA |  ->  OK
+00 | 1   | ADDRESS+1 | DATA |  ->  OK
+```
+
+#### RMW bits X <= (X & A) | B
+```
+MM | R/W | ADDRESS   | DATA     |  ->  RESPONSE
+-----------------------------------------------
+01 | 0   | ADDRESS   | AND_MASK |  ->  DATA_PRE     # READ_AND
+01 | 1   | ADDRESS   | OR_MASK  |  ->  OK           # WRITE_OR
+```
+
+
+#### RMW Sum  X <= (X + A)
+```
+MM | R/W | ADDRESS   | DATA     |  ->  RESPONSE
+-----------------------------------------------
+10 | 0   | ADDRESS   | SUM_TERM |  ->  DATA_PRE     # READ_SUM
+```
 
 ## Testing
 Testing framework was provided by [frun36](https://github.com/frun36) and is available [here](https://github.com/frun36/alf-ipbus-tester).
