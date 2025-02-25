@@ -51,3 +51,7 @@ echo Stopping containers
 docker stop tester-generator
 docker stop tester-alf
 docker stop tester-mock
+
+if [ $EXIT_CODE -ne 0 ]; then
+    exit 1
+fi
