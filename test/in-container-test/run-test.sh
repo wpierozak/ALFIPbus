@@ -36,6 +36,7 @@ docker run -i -d --name tester-generator --rm \
 
 docker exec -e LD_LIBRARY_PATH="/usr/lib" -e DIM_HOST_NODE=172.25.75.12 -e DIM_DNS_NODE=host.docker.internal tester-generator /bin/bash -c \
     "/alf-ipbus-tester/build/bin/generator -c /common-storage/test-configuration.toml -f /common-storage/output/generator-log -v"
+EXIT_CODE=$?
 
 if [ $EXIT_CODE -ne 0 ]; then
           echo "Test failed: $EXIT_CODE"
