@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 enable_testing()
 
+include(GNUInstallDirs)
+
 # Project name and version
 project(AlfIPbus VERSION 1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
@@ -10,7 +12,7 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
 # Set the output directories for binaries and libraries
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+set(cma ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
 find_package(Boost REQUIRED COMPONENTS system log log_setup program_options)
 
@@ -44,4 +46,4 @@ set_tests_properties(in-container-test PROPERTIES WORKING_DIRECTORY ${CMAKE_SOUR
 set_tests_properties(in-container-test PROPERTIES
     ENVIRONMENT "PATH=/usr/local/bin:${PATH};LD_LIBRARY_PATH=/usr/local/lib")
 
-
+install(TARGETS AlfIPbus DESTINATION ${CMAKE_INSTALL_BINDIR})
