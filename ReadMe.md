@@ -33,7 +33,7 @@ cmake3 --build build                    \
     - DEVICE_ADDRESS: Specify the device address.
     - LOG_FILE: Provide the path where the log file should be stored.
     - TIMEOUT: Define the timeout period for the service.
-    - DID_DNS_NODE: Set the DNS node details.
+    - DIM_DNS_NODE: Set the DNS node details.
     
     Additionally, configure the following options:
     - User: Specify the user that should run the service by setting the User option.
@@ -76,59 +76,84 @@ SwtLink is compatible with SWT frame designed for ALICE's FIT detector.
 |0x8 | block read |
 |0x9 | block read non-increment |
 
-### IPbus operations in SWT
-```
-MM | R/W | ADDRESS | DATA |  ->  RESPONSE
-2b | 1b  | 32b     | 32b  |  ->  ... + 32b
-```
+----
+### READ
 
-#### READ (non-incrementing) (FIFO)
-```
-MM | R/W | ADDRESS | DATA     |  ->  RESPONSE
----------------------------------------------
-00 | 0   | ADDRESS | DONTCARE |  ->  DATA
-00 | 0   | ADDRESS | DONTCARE |  ->  DATA
-```
+#### Request
+| SWT ID (4b) | NOT USED (8b) | Transaction type (4b) | ADDRESS (32b) | DATA (32b) |
+|----|-----|-----|-----|----|
+|0011|00000000|0000| addresss | ignored |
+#### Response
+| SWT ID (4b) | NOT USED (8b) | Transaction type (4b) | ADDRESS (32b) | DATA (32b) |
+|----|-----|-----|-----|----|
+|0011|00000000|0000| addresss | data |
 
-#### READ (incrementing)
-```
-MM | R/W | ADDRESS   | DATA     |  ->  RESPONSE
------------------------------------------------
-00 | 0   | ADDRESS   | DONTCARE |  ->  DATA
-00 | 0   | ADDRESS+1 | DONTCARE |  ->  DATA
-```
+----
+### WRITE 
+#### Request
+| SWT ID (4b) | NOT USED (8b) | Transaction type (4b) | ADDRESS (32b) | DATA (32b) |
+|----|-----|-----|-----|----|
+|0011|00000000|0001| addresss | data |
+#### Response
+None
 
-#### WRITE (non-incrementing) (FIFO)
-```
-MM | R/W | ADDRESS | DATA |  ->  RESPONSE
------------------------------------------
-00 | 1   | ADDRESS | DATA |  ->  OK
-00 | 1   | ADDRESS | DATA |  ->  OK
-```
+----
+### RMW bits X <= (X & A) | B
 
-#### WRITE (incrementing)
-```
-MM | R/W | ADDRESS   | DATA |  ->  RESPONSE
--------------------------------------------
-00 | 1   | ADDRESS   | DATA |  ->  OK
-00 | 1   | ADDRESS+1 | DATA |  ->  OK
-```
+#### Request
+| SWT ID (4b) | NOT USED (8b) | Transaction type (4b) | ADDRESS (32b) | DATA (32b) |
+|----|-----|-----|-----|----|
+|0011|00000000|0010| address | AND mask |
+|0011|00000000|0011| address | OR mask |
 
-#### RMW bits X <= (X & A) | B
-```
-MM | R/W | ADDRESS   | DATA     |  ->  RESPONSE
------------------------------------------------
-01 | 0   | ADDRESS   | AND_MASK |  ->  DATA_PRE     # READ_AND
-01 | 1   | ADDRESS   | OR_MASK  |  ->  OK           # WRITE_OR
-```
+#### Response
+Only to first frame
+| SWT ID (4b) | NOT USED (8b) | Transaction type (4b) | ADDRESS (32b) | DATA (32b) |
+|----|-----|-----|-----|----|
+|0011|00000000|0010| address | data before operation |
 
+----
+### RMW Sum  X <= (X + A)
 
-#### RMW Sum  X <= (X + A)
-```
-MM | R/W | ADDRESS   | DATA     |  ->  RESPONSE
------------------------------------------------
-10 | 0   | ADDRESS   | SUM_TERM |  ->  DATA_PRE     # READ_SUM
-```
+#### Request
+| SWT ID (4b) | NOT USED (8b) | Transaction type (4b) | ADDRESS (32b) | DATA (32b) |
+|----|-----|-----|-----|----|
+|0011|00000000|0100| address | data to sum |
+
+#### Response
+| SWT ID (4b) | NOT USED (8b) | Transaction type (4b) | ADDRESS (32b) | DATA (32b) |
+|----|-----|-----|-----|----|
+|0011|00000000|0100| address | data before operation |
+
+----
+#### Block read - incrementing
+
+#### Request
+| SWT ID (4b) | NOT USED (8b) | Transaction type (4b) | ADDRESS (32b) | DATA (32b) |
+|----|-----|-----|-----|----|
+|0011|00000000|1000| address | number of words |
+
+#### Response
+Each word is send in separate frame
+| SWT ID (4b) | NOT USED (8b) | Transaction type (4b) | ADDRESS (32b) | DATA (32b) |
+|----|-----|-----|-----|----|
+|0011|00000000|1000| word address | data |
+
+----
+#### Block read - non-incrementing
+
+#### Request
+| SWT ID (4b) | NOT USED (8b) | Transaction type (4b) | ADDRESS (32b) | DATA (32b) |
+|----|-----|-----|-----|----|
+|0011|00000000|1001| address | number of words |
+
+#### Response
+Each word is send in separate frame
+| SWT ID (4b) | NOT USED (8b) | Transaction type (4b) | ADDRESS (32b) | DATA (32b) |
+|----|-----|-----|-----|----|
+|0011|00000000|1001| address | data |
+
+#### 
 
 ## Testing
 Testing framework was provided by [frun36](https://github.com/frun36) and is available [here](https://github.com/frun36/alf-ipbus-tester).
