@@ -30,7 +30,7 @@ struct CruCommand
         }
     }
 
-    Type type;
+    Type type{Type::Invalid};
     fit_swt::Swt frame;
 
     uint32_t commandStrLen() const
@@ -43,6 +43,8 @@ struct CruCommand
                 return ReadLen;
             case Type::Write:
                 return WriteLen + fit_swt::Swt::SwtStrLen + 1;
+            default:
+                throw std::runtime_error("Request for length of invalid line!");
         }
     }
 
