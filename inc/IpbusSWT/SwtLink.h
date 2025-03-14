@@ -67,6 +67,8 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
   
   static constexpr uint32_t PacketPadding = 4;
   
+  std::unique_ptr<std::thread> m_checkStatusParallel;
+
   std::array<CruCommand,1024> m_commands;
   uint32_t m_cmdFifoSize{0};
   std::string m_fredResponse;

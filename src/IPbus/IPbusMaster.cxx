@@ -125,13 +125,14 @@ void IPbusMaster::handleDeadline()
 
   m_timer.expires_at(boost::posix_time::pos_infin);
   //m_timer.async_wait(boost::bind(&IPbusMaster::handleDeadline, this));
-
+  
   pthread_mutex_unlock(&m_receiveStatusMutex);
 }
 
 bool IPbusMaster::checkStatus()
 {
   pthread_mutex_lock(&m_linkMutex);
+  m_isStatusCheckInProgress = true;
   m_isAvailable = false;
 
   try {
@@ -158,6 +159,7 @@ bool IPbusMaster::checkStatus()
     m_isAvailable = false;
   }
 
+  m_isStatusCheckInProgress = false;
   RETURN_AND_RELEASE(m_linkMutex, m_isAvailable);
 }
 

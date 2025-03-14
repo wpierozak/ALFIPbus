@@ -27,9 +27,13 @@ void SwtLink::processRequest(const char* swtSequence)
   if(isIPbusOK() == false){
     BOOST_LOG_TRIVIAL(error) << "Device is not available!";
     sendFailure();
-    checkStatus();
+    if(isStausCheckInProgress() == false){
+      m_checkStatusParallel = std::make_unique<std::thread>([&]{while(!isIPbusOK()) {checkStatus();}});
+      m_checkStatusParallel->detach();
+    }
     return;
   }
+
 
   bool success = false;
   try{

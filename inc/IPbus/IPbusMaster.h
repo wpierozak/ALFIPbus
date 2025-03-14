@@ -42,6 +42,7 @@ class IPbusMaster
   const StatusPacket m_status;
   StatusPacket m_statusRespone;
   bool m_isAvailable{ false };
+  bool m_isStatusCheckInProgress{ false };
 
   bool openSocket();
 
@@ -77,6 +78,7 @@ class IPbusMaster
   bool transceive(IPbusRequest& request, IPbusResponse& response);
 
   bool isIPbusOK() { return m_isAvailable; }
+  bool isStausCheckInProgress() { return m_isStatusCheckInProgress; }
 
   void setTimeout(boost::posix_time::milliseconds timeout);
   boost::posix_time::milliseconds getTimeout() const;
