@@ -37,15 +37,15 @@ void AlfIPbus::startServer()
 
 void AlfIPbus::stop(int)
 {
-  if (s_running)
-    s_running = false;
-  else
-    exit(1);
+  s_running = false;
 }
 
 void AlfIPbus::mainLoop()
 {
   while (AlfIPbus::s_running) {
     usleep(100000);
+  }
+  for(auto& link: m_swtLinks){
+    link.terminate();
   }
 }

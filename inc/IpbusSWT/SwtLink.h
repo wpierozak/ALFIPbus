@@ -23,7 +23,13 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
   SwtLink(std::string rpc, boost::asio::io_context& ioContext, std::string address = "172.20.75.175", uint16_t rport = 50001, uint16_t lport = 0) : IPbusMaster(ioContext, address, lport, rport),
                                                                                                                                                     DimRpcParallel(rpc.c_str(), "C", "C", 0)
   {
-    m_checkStatusParallel = std::make_unique<std::thread>([&]{while(!isIPbusOK()) {checkStatus();}});
+    m_checkStatusParallel = std::make_unique<std::thread>(
+      [&]{
+        while(!isIPbusOK() && !m_terminate) {
+          checkStatus();
+        }
+      }
+    );
     m_checkStatusParallel->detach();
     BOOST_LOG_TRIVIAL(info) << "SWT-IPbus link initialization - " << address << ":" << rport;
   }
@@ -41,8 +47,11 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
   void processExecutedCommands();
   void sendResponse();
 
+  void terminate() { m_terminate = true; }
+
  private:
   void updateFifoState(const Swt& frame);
+  void runStatusThread();
 
   CruCommand& parseNextCommand(const char* &currentLine);
   std::string parseInvalidLine(const char* currentLine, const char*end);
@@ -66,6 +75,8 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
   uint32_t m_cmdFifoSize{0};
   std::string m_fredResponse;
   SwtFifo m_fifo;
+
+  bool m_terminate {false};
 };
 
 } // namespace fit_swt

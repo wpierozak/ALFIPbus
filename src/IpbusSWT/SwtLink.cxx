@@ -8,17 +8,33 @@
 namespace fit_swt
 {
 
+void SwtLink::runStatusThread()
+{
+  if(isStausCheckInProgress() == false){
+    m_checkStatusParallel = std::make_unique<std::thread>(
+      [&]{
+        while(!isIPbusOK() && !m_terminate) {
+          checkStatus();
+        }
+      });
+    m_checkStatusParallel->detach();
+  }
+}
+
 void SwtLink::rpcHandler()
 {
   BOOST_LOG_TRIVIAL(debug) << "Received request";
   resetState();
   processRequest(getString());
+  
+  if(isIPbusOK() == false){
+    runStatusThread();
+  }
 }
 
 void SwtLink::processRequest(const char* swtSequence)
 {
-  if(getSize() <= 1)
-  {
+  if(getSize() <= 1){
     BOOST_LOG_TRIVIAL(debug) << "Received empty request";
     sendResponse();
     return;
@@ -27,10 +43,7 @@ void SwtLink::processRequest(const char* swtSequence)
   if(isIPbusOK() == false){
     BOOST_LOG_TRIVIAL(error) << "Device is not available!";
     sendFailure();
-    if(isStausCheckInProgress() == false){
-      m_checkStatusParallel = std::make_unique<std::thread>([&]{while(!isIPbusOK()) {checkStatus();}});
-      m_checkStatusParallel->detach();
-    }
+    runStatusThread();
     return;
   }
 
@@ -46,14 +59,6 @@ void SwtLink::processRequest(const char* swtSequence)
     sendResponse();
   } else {
     sendFailure();
-  }
-  resetState();
-
-  if(isIPbusOK() == false){
-    if(isStausCheckInProgress() == false){
-      m_checkStatusParallel = std::make_unique<std::thread>([&]{while(!isIPbusOK()) {checkStatus();}});
-      m_checkStatusParallel->detach();
-    }
   }
 }
 
