@@ -34,7 +34,6 @@ void SwtLink::processRequest(const char* swtSequence)
     return;
   }
 
-
   bool success = false;
   try{
     success = parseSequence(swtSequence);
@@ -49,6 +48,13 @@ void SwtLink::processRequest(const char* swtSequence)
     sendFailure();
   }
   resetState();
+
+  if(isIPbusOK() == false){
+    if(isStausCheckInProgress() == false){
+      m_checkStatusParallel = std::make_unique<std::thread>([&]{while(!isIPbusOK()) {checkStatus();}});
+      m_checkStatusParallel->detach();
+    }
+  }
 }
 
 void SwtLink::resetState()
