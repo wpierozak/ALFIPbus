@@ -24,6 +24,13 @@ void SwtLink::processRequest(const char* swtSequence)
     return;
   }
 
+  if(isIPbusOK() == false){
+    BOOST_LOG_TRIVIAL(error) << "Device is not available!";
+    sendFailure();
+    checkStatus();
+    return;
+  }
+
   bool success = false;
   try{
     success = parseSequence(swtSequence);

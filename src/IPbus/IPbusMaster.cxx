@@ -119,6 +119,7 @@ void IPbusMaster::handleDeadline()
     BOOST_LOG_TRIVIAL(error) << "Request has timed out";
 
     m_receiveStatus = ReceiveStatus::Expired;
+    m_isAvailable = false;
     //m_socket.cancel();
   }
 
@@ -165,6 +166,7 @@ bool IPbusMaster::transceive(IPbusRequest& request, IPbusResponse& response)
   BOOST_LOG_TRIVIAL(debug) << "Transceiving...";
   if (m_isAvailable == false) {
     BOOST_LOG_TRIVIAL(error) << "Transceive: device at " << m_ipAddress << ":" << m_remotePort << " is not available";
+    return false;
   }
 
   pthread_mutex_lock(&m_linkMutex);
