@@ -113,8 +113,10 @@ bool SwtLink::readBlock(const Swt& frame)
     
     if(transceive(m_request, m_response))
     {
-      for( uint32_t idx = 0 ; idx < size; idx++){
-        m_fifo.push(Swt{frame.mode, currentAddress, ipbusOutputBuffer[idx]});
+      for(uint32_t idx = 0 ; idx < size; idx++){
+        Swt responseFrame = {frame.mode, currentAddress, ipbusOutputBuffer[idx]};
+        updateFifoState(responseFrame);
+        //m_fifo.push(Swt{frame.mode, currentAddress, ipbusOutputBuffer[idx]});
         if(increment){
           currentAddress++;
         }
@@ -163,6 +165,8 @@ void SwtLink::updateFifoState(const Swt& frame)
     case 0:
     case 2:
     case 4:
+    case 8:
+    case 9:
     try
     {  
       m_fifo.push(frame);

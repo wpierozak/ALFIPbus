@@ -46,6 +46,7 @@ void AlfIPbus::mainLoop()
     usleep(100000);
   }
   for(auto& link: m_swtLinks){
+    BOOST_LOG_TRIVIAL(info) << "Terminating links...";
     link.terminate();
   }
 }
