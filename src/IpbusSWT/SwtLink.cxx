@@ -71,7 +71,7 @@ void SwtLink::resetState()
 bool SwtLink::executeTransactions()
 {
   bool success = transceive(m_request, m_response);
-  if(success && m_request.getSize() > 1){
+  if(success){
     processExecutedCommands();
   }
   m_request.reset();
