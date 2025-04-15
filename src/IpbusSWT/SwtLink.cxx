@@ -25,7 +25,13 @@ void SwtLink::rpcHandler()
 {
   BOOST_LOG_TRIVIAL(debug) << "Received request";
   resetState();
-  processRequest(getString());
+  
+  if(isIPbusOK() == true){
+    processRequest(getString());
+  } else{
+    BOOST_LOG_TRIVIAL(error) << "Device is not available!";
+    sendFailure();
+  }
   
   if(isIPbusOK() == false){
     runStatusThread();
@@ -37,13 +43,6 @@ void SwtLink::processRequest(const char* swtSequence)
   if(getSize() <= 1){
     BOOST_LOG_TRIVIAL(debug) << "Received empty request";
     sendResponse();
-    return;
-  }
-
-  if(isIPbusOK() == false){
-    BOOST_LOG_TRIVIAL(error) << "Device is not available!";
-    sendFailure();
-    runStatusThread();
     return;
   }
 
@@ -72,7 +71,7 @@ void SwtLink::resetState()
 bool SwtLink::executeTransactions()
 {
   bool success = transceive(m_request, m_response);
-  if(success){
+  if(success && m_request.getSize() > 1){
     processExecutedCommands();
   }
   m_request.reset();
