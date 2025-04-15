@@ -17,7 +17,7 @@ public:
         m_buffer[m_currentBack++] = frame;
         return &m_buffer[m_currentBack-1].data;
     }
-    void SwtFifo::push(const Swt& frame){
+    void push(const Swt& frame){
         if(m_currentBack == FifoLimit){
             throw std::out_of_range("Reached SWT fifo limit");
         }
