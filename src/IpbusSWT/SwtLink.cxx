@@ -87,6 +87,8 @@ bool SwtLink::readBlock(const Swt& frame)
     return false;
   }
 
+  m_fifo.clear();
+
   bool increment = (frame.type() == Swt::TransactionType::BlockReadIncrement);
   auto transactionType = (increment) ? ipbus::enums::transactions::Read : ipbus::enums::transactions::NonIncrementingRead;
   uint32_t currentAddress = frame.address;
@@ -110,12 +112,11 @@ bool SwtLink::readBlock(const Swt& frame)
       size += sizeB;
     }
 
-    
     if(transceive(m_request, m_response))
     {
       for(uint32_t idx = 0 ; idx < size; idx++){
-        Swt responseFrame = {frame.mode, currentAddress, ipbusOutputBuffer[idx]};
-        updateFifoState(responseFrame);
+        //Swt responseFrame = {frame.mode, currentAddress, ipbusOutputBuffer[idx]};
+        updateFifoState(Swt{frame.mode, currentAddress, ipbusOutputBuffer[idx]});
         //m_fifo.push(Swt{frame.mode, currentAddress, ipbusOutputBuffer[idx]});
         if(increment){
           currentAddress++;
