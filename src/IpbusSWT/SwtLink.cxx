@@ -220,12 +220,14 @@ bool SwtLink::parseSequence(const char* request)
 
   while(!failure && currentLine < end)
     {
-      CruCommand& cmd = parseNextCommand(currentLine);
       if(isIPbusPacketFull()){
         if(executeTransactions() == false){
           failure = true;
         }
       }
+
+      CruCommand& cmd = parseNextCommand(currentLine);
+      
       if(cmd.type == CruCommand::Type::Invalid){
         BOOST_LOG_TRIVIAL(error) << "Sequence parsing failed: Invalid line:" << parseInvalidLine(currentLine,end);
         failure = true;
