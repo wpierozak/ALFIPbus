@@ -66,7 +66,7 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
         BOOST_LOG_TRIVIAL(error) << "RMW OR address mismatch!";
         return false;
     }
-    return true
+    return true;
   }
 
   ipbus::IPbusRequest m_request;
