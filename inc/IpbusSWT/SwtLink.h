@@ -50,8 +50,23 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
   std::string parseInvalidLine(const char* currentLine, const char*end);
 
   bool parseSequence(const char* request);
-  bool isIPbusPacketFull(){
+
+  // Inlines
+  
+  inline bool isIPbusPacketFull(){
     return (m_request.getSize() + PacketPadding >= ipbus::maxPacket);
+  }
+
+  inline bool validateRmwTransaction(const Swt& frame, const bool& expectRmwOr)
+  {
+    if(expectRmwOr == false){
+        BOOST_LOG_TRIVIAL(error) << "Received RMW OR before RMW AND!";
+        return false;
+    } else if(frame.address != m_commands[m_cmdFifoSize-2].frame.address){
+        BOOST_LOG_TRIVIAL(error) << "RMW OR address mismatch!";
+        return false;
+    }
+    return true
   }
 
   ipbus::IPbusRequest m_request;
