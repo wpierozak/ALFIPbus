@@ -64,11 +64,9 @@ namespace ipbus
             break;
         }
 
-        if(m_expectedResponseSize > maxPacket)
-        {
+        if(m_expectedResponseSize > maxPacket){
             BOOST_LOG_TRIVIAL(error) << "Response packet size exceeded";
-            // ADD THROW!!!
-            return;
+            throw std::runtime_error("Exceeded response packet size!");
         }
 
         m_dataOut.push_back(dataOut);

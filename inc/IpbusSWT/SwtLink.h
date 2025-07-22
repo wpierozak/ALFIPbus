@@ -47,7 +47,6 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
   void runStatusThread();
 
   CruCommand& parseNextCommand(const char* &currentLine);
-  std::string parseInvalidLine(const char* currentLine, const char*end);
 
   bool parseSequence(const char* request);
 

@@ -31,14 +31,14 @@ Swt::TransactionType Swt::type() const
 Swt::Swt(const char* str)
 {
   data = (static_cast<uint32_t>(utils::stringToByte(str[11], str[12])) << 24) 
-    + (static_cast<uint32_t>(utils::stringToByte(str[13], str[14])) << 16) 
-    + (static_cast<uint32_t>(utils::stringToByte(str[15], str[16])) << 8) 
-    + static_cast<uint32_t>(utils::stringToByte(str[17], str[18]));
+    | (static_cast<uint32_t>(utils::stringToByte(str[13], str[14])) << 16) 
+    | (static_cast<uint32_t>(utils::stringToByte(str[15], str[16])) << 8) 
+    | static_cast<uint32_t>(utils::stringToByte(str[17], str[18]));
 
   address = (static_cast<uint32_t>(utils::stringToByte(str[3], str[4])) << 24) 
-    + (static_cast<uint32_t>(utils::stringToByte(str[5], str[6])) << 16) 
-    + (static_cast<uint32_t>(utils::stringToByte(str[7], str[8])) << 8) 
-    + static_cast<uint32_t>(utils::stringToByte(str[9], str[10]));
+    | (static_cast<uint32_t>(utils::stringToByte(str[5], str[6])) << 16) 
+    | (static_cast<uint32_t>(utils::stringToByte(str[7], str[8])) << 8) 
+    | static_cast<uint32_t>(utils::stringToByte(str[9], str[10]));
 
   mode = static_cast<uint16_t>(utils::stringToByte(str[1], str[2]));
 }

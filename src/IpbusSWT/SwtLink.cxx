@@ -141,7 +141,6 @@ void SwtLink::sendResponse()
   setData(m_fredResponse.c_str());
 }
 
-
 void SwtLink::processExecutedCommands()
 {
   for(uint32_t idx = 0; idx < m_cmdFifoSize; idx++) {
@@ -199,14 +198,6 @@ CruCommand& SwtLink::parseNextCommand(const char* &currentLine)
   return m_commands[m_cmdFifoSize-1];
 }
 
-std::string SwtLink::parseInvalidLine(const char* currentLine, const char*end)
-{
-  const char* delimiter = std::find(currentLine, end,'\n');
-  std::string message;
-  std:copy(currentLine, delimiter, std::back_inserter(message));
-  return message;
-}
-
 bool SwtLink::parseSequence(const char* request)
 {
   const char* currentLine = request;
@@ -217,80 +208,76 @@ bool SwtLink::parseSequence(const char* request)
   
   uint32_t buffer[2];
 
-  while(!failure && currentLine < end)
-    {
-      if(isIPbusPacketFull()){
+  while(!failure && currentLine < end){
+    if(isIPbusPacketFull()){
+      failure = !(executeTransactions());
+    }
+
+    CruCommand& cmd = parseNextCommand(currentLine);
+    
+    if(cmd.type == CruCommand::Type::Invalid){
+      BOOST_LOG_TRIVIAL(error) << "Sequence parsing failed: Invalid line:" 
+                              << std::string_view(currentLine, std::find(currentLine, end,'\n'));
+      failure = true;
+    } else if(cmd.type == CruCommand::Type::Read){
+      processExecutedCommands();
+    } else if(cmd.type == CruCommand::Type::ScReset){
+      m_fifo.clear();
+    } else {
+      switch (cmd.frame.type()){
+      case Swt::TransactionType::Read:{
+        Swt &frame = cmd.frame;
+        m_request.addTransaction(ipbus::enums::transactions::Read, frame.address, &frame.data, &frame.data, 1);
+      }
+        break;
+      case Swt::TransactionType::Write:{
+        Swt &frame = cmd.frame;
+        m_request.addTransaction(ipbus::enums::transactions::Write, frame.address, &frame.data, &frame.data, 1);
+      }
+        break;
+      case Swt::TransactionType::RMWsum:{
+        Swt &frame = cmd.frame;
+        m_request.addTransaction(ipbus::enums::transactions::RMWsum, frame.address, &frame.data, &frame.data);
+      }
+        break;
+      case Swt::TransactionType::RMWbitsAnd:{
+        expectRmwOr = true;
+        continue;
+      }
+        break;
+      case Swt::TransactionType::RMWbitsOr:{
+        if(validateRmwTransaction(cmd.frame, expectRmwOr) == false){
+          failure = true;
+        } else {
+          expectRmwOr = false; 
+          buffer[0] = m_commands[m_cmdFifoSize-2].frame.data;
+          buffer[1] = cmd.frame.data;
+          m_request.addTransaction(ipbus::enums::transactions::RMWbits, cmd.frame.address, buffer, &m_commands[m_cmdFifoSize-2].frame.data);
+        } 
+      }
+        break;
+      case Swt::TransactionType::BlockReadIncrement:
+      case Swt::TransactionType::BlockReadNonIncrement:{
         if(executeTransactions() == false){
           failure = true;
+        } else {
+          failure = !(readBlock(cmd.frame));
         }
       }
+        break;
+      default:
+        break;
+      }
 
-      CruCommand& cmd = parseNextCommand(currentLine);
-      
-      if(cmd.type == CruCommand::Type::Invalid){
-        BOOST_LOG_TRIVIAL(error) << "Sequence parsing failed: Invalid line:" << parseInvalidLine(currentLine,end);
+      if(expectRmwOr == true){
+        BOOST_LOG_TRIVIAL(error) << "Missing RMW OR after RMW AND!";
         failure = true;
-      } else if(cmd.type == CruCommand::Type::Read){
-          processExecutedCommands();
-      } else if(cmd.type == CruCommand::Type::ScReset){
-        m_fifo.clear();
-      } else {
-        switch (cmd.frame.type()){
-        case Swt::TransactionType::Read:{
-          Swt &frame = cmd.frame;
-          m_request.addTransaction(ipbus::enums::transactions::Read, frame.address, &frame.data, &frame.data, 1);
-        }
-          break;
-        case Swt::TransactionType::Write:{
-          Swt &frame = cmd.frame;
-          m_request.addTransaction(ipbus::enums::transactions::Write, frame.address, &frame.data, &frame.data, 1);
-        }
-          break;
-        case Swt::TransactionType::RMWsum:{
-          Swt &frame = cmd.frame;
-          m_request.addTransaction(ipbus::enums::transactions::RMWsum, frame.address, &frame.data, &frame.data);
-        }
-          break;
-        case Swt::TransactionType::RMWbitsAnd:{
-          expectRmwOr = true;
-          continue;
-        }
-        break;
-        case Swt::TransactionType::RMWbitsOr:{
-          if(validateRmwTransaction(cmd.frame, expectRmwOr) == false){
-            failure = true;
-          } else {
-            expectRmwOr = false; 
-            buffer[0] = m_commands[m_cmdFifoSize-2].frame.data;
-            buffer[1] = cmd.frame.data;
-            m_request.addTransaction(ipbus::enums::transactions::RMWbits, cmd.frame.address, buffer, &m_commands[m_cmdFifoSize-2].frame.data);
-          } 
-        }
-        break;
-        case Swt::TransactionType::BlockReadIncrement:
-        case Swt::TransactionType::BlockReadNonIncrement:{
-          if(executeTransactions() == false){
-            failure = true;
-          }else{
-            if(readBlock(cmd.frame) == false){
-              failure = true;
-            }
-          }
-        }
-        break;
-        default:
-          break;
-        }
-        if(expectRmwOr == true){
-          BOOST_LOG_TRIVIAL(error) << "Missing RMW OR after RMW AND!";
-          failure = true;
-        }  
-      } 
+      }  
+    } 
   }
+
   if(failure == false){
-    if(executeTransactions() == false){
-      failure = true;
-    }
+      failure = !(executeTransactions());
   }
   return !failure;
 }
