@@ -41,11 +41,9 @@ bool IPbusMaster::openSocket()
 bool IPbusMaster::reopen()
 {
   if (m_socket.is_open()) {
-    BOOST_LOG_TRIVIAL(debug) << "Socket is already open.";
-    return true;
+    m_socket.close();
   }
-  BOOST_LOG_TRIVIAL(debug) << "Socket is not open. Attempting to reopen...";
-  return openSocket(); // Reopen the socket if it is not open
+  return openSocket();
 }
 
 size_t IPbusMaster::receive(char* destBuffer, size_t maxSize)
@@ -132,8 +130,11 @@ void IPbusMaster::handleDeadline()
 bool IPbusMaster::checkStatus()
 {
   pthread_mutex_lock(&m_linkMutex);
+  reopen();
+  
   m_isStatusCheckInProgress = true;
   m_isAvailable = false;
+
 
   try {
     BOOST_LOG_TRIVIAL(info) << "Checking status of device at " << m_ipAddress << ":" << m_remotePort;
