@@ -275,7 +275,7 @@ bool SwtLink::parseSequence(const char* request)
         break;
       }
     }
-
+      break;
     case CruCommand::Type::Invalid: {
       BOOST_LOG_TRIVIAL(error) << "Sequence parsing failed: Invalid line:" 
                               << std::string_view(currentLine, std::find(currentLine, end,'\n'));
