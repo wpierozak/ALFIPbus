@@ -141,15 +141,20 @@ void SwtLink::sendResponse()
   setData(m_fredResponse.c_str());
 }
 
+void SwtLink::executeReadCommand()
+{
+  do{
+    m_fifo.pop().appendToString(m_fredResponse);
+    m_fredResponse += "\n";
+  }while(m_fifo.empty() == false);
+  m_fifo.clear();
+}
+
 void SwtLink::processExecutedCommands()
 {
   for(uint32_t idx = 0; idx < m_cmdFifoSize; idx++) {
     if (m_commands[idx].type == CruCommand::Type::Read) {
-        do{
-          m_fifo.pop().appendToString(m_fredResponse);
-          m_fredResponse += "\n";
-        }while(m_fifo.empty() == false);
-        m_fifo.clear();
+      executeReadCommand();
     } else if(m_commands[idx].type == CruCommand::Type::Write){
       updateFifoState(m_commands[idx].frame);
       m_fredResponse += "0\n";
@@ -220,9 +225,7 @@ bool SwtLink::parseSequence(const char* request)
                               << std::string_view(currentLine, std::find(currentLine, end,'\n'));
       failure = true;
     } else if(cmd.type == CruCommand::Type::Read){
-      if(isIPbusPacketFull()){
-        failure = !(executeTransactions());
-      }
+      executeReadCommand();
     } else if(cmd.type == CruCommand::Type::ScReset){
       m_fifo.clear();
     } else {

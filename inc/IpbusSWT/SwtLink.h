@@ -38,6 +38,7 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
   bool readBlock(const Swt& frame);
 
   void processExecutedCommands();
+  void executeReadCommand();
   void sendResponse();
 
   void terminate() { m_terminate = true; }
