@@ -28,6 +28,23 @@ struct Swt {
   {
     return mode == 8 || mode == 9;
   }
+  uint32_t responseSize() const
+  {
+    switch(mode)
+    {
+      case 1:
+      case 3:
+        return 0;
+      case 0:
+      case 2:
+      case 4:
+        return 1;
+      case 8:
+      case 9:
+        return data;
+    }
+    return 0;
+  }
   void appendToString(std::string& dest) const;
   static constexpr uint32_t SwtStrLen = 21;
 };

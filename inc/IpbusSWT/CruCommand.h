@@ -33,7 +33,7 @@ struct CruCommand
     Type type{Type::Invalid};
     fit_swt::Swt frame;
 
-    uint32_t commandStrLen() const
+    inline uint32_t commandStrLen() const
     {
         switch(type)
         {
@@ -46,6 +46,11 @@ struct CruCommand
             default:
                 throw std::runtime_error("Request for length of invalid line!");
         }
+    }
+
+    inline bool valid() const
+    {
+        return type != Type::Invalid;
     }
 
     static constexpr const char* ScReset = "sc_reset";

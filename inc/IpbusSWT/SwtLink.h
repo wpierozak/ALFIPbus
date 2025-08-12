@@ -12,6 +12,7 @@
 #include <boost/log/trivial.hpp>
 #include"utils.h"
 #include"CruCommand.h"
+#include "CruCommandBuffer.h"
 #include"SwtFifo.h"
 #include<span>
 namespace fit_swt
@@ -62,7 +63,7 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
     if(expectRmwOr == false){
         BOOST_LOG_TRIVIAL(error) << "Received RMW OR before RMW AND!";
         return false;
-    } else if(frame.address != m_commands[m_cmdFifoSize-2].frame.address){
+    } else if(frame.address != m_cmdBuffer.oneBeforeLast().frame.address){
         BOOST_LOG_TRIVIAL(error) << "RMW OR address mismatch!";
         return false;
     }
@@ -79,7 +80,8 @@ class SwtLink : public ipbus::IPbusMaster, DimRpcParallel
   
   std::unique_ptr<std::thread> m_checkStatusParallel;
 
-  std::array<CruCommand,1024> m_commands;
+  CruCommandBuffer m_cmdBuffer;
+
   uint32_t m_cmdFifoSize{0};
   std::string m_fredResponse;
   SwtFifo m_fifo;

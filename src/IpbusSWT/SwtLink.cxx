@@ -115,9 +115,7 @@ bool SwtLink::readBlock(const Swt& frame)
     if(transceive(m_request, m_response))
     {
       for(uint32_t idx = 0 ; idx < size; idx++){
-        //Swt responseFrame = {frame.mode, currentAddress, ipbusOutputBuffer[idx]};
         updateFifoState(Swt{frame.mode, currentAddress, ipbusOutputBuffer[idx]});
-        //m_fifo.push(Swt{frame.mode, currentAddress, ipbusOutputBuffer[idx]});
         if(increment){
           currentAddress++;
         }
@@ -152,15 +150,22 @@ void SwtLink::executeReadCommand()
 
 void SwtLink::processExecutedCommands()
 {
-  for(uint32_t idx = 0; idx < m_cmdFifoSize; idx++) {
-    if (m_commands[idx].type == CruCommand::Type::Read) {
-      executeReadCommand();
-    } else if(m_commands[idx].type == CruCommand::Type::Write){
-      updateFifoState(m_commands[idx].frame);
-      m_fredResponse += "0\n";
-    } 
+  for(uint32_t idx = 0; idx < m_cmdBuffer.size; idx++) {
+      switch(m_cmdBuffer[idx].type) {
+        case CruCommand::Type::Read: {
+          executeReadCommand();
+        }
+          break;
+        case CruCommand::Type::Write: {
+          updateFifoState(m_cmdBuffer[idx].frame);
+          m_fredResponse += "0\n";
+        }
+          break;
+        default:
+          break;
+      }
   }
-  m_cmdFifoSize = 0;
+  m_cmdBuffer.reset();
 }
 
 void SwtLink::updateFifoState(const Swt& frame)
@@ -196,11 +201,8 @@ void SwtLink::sendFailure()
 
 CruCommand& SwtLink::parseNextCommand(const char* &currentLine)
 {
-  m_commands[m_cmdFifoSize++] = CruCommand(currentLine);
-  if(m_commands[m_cmdFifoSize-1].type != CruCommand::Type::Invalid){
-    currentLine += m_commands[m_cmdFifoSize-1].commandStrLen()+1;    
-  }
-  return m_commands[m_cmdFifoSize-1];
+  currentLine += (m_cmdBuffer.push(CruCommand(currentLine)).valid()) ? (m_cmdBuffer.back().commandStrLen() + 1) : 0;
+  return m_cmdBuffer.back();
 }
 
 bool SwtLink::parseSequence(const char* request)
@@ -217,18 +219,17 @@ bool SwtLink::parseSequence(const char* request)
     if(isIPbusPacketFull()){
       failure = !(executeTransactions());
     }
-
     CruCommand& cmd = parseNextCommand(currentLine);
-    
-    if(cmd.type == CruCommand::Type::Invalid){
-      BOOST_LOG_TRIVIAL(error) << "Sequence parsing failed: Invalid line:" 
-                              << std::string_view(currentLine, std::find(currentLine, end,'\n'));
-      failure = true;
-    } else if(cmd.type == CruCommand::Type::Read){
-      executeReadCommand();
-    } else if(cmd.type == CruCommand::Type::ScReset){
+    switch (cmd.type){
+    case CruCommand::Type::ScReset: {
       m_fifo.clear();
-    } else {
+    }
+      break;
+    case CruCommand::Type::Read: {
+      failure = m_cmdBuffer.validateLastCmd();
+    }
+      break;
+    case CruCommand::Type::Write:{
       switch (cmd.frame.type()){
       case Swt::TransactionType::Read:{
         Swt &frame = cmd.frame;
@@ -255,9 +256,9 @@ bool SwtLink::parseSequence(const char* request)
           failure = true;
         } else {
           expectRmwOr = false; 
-          buffer[0] = m_commands[m_cmdFifoSize-2].frame.data;
+          buffer[0] = m_cmdBuffer.oneBeforeLast().frame.data;
           buffer[1] = cmd.frame.data;
-          m_request.addTransaction(ipbus::enums::transactions::RMWbits, cmd.frame.address, buffer, &m_commands[m_cmdFifoSize-2].frame.data);
+          m_request.addTransaction(ipbus::enums::transactions::RMWbits, cmd.frame.address, buffer, &m_cmdBuffer.oneBeforeLast().frame.data);
         } 
       }
         break;
@@ -273,13 +274,24 @@ bool SwtLink::parseSequence(const char* request)
       default:
         break;
       }
+    }
 
-      if(expectRmwOr == true){
+    case CruCommand::Type::Invalid: {
+      BOOST_LOG_TRIVIAL(error) << "Sequence parsing failed: Invalid line:" 
+                              << std::string_view(currentLine, std::find(currentLine, end,'\n'));
+      failure = true;
+    }
+      break;
+    
+    default:
+      break;
+    }
+
+    if(expectRmwOr == true){
         BOOST_LOG_TRIVIAL(error) << "Missing RMW OR after RMW AND!";
         failure = true;
       }  
-    } 
-  }
+  } 
 
   if(failure == false){
       failure = !(executeTransactions());
