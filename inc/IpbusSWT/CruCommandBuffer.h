@@ -8,21 +8,12 @@ public:
     static constexpr uint32_t Capacity = 1024;
 private:
     std::array<CruCommand,Capacity> m_buffer;
-    uint32_t m_currentBack;
+    uint32_t m_currentBack { 0 };
     bool m_areWordsToRead;
 
 public:
     CruCommandBuffer(): m_currentBack(0), size(m_currentBack) {}
-
-    inline CruCommand& push(const CruCommand& cmd){
-        if(m_currentBack == Capacity){
-            throw std::out_of_range("Reached SWT fifo limit");
-        }
-        m_buffer[m_currentBack++] = cmd;
-        m_areWordsToRead = (cmd.type == CruCommand::Type::Write);
-        return m_buffer[m_currentBack-1];
-    }
-
+    
     inline CruCommand& push(const CruCommand&& cmd){
         if(m_currentBack == Capacity){
             throw std::out_of_range("Reached SWT fifo limit");

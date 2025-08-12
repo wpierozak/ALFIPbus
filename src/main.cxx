@@ -9,6 +9,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "AlfInfo.h"
 
 int main(int argc, const char** argv)
 {
@@ -19,6 +20,8 @@ int main(int argc, const char** argv)
   logging::init(cfg.logFilename, cfg.verbose);
 
   AlfIPbus alf(cfg);
+  AlfInfo info("ALF_INFO");
+
   alf.initLinks();
   alf.startServer();
   return 0;

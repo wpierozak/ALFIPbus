@@ -13,7 +13,7 @@ IPbusMaster::IPbusMaster(boost::asio::io_context& ioContext, std::string address
                                                                                                                     m_remotePort(rport),
                                                                                                                     m_ipAddress(address),
                                                                                                                     m_localEndpoint(boost::asio::ip::udp::v4(), m_localPort),
-                                                                                                                    m_remoteEndpoint(boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(m_ipAddress), m_remotePort)),
+                                                                                                                    m_remoteEndpoint(boost::asio::ip::udp::endpoint(boost::asio::ip::make_address(m_ipAddress), m_remotePort)),
                                                                                                                     m_socket(ioContext),
                                                                                                                     m_timer(ioContext)
 
