@@ -220,7 +220,9 @@ bool SwtLink::parseSequence(const char* request)
                               << std::string_view(currentLine, std::find(currentLine, end,'\n'));
       failure = true;
     } else if(cmd.type == CruCommand::Type::Read){
-      failure = !(executeTransactions());
+      if(isIPbusPacketFull()){
+        failure = !(executeTransactions());
+      }
     } else if(cmd.type == CruCommand::Type::ScReset){
       m_fifo.clear();
     } else {
