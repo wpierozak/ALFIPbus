@@ -161,6 +161,9 @@ void SwtLink::processExecutedCommands()
           m_fredResponse += "0\n";
         }
           break;
+        case CruCommand::Type::Wait: {
+          m_fredResponse += "1\n";
+        }
         default:
           break;
       }

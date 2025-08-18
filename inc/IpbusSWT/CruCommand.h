@@ -25,6 +25,9 @@ struct CruCommand
             frame = fit_swt::Swt(str+2);
             type = Type::Write;
         }
+        else if(strncmp(str, Wait, WaitLen) == 0){
+            type = Type::Wait;
+        }
         else{
             type = Type::Invalid;
         }
@@ -59,6 +62,8 @@ struct CruCommand
     static constexpr uint32_t ReadLen = std::char_traits<char>::length(Read);
     static constexpr const char* Write = "write";
     static constexpr uint32_t WriteLen = std::char_traits<char>::length(Write);
+    static constexpr const char* Wait = "wait";
+    static constexpr uint32_t WaitLen = std::char_traits<char>::length(Wait);
 };
 
 

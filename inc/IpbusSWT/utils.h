@@ -18,8 +18,6 @@ char hexToChar(uint8_t hex);
 uint8_t charToHex(char ch);
 uint8_t stringToByte(char c1, char c2);
 
-
-
 template< size_t N >
 constexpr size_t length( char const (&)[N] )
 {
