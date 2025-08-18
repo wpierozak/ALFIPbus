@@ -4,7 +4,7 @@
 
 struct CruCommand
 {
-    enum class Type {ScReset = 0, Read,Write,Invalid};
+    enum class Type {ScReset = 0, Read, Write, Wait, Invalid};
     CruCommand(): type(Type::Invalid)
     {
 
