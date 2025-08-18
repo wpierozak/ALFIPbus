@@ -16,7 +16,7 @@ public:
     
     inline CruCommand& push(const CruCommand&& cmd){
         if(m_currentBack == Capacity){
-            throw std::out_of_range("Reached SWT fifo limit");
+            throw std::out_of_range("Reached CRU command buffer limit");
         }
         m_buffer[m_currentBack++] = cmd;
         m_areWordsToRead = ((cmd.type == CruCommand::Type::Write) && (cmd.frame.responseSize() != 0));

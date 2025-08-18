@@ -65,7 +65,7 @@ void SwtLink::resetState()
 {
   m_fredResponse.clear();
   m_request.reset();
-  m_cmdFifoSize = 0;
+  m_cmdBuffer.reset();
 }
 
 bool SwtLink::executeTransactions()
@@ -227,6 +227,9 @@ bool SwtLink::parseSequence(const char* request)
       break;
     case CruCommand::Type::Read: {
       failure = m_cmdBuffer.validateLastCmd();
+      if(m_fifo.size() > 0){
+        executeReadCommand();
+      }
     }
       break;
     case CruCommand::Type::Write:{
