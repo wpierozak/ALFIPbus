@@ -1,6 +1,8 @@
 #pragma once
 #include"Swt.h"
+#include "utils.h"
 #include<cstring>
+#include<charconv>
 
 struct CruCommand
 {
@@ -25,7 +27,7 @@ struct CruCommand
             frame = fit_swt::Swt(str+2);
             type = Type::Write;
         }
-        else if(strncmp(str, Wait, WaitLen) == 0){
+        else if(strncmp(str, Wait, WaitLen) == 0 && (std::from_chars(str + WaitLen + 2, fit_swt::utils::findC(str, '\n'), frame.data).ec == std::errc())){
             type = Type::Wait;
         }
         else{
@@ -46,6 +48,8 @@ struct CruCommand
                 return ReadLen;
             case Type::Write:
                 return WriteLen + fit_swt::Swt::SwtStrLen + 1;
+            case Type::Wait:
+                return WaitLen + 3;
             default:
                 throw std::runtime_error("Request for length of invalid line!");
         }
