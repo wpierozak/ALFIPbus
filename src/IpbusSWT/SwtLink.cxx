@@ -162,7 +162,7 @@ void SwtLink::processExecutedCommands()
         }
           break;
         case CruCommand::Type::Wait: {
-          m_fredResponse += "1\n";
+          m_fredResponse += std::to_string(m_cmdBuffer[idx].frame.data) + "\n";
         }
           break;
         default:
