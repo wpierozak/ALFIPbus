@@ -27,11 +27,14 @@ struct CruCommand
             frame = fit_swt::Swt(str+2);
             type = Type::Write;
         }
-        else if(strncmp(str, Wait, WaitLen) == 0 && (std::from_chars(str + WaitLen + 1, fit_swt::utils::findC(str, '\n'), frame.data).ec == std::errc())){
-            type = Type::Wait;
-        }
-        else{
-            type = Type::Invalid;
+        else {
+            const char* comma = fit_swt::utils::findC(str, ',');
+            auto res = std::from_chars(str, comma, frame.data);
+            if(res.ec == std::errc() && res.ptr == comma && strncmp(comma, Wait, WaitLen) == 0){
+                type = Type::Wait;
+            } else{
+                type = Type::Invalid;
+            }
         }
     }
 
@@ -66,7 +69,7 @@ struct CruCommand
     static constexpr uint32_t ReadLen = std::char_traits<char>::length(Read);
     static constexpr const char* Write = "write";
     static constexpr uint32_t WriteLen = std::char_traits<char>::length(Write);
-    static constexpr const char* Wait = "wait";
+    static constexpr const char* Wait = ",wait";
     static constexpr uint32_t WaitLen = std::char_traits<char>::length(Wait);
 };
 
