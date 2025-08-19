@@ -27,7 +27,7 @@ struct CruCommand
             frame = fit_swt::Swt(str+2);
             type = Type::Write;
         }
-        else if(strncmp(str, Wait, WaitLen) == 0 && (std::from_chars(str + WaitLen + 2, fit_swt::utils::findC(str, '\n'), frame.data).ec == std::errc())){
+        else if(strncmp(str, Wait, WaitLen) == 0 && (std::from_chars(str + WaitLen + 1, fit_swt::utils::findC(str, '\n'), frame.data).ec == std::errc())){
             type = Type::Wait;
         }
         else{
