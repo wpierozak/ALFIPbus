@@ -205,7 +205,7 @@ void SwtLink::sendFailure()
 
 CruCommand& SwtLink::parseNextCommand(const char* &currentLine)
 {
-  currentLine += (m_cmdBuffer.push(CruCommand(currentLine)).valid()) ? (m_cmdBuffer.back().commandStrLen() + 1) : 0;
+  currentLine = (m_cmdBuffer.push(CruCommand(currentLine)).valid()) ? fit_swt::utils::findC(currentLine, '\n') + 1 : currentLine;
   return m_cmdBuffer.back();
 }
 
