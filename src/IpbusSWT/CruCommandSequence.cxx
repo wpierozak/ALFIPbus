@@ -13,7 +13,7 @@ CruCommandSequnce::Command CruCommandSequnce::getNextCmd()
     size_t len{0};
     for(const char* tmp = m_position; *tmp != '\0'; tmp++){
         if(*tmp == ',') {
-            command = tmp - m_position + 1;
+            command = (tmp - m_position) + 1;
         } else if (*tmp == '\n' || *tmp == '\0'){
             len = tmp - m_position;
             break;
@@ -34,7 +34,7 @@ CruCommandSequnce::Command::Command(const char* beg, size_t command, size_t len)
     switch (len - command)
     {
     case ReadStrLen: // same len for WaitStr
-        if (strncmp(beg + command, ReadStr, ReadCntStrLen) == 0) {
+        if (strncmp(beg + command, ReadStr, ReadStr) == 0) {
             type = Type::Read;
         } else if (strncmp(beg + command, WaitStr, WaitStrLen) == 0) {
             type = Type::Wait;
@@ -87,13 +87,13 @@ CruCommandSequnce::Command::Command(const char* beg, size_t command, size_t len)
         case Type::Write: {
             if(command != SwtFrameLen + 1) {
                 std::string argument(beg, beg + command);
-                throw std::runtime_error("Invalid argument to " + std::string(WaitStr) + ": " + argument);
+                throw std::runtime_error("Invalid argument to " + std::string(WriteStr) + ": " + argument);
             }
             try{
-                data.frame = fit_swt::Swt(beg);
+                data.frame = fit_swt::Swt(beg + 2);
             } catch(std::exception & e){
-                std::string argument(beg, beg + command);
-                throw std::runtime_error("Invalid argument to " + std::string(WaitStr) + ": " + argument + std::string("; Exception: ") + e.what());
+                std::string argument(beg, beg + command - 1);
+                throw std::runtime_error("Invalid argument to " + std::string(WriteStr) + ": " + argument + std::string("; Exception: ") + e.what());
             }
         }
             break;
