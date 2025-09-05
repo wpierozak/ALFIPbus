@@ -24,7 +24,7 @@ CruCommandSequnce::Command CruCommandSequnce::getNextCmd()
 
 bool CruCommandSequnce::isNextCmd()
 {
-    return *m_position == '\0' || *(m_position + 1) == '\0';
+    return (*m_position != '\0' && *(m_position + 1) != '\0');
 }
 
 CruCommandSequnce::Command::Command(const char* beg, size_t command, size_t len)
