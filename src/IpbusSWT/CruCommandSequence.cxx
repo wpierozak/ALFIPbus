@@ -71,12 +71,14 @@ CruCommandSequnce::Command::Command(const char* beg, size_t command, size_t len)
                 throw std::runtime_error("Invalid argument to " + std::string(ReadStr) + ": " + argument);
             }
         }
+            break;
         case Type::Wait:  {
             if(command == 0 || (command != 0 && parsedArgUnsignedInteger(beg, command, data.waitTime) == false)){
                 std::string argument(beg, beg + command);
                 throw std::runtime_error("Invalid argument to " + std::string(WaitStr) + ": " + argument);
             }
         }
+            break;
         case Type::ReadCnt: {
             if(command == 0 || (command != 0 && parsedArgUnsignedInteger(beg, command, data.wordsToRead) == false)){
                 std::string argument(beg, beg + command);
