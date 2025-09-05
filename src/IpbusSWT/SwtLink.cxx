@@ -170,6 +170,7 @@ bool SwtLink::parseSequence(const char* request)
           break;
         case Swt::TransactionType::RMWbitsAnd: {
           expectRmwOr = true;
+          wordsToReadByNextCmd += cmd.data.frame.responseSize();
           continue;
         }
           break;
