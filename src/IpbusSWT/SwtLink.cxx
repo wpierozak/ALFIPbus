@@ -4,6 +4,8 @@
 #include<iterator>
 #include "IpbusSWT/SwtLink.h"
 #include "IpbusSWT/utils.h"
+#include "IpbusSWT/CruCommandSequence.h"
+#include "IpbusSWT/CruCommandExecutor.h"
 
 namespace fit_swt
 {
@@ -52,6 +54,8 @@ void SwtLink::processRequest(const char* swtSequence)
   }
   catch(std::exception& e){
     BOOST_LOG_TRIVIAL(error) << e.what();
+    m_fredResponse += "\n" ;
+    m_fredResponse += e.what();
   }
 
   if (success) {
@@ -68,26 +72,160 @@ void SwtLink::resetState()
   m_cmdBuffer.reset();
 }
 
+void SwtLink::sendResponse()
+{
+  BOOST_LOG_TRIVIAL(debug) << "Request successfully processed - sending response";
+  m_fredResponse = "success\n" + m_fredResponse;
+  setData(m_fredResponse.c_str());
+}
+
+void SwtLink::sendFailure()
+{
+  BOOST_LOG_TRIVIAL(error) << "Request execution failed";
+  m_fredResponse = "failure\n" + m_fredResponse;
+  setData(m_fredResponse.c_str());
+}
+
 bool SwtLink::executeTransactions()
 {
   bool success = transceive(m_request, m_response);
   if(success){
-    processExecutedCommands();
+    CruCommandExecutor::execute(m_cmdBuffer, m_fifo, m_fredResponse);
   }
   m_request.reset();
   return success;
+}
+
+bool SwtLink::parseSequence(const char* request)
+{
+  CruCommandSequnce sequence(request);
+  bool expectRmwOr = false;
+  bool failure = false;
+  bool executeTransactionsOnNextRead = false;
+  
+  uint32_t buffer[2];
+  uint32_t wordsToReadByNextCmd = 0x0;
+
+  while(!failure && sequence.isNextCmd()){
+    if(isIPbusPacketFull()){
+      failure = !(executeTransactions());
+    }
+
+    CruCommandSequnce::Command& cmd  = m_cmdBuffer.push(sequence.getNextCmd());
+    uint32_t* responseData = nullptr;
+
+    switch (cmd.type){
+    case CruCommandSequnce::Command::Type::ScReset: {
+      m_fifo.clear();
+      wordsToReadByNextCmd = 0x0;
+    }
+      break;
+
+    case CruCommandSequnce::Command::Type::Read: {
+      if(wordsToReadByNextCmd == 0x0) {
+        throw std::runtime_error(std::string(CruCommandSequnce::Command::ReadStr) + ": there is no data in SWT FIFO to read!");
+      } else if (m_cmdBuffer(1).type == CruCommandSequnce::Command::Type::ScReset) {
+        throw std::runtime_error(std::string(CruCommandSequnce::Command::ReadStr) + ": there is no data in SWT FIFO to read!");
+      } else if (m_cmdBuffer(1).type == CruCommandSequnce::Command::Type::Read) {
+        throw std::runtime_error(std::string(CruCommandSequnce::Command::ReadStr) + ": there is no data in SWT FIFO to read!");
+      } 
+      if(executeTransactionsOnNextRead){
+        failure = !(executeTransactions());
+        executeTransactionsOnNextRead = false;
+      }
+      wordsToReadByNextCmd = 0x0;
+    }
+      break;
+
+    case CruCommandSequnce::Command::Type::ReadCnt: {
+      if (wordsToReadByNextCmd == 0x0) {
+        throw std::runtime_error(std::string(CruCommandSequnce::Command::ReadCntStr) + ": there is no data in SWT FIFO to read!");
+      } else if (wordsToReadByNextCmd != cmd.data.wordsToRead) {
+        throw std::runtime_error(std::string(CruCommandSequnce::Command::ReadCntStr) + ": mismatch between expected words to read and words in SWT FIFO!");
+      }
+      if(executeTransactionsOnNextRead){
+        failure = !(executeTransactions());
+        executeTransactionsOnNextRead = false;
+      }
+      wordsToReadByNextCmd = 0x0;
+    }
+      break;
+
+    case CruCommandSequnce::Command::Type::Write: {
+      switch (cmd.data.frame.type()){
+        case Swt::TransactionType::Read: {
+          responseData = m_fifo.prepareResponseFrame(cmd.data.frame);
+          m_request.addTransaction(ipbus::enums::transactions::Read, cmd.data.frame.address, &cmd.data.frame.data, responseData, 1);
+        }
+          break;
+        case Swt::TransactionType::Write: {
+          (void) m_fifo.prepareResponseFrame(cmd.data.frame);
+          m_request.addTransaction(ipbus::enums::transactions::Write, cmd.data.frame.address, &cmd.data.frame.data, nullptr, 1);
+        }
+          break;
+        case Swt::TransactionType::RMWsum: {
+          responseData = m_fifo.prepareResponseFrame(cmd.data.frame);
+          m_request.addTransaction(ipbus::enums::transactions::RMWsum, cmd.data.frame.address, &cmd.data.frame.data, responseData);
+        }
+          break;
+        case Swt::TransactionType::RMWbitsAnd: {
+          expectRmwOr = true;
+          continue;
+        }
+          break;
+        case Swt::TransactionType::RMWbitsOr: {
+          if (expectRmwOr == false) {
+            throw std::runtime_error("SWT - RMW bits: received RMW OR without preceeding RMW AND!");
+          } else if (cmd.data.frame.address != m_cmdBuffer(1).data.frame.address) {
+            throw std::runtime_error("SWT - RMW bits: received RMW OR on address different than in preceeding RMW AND!");
+          }
+          expectRmwOr = false;
+          responseData = m_fifo.prepareResponseFrame(cmd.data.frame);
+          buffer[0] = m_cmdBuffer(1).data.frame.data;
+          buffer[1] = cmd.data.frame.data;
+          m_request.addTransaction(ipbus::enums::transactions::RMWbits, cmd.data.frame.address, buffer, responseData);
+        }
+          break;
+        case Swt::TransactionType::BlockReadIncrement:
+        case Swt::TransactionType::BlockReadNonIncrement:{
+          if(executeTransactions() == false){
+            failure = true;
+          } else {
+            failure = !(readBlock(cmd.data.frame));
+            executeTransactionsOnNextRead = true;
+          }
+        }
+          break;
+        default:
+          break;
+      }// SWT switch
+      wordsToReadByNextCmd += cmd.data.frame.responseSize();
+    } 
+      break;
+
+    default:
+      break;
+    }
+
+    if(expectRmwOr == true){
+        throw std::runtime_error("SWT - RMW bits: received RMW AND without following RMW OR!");
+    }  
+  } // CRU command switch
+
+  if(failure == false){
+      failure = !(executeTransactions());
+  }
+  return !failure;
 }
 
 bool SwtLink::readBlock(const Swt& frame)
 {
   constexpr uint32_t maxPacketPayload = ipbus::maxPacket - 3;
 
-  if(frame.data > 1024){
-    BOOST_LOG_TRIVIAL(error) << "Exceeded maximum block size (1024); received request for " << frame.data << " words";
+  if(frame.data > 1023){
+    BOOST_LOG_TRIVIAL(error) << "Exceeded maximum block size (1023); received request for " << frame.data << " words";
     return false;
   }
-
-  m_fifo.clear();
 
   bool increment = (frame.type() == Swt::TransactionType::BlockReadIncrement);
   auto transactionType = (increment) ? ipbus::enums::transactions::Read : ipbus::enums::transactions::NonIncrementingRead;
@@ -115,7 +253,7 @@ bool SwtLink::readBlock(const Swt& frame)
     if(transceive(m_request, m_response))
     {
       for(uint32_t idx = 0 ; idx < size; idx++){
-        updateFifoState(Swt{frame.mode, currentAddress, ipbusOutputBuffer[idx]});
+        m_fifo.push(Swt{frame.mode, currentAddress, ipbusOutputBuffer[idx]});
         if(increment){
           currentAddress++;
         }
@@ -131,177 +269,5 @@ bool SwtLink::readBlock(const Swt& frame)
   }
   return true;
 }
-
-void SwtLink::sendResponse()
-{
-  BOOST_LOG_TRIVIAL(debug) << "Request successfully processed - sending response";
-  m_fredResponse = "success\n" + m_fredResponse;
-  setData(m_fredResponse.c_str());
-}
-
-void SwtLink::executeReadCommand()
-{
-  do{
-    m_fifo.pop().appendToString(m_fredResponse);
-    m_fredResponse += "\n";
-  }while(m_fifo.empty() == false);
-  m_fifo.clear();
-}
-
-void SwtLink::processExecutedCommands()
-{
-  for(uint32_t idx = 0; idx < m_cmdBuffer.size; idx++) {
-      switch(m_cmdBuffer[idx].type) {
-        case CruCommand::Type::Read: {
-          executeReadCommand();
-        }
-          break;
-        case CruCommand::Type::Write: {
-          updateFifoState(m_cmdBuffer[idx].frame);
-          m_fredResponse += "0\n";
-        }
-          break;
-        case CruCommand::Type::Wait: {
-          m_fredResponse += std::to_string(m_cmdBuffer[idx].frame.data) + "\n";
-        }
-          break;
-        default:
-          break;
-      }
-  }
-  m_cmdBuffer.reset();
-}
-
-void SwtLink::updateFifoState(const Swt& frame)
-{
-  switch(frame.mode)
-  {
-    case 0:
-    case 2:
-    case 4:
-    case 8:
-    case 9:
-    try
-    {  
-      m_fifo.push(frame);
-    }
-    catch(const std::exception& e)
-    {
-      BOOST_LOG_TRIVIAL(warning) << "Fifo is full!";
-    }
-    
-    break;
-    default:
-    break;
-  }
-}
-
-void SwtLink::sendFailure()
-{
-  BOOST_LOG_TRIVIAL(error) << "Request execution failed";
-  m_fredResponse = "failure\n" + m_fredResponse;
-  setData(m_fredResponse.c_str());
-}
-
-CruCommand& SwtLink::parseNextCommand(const char* &currentLine)
-{
-  currentLine = (m_cmdBuffer.push(CruCommand(currentLine)).valid()) ? fit_swt::utils::findC(currentLine, '\n') + 1 : currentLine;
-  return m_cmdBuffer.back();
-}
-
-bool SwtLink::parseSequence(const char* request)
-{
-  const char* currentLine = request;
-  const char* end = request + getSize() - 1;
-
-  bool expectRmwOr = false;
-  bool failure = false;
-  
-  uint32_t buffer[2];
-
-  while(!failure && currentLine < end){
-    if(isIPbusPacketFull()){
-      failure = !(executeTransactions());
-    }
-    CruCommand& cmd = parseNextCommand(currentLine);
-    switch (cmd.type){
-    case CruCommand::Type::ScReset: {
-      m_fifo.clear();
-    }
-      break;
-    case CruCommand::Type::Read: {
-      failure = m_cmdBuffer.validateLastCmd();
-    }
-      break;
-    case CruCommand::Type::Write:{
-      switch (cmd.frame.type()){
-      case Swt::TransactionType::Read:{
-        Swt &frame = cmd.frame;
-        m_request.addTransaction(ipbus::enums::transactions::Read, frame.address, &frame.data, &frame.data, 1);
-      }
-        break;
-      case Swt::TransactionType::Write:{
-        Swt &frame = cmd.frame;
-        m_request.addTransaction(ipbus::enums::transactions::Write, frame.address, &frame.data, &frame.data, 1);
-      }
-        break;
-      case Swt::TransactionType::RMWsum:{
-        Swt &frame = cmd.frame;
-        m_request.addTransaction(ipbus::enums::transactions::RMWsum, frame.address, &frame.data, &frame.data);
-      }
-        break;
-      case Swt::TransactionType::RMWbitsAnd:{
-        expectRmwOr = true;
-        continue;
-      }
-        break;
-      case Swt::TransactionType::RMWbitsOr:{
-        if(validateRmwTransaction(cmd.frame, expectRmwOr) == false){
-          failure = true;
-        } else {
-          expectRmwOr = false; 
-          buffer[0] = m_cmdBuffer.oneBeforeLast().frame.data;
-          buffer[1] = cmd.frame.data;
-          m_request.addTransaction(ipbus::enums::transactions::RMWbits, cmd.frame.address, buffer, &m_cmdBuffer.oneBeforeLast().frame.data);
-        } 
-      }
-        break;
-      case Swt::TransactionType::BlockReadIncrement:
-      case Swt::TransactionType::BlockReadNonIncrement:{
-        if(executeTransactions() == false){
-          failure = true;
-        } else {
-          failure = !(readBlock(cmd.frame));
-        }
-      }
-        break;
-      default:
-        break;
-      }
-    }
-      break;
-    case CruCommand::Type::Invalid: {
-      BOOST_LOG_TRIVIAL(error) << "Sequence parsing failed: Invalid line:" 
-                              << std::string_view(currentLine, std::find(currentLine, end,'\n'));
-      failure = true;
-    }
-      break;
-    
-    default:
-      break;
-    }
-
-    if(expectRmwOr == true){
-        BOOST_LOG_TRIVIAL(error) << "Missing RMW OR after RMW AND!";
-        failure = true;
-      }  
-  } 
-
-  if(failure == false){
-      failure = !(executeTransactions());
-  }
-  return !failure;
-}
-
 
 } // namespace fit_swt

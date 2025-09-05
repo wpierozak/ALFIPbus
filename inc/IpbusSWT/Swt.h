@@ -24,10 +24,12 @@ struct Swt {
                                BlockReadIncrement = 8,
                                BlockReadNonIncrement = 9 };
   TransactionType type() const;
+  
   bool isBlock() const
   {
     return mode == 8 || mode == 9;
   }
+
   uint32_t responseSize() const
   {
     switch(mode)
@@ -42,12 +44,16 @@ struct Swt {
       case 8:
       case 9:
         return data;
+      default:
+        break;
     }
     return 0;
   }
-  void appendToString(std::string& dest) const;
   static constexpr uint32_t SwtStrLen = 21;
 };
+
+void writeSwtFrameToStrBuffer(const Swt& frame, std::string& dest);
+
 } // namespace fit_swt
 
 #endif
