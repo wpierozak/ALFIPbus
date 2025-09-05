@@ -34,7 +34,7 @@ CruCommandSequnce::Command::Command(const char* beg, size_t command, size_t len)
     switch (len - command)
     {
     case ReadStrLen: // same len for WaitStr
-        if (strncmp(beg + command, ReadStr, ReadStr) == 0) {
+        if (strncmp(beg + command, ReadStr, ReadStrLen) == 0) {
             type = Type::Read;
         } else if (strncmp(beg + command, WaitStr, WaitStrLen) == 0) {
             type = Type::Wait;
