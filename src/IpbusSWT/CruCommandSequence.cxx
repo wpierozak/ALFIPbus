@@ -11,7 +11,7 @@ CruCommandSequnce::Command CruCommandSequnce::getNextCmd()
 {
     size_t command{0};
     size_t len{0};
-    for(const char* tmp = m_position; *tmp != '\0'; tmp++){
+    for(const char* tmp = m_position; ; tmp++){
         if(*tmp == ',') {
             command = (tmp - m_position) + 1;
         } else if (*tmp == '\n' || *tmp == '\0'){
