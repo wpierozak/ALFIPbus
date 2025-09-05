@@ -19,7 +19,9 @@ CruCommandSequnce::Command CruCommandSequnce::getNextCmd()
             break;
         }       
     }
-    return Command(m_position, command, len);
+    Command next(m_position, command, len);
+    m_position += (*(m_position + len) != '\0') ? len + 1 : len;
+    return next;
 }
 
 bool CruCommandSequnce::isNextCmd()
