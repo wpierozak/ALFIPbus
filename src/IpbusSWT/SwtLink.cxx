@@ -129,7 +129,7 @@ bool SwtLink::parseSequence(const char* request)
         failure = !(executeTransactions());
         executeTransactionsOnNextRead = false;
       } else if(m_cmdBuffer.size == 1 && m_fifo.size() > 0){
-        CruCommandExecutor::execute(m_cmdBuffer, m_fifo, m_fredResponse);
+        CruCommandExecutor::execute(m_cmdBuffer, m_fifo, m_fredResponse, m_fifo.size());
       }
       wordsToReadByNextCmd = 0x0;
     }

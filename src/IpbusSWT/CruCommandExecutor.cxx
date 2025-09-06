@@ -1,8 +1,8 @@
 #include "IpbusSWT/CruCommandExecutor.h"
 
-void CruCommandExecutor::execute(CruCommandBuffer& cmdBuffer, fit_swt::SwtFifo& swtFifo, std::string& response)
+void CruCommandExecutor::execute(CruCommandBuffer& cmdBuffer, fit_swt::SwtFifo& swtFifo, std::string& response, uint32_t initialEmulatedFifoSize)
 {
-    uint32_t emulatedFifoSize = 0x0;
+    uint32_t emulatedFifoSize = initialEmulatedFifoSize;
     response.reserve(response.capacity() + (fit_swt::Swt::SwtStrLen + 1) * swtFifo.size() + 2*cmdBuffer.size);
     for(uint32_t idx = 0; idx < cmdBuffer.size; idx++){
         switch(cmdBuffer[idx].type)
