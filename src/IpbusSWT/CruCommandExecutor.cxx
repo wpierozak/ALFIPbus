@@ -4,7 +4,6 @@ void CruCommandExecutor::execute(CruCommandBuffer& cmdBuffer, fit_swt::SwtFifo& 
 {
     uint32_t emulatedFifoSize = 0x0;
     response.reserve(response.capacity() + (fit_swt::Swt::SwtStrLen + 1) * swtFifo.size() + 2*cmdBuffer.size);
-
     for(uint32_t idx = 0; idx < cmdBuffer.size; idx++){
         switch(cmdBuffer[idx].type)
         {
@@ -33,7 +32,7 @@ void CruCommandExecutor::execute(CruCommandBuffer& cmdBuffer, fit_swt::SwtFifo& 
 void CruCommandExecutor::exectureRead(CruCommandSequnce::Command& cmd, fit_swt::SwtFifo& swtFifo, uint32_t& emulatedFifoSize, std::string& response)
 {
     if(emulatedFifoSize == 0){
-        throw std::runtime_error(std::string(CruCommandSequnce::Command::ReadStr) + ": there is now data in SWT FIFO to read!");
+        throw std::runtime_error(std::string(CruCommandSequnce::Command::ReadStr) + ": there is no data in SWT FIFO to read!");
     }
     
     while(emulatedFifoSize > 0){
@@ -46,7 +45,7 @@ void CruCommandExecutor::exectureRead(CruCommandSequnce::Command& cmd, fit_swt::
 void CruCommandExecutor::exectureReadCnt(CruCommandSequnce::Command& cmd, fit_swt::SwtFifo& swtFifo, uint32_t& emulatedFifoSize, std::string& response)
 {
     if(emulatedFifoSize == 0){
-         throw std::runtime_error(std::string(CruCommandSequnce::Command::ReadStr) + ": there is now data in SWT FIFO to read!");
+         throw std::runtime_error(std::string(CruCommandSequnce::Command::ReadStr) + ": there is no data in SWT FIFO to read!");
     }
     const uint32_t initialEmulatedFifoSize = 0;
     

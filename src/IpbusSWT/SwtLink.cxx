@@ -105,7 +105,7 @@ bool SwtLink::parseSequence(const char* request)
   
   uint32_t buffer[2];
   uint32_t wordsToReadByNextCmd = 0x0;
-
+  
   while(!failure && sequence.isNextCmd()){
     if(isIPbusPacketFull()){
       failure = !(executeTransactions());
@@ -124,14 +124,12 @@ bool SwtLink::parseSequence(const char* request)
     case CruCommandSequnce::Command::Type::Read: {
       if(wordsToReadByNextCmd == 0x0) {
         throw std::runtime_error(std::string(CruCommandSequnce::Command::ReadStr) + ": there is no data in SWT FIFO to read!");
-      } else if (m_cmdBuffer.size > 1 && m_cmdBuffer(1).type == CruCommandSequnce::Command::Type::ScReset) {
-        throw std::runtime_error(std::string(CruCommandSequnce::Command::ReadStr) + ": there is no data in SWT FIFO to read!");
-      } else if (m_cmdBuffer.size > 1 && m_cmdBuffer(1).type == CruCommandSequnce::Command::Type::Read) {
-        throw std::runtime_error(std::string(CruCommandSequnce::Command::ReadStr) + ": there is no data in SWT FIFO to read!");
-      } 
+      }
       if(executeTransactionsOnNextRead){
         failure = !(executeTransactions());
         executeTransactionsOnNextRead = false;
+      } else if(m_cmdBuffer.size == 1 && m_fifo.size() > 0){
+        CruCommandExecutor::execute(m_cmdBuffer, m_fifo, m_fredResponse);
       }
       wordsToReadByNextCmd = 0x0;
     }
