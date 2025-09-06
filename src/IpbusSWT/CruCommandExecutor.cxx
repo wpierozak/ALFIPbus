@@ -3,7 +3,7 @@
 void CruCommandExecutor::execute(CruCommandBuffer& cmdBuffer, fit_swt::SwtFifo& swtFifo, std::string& response, uint32_t initialEmulatedFifoSize)
 {
     uint32_t emulatedFifoSize = initialEmulatedFifoSize;
-    response.reserve(response.capacity() + (fit_swt::Swt::SwtStrLen + 1) * swtFifo.size() + 2*cmdBuffer.size);
+    response.reserve(response.size() + (fit_swt::Swt::SwtStrLen + 1) * swtFifo.size() + 2*cmdBuffer.size);
     for(uint32_t idx = 0; idx < cmdBuffer.size; idx++){
         switch(cmdBuffer[idx].type)
         {
@@ -37,7 +37,6 @@ void CruCommandExecutor::exectureRead(CruCommandSequnce::Command& cmd, fit_swt::
     
     while(emulatedFifoSize > 0){
         fit_swt::writeSwtFrameToStrBuffer(swtFifo.pop(), response);
-        response.push_back('\n');
         emulatedFifoSize--;
     }
 }
@@ -51,7 +50,6 @@ void CruCommandExecutor::exectureReadCnt(CruCommandSequnce::Command& cmd, fit_sw
     
     for(uint32_t cnt = 0; cnt < cmd.data.wordsToRead && emulatedFifoSize > 0; cnt++){
         fit_swt::writeSwtFrameToStrBuffer(swtFifo.pop(), response);
-        response.push_back('\n');
         emulatedFifoSize--;
     }
 
@@ -62,7 +60,8 @@ void CruCommandExecutor::exectureReadCnt(CruCommandSequnce::Command& cmd, fit_sw
 
 void CruCommandExecutor::executerWrite(CruCommandSequnce::Command& cmd, fit_swt::SwtFifo& swtFifo, uint32_t& emulatedFifoSize, std::string& response)
 {
-    response.append("0\n");
+    response.push_back('0');
+    response.push_back('\n');
     emulatedFifoSize += cmd.data.frame.responseSize();
 }
 
