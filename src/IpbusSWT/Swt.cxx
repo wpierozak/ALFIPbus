@@ -46,12 +46,12 @@ Swt::Swt(const char* str)
 void writeSwtFrameToStrBuffer(const Swt& frame, std::string& dest)
 {
   uint32_t pos = dest.size();
-  dest.resize(Swt::SwtStrLen + 1);
+  dest.resize(pos + Swt::SwtStrLen + 1);
   dest[pos++] = '0';
   dest[pos++] = 'x';
 
   const uint8_t* buffer = (const uint8_t*)&frame.mode;
-  dest.push_back(utils::hexToChar(buffer[1] & 0x0F)); 
+  dest[pos++] = utils::hexToChar(buffer[1] & 0x0F); 
   dest[pos++] = utils::hexToChar(buffer[0] >> 4);
   dest[pos++] = utils::hexToChar(buffer[0] & 0x0F); 
 

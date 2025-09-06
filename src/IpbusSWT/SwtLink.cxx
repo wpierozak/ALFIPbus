@@ -105,6 +105,7 @@ bool SwtLink::parseSequence(const char* request)
   
   uint32_t buffer[2];
   uint32_t wordsToReadByNextCmd = 0x0;
+  m_fredResponse.reserve(getSize());
   
   while(!failure && sequence.isNextCmd()){
     if(isIPbusPacketFull()){

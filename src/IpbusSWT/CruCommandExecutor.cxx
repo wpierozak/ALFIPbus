@@ -3,7 +3,9 @@
 void CruCommandExecutor::execute(CruCommandBuffer& cmdBuffer, fit_swt::SwtFifo& swtFifo, std::string& response, uint32_t initialEmulatedFifoSize)
 {
     uint32_t emulatedFifoSize = initialEmulatedFifoSize;
-    response.reserve(response.size() + (fit_swt::Swt::SwtStrLen + 1) * swtFifo.size() + 2*cmdBuffer.size);
+    if(response.size() + (fit_swt::Swt::SwtStrLen + 1) * swtFifo.size() + 2*cmdBuffer.size > response.capacity()){
+        response.reserve(response.size() + (fit_swt::Swt::SwtStrLen + 1) * swtFifo.size() + 2*cmdBuffer.size);
+    }
     for(uint32_t idx = 0; idx < cmdBuffer.size; idx++){
         switch(cmdBuffer[idx].type)
         {
