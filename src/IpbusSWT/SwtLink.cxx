@@ -159,7 +159,6 @@ bool SwtLink::parseSequence(const char* request)
         }
           break;
         case Swt::TransactionType::Write: {
-          (void) m_fifo.prepareResponseFrame(cmd.data.frame);
           m_request.addTransaction(ipbus::enums::transactions::Write, cmd.data.frame.address, &cmd.data.frame.data, nullptr, 1);
         }
           break;
