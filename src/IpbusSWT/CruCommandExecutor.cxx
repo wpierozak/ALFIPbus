@@ -62,7 +62,7 @@ void CruCommandExecutor::exectureReadCnt(CruCommandSequnce::Command& cmd, fit_sw
 void CruCommandExecutor::executerWrite(CruCommandSequnce::Command& cmd, fit_swt::SwtFifo& swtFifo, uint32_t& emulatedFifoSize, std::string& response)
 {
     response.append("0\n");
-    emulatedFifoSize++;
+    emulatedFifoSize += cmd.data.frame.responseSize();
 }
 
 void CruCommandExecutor::executeWait(CruCommandSequnce::Command& cmd, fit_swt::SwtFifo& swtFifo, uint32_t& emulatedFifoSize, std::string& response)
