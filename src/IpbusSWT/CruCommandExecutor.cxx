@@ -1,6 +1,6 @@
 #include "IpbusSWT/CruCommandExecutor.h"
 
-void CruCommandExecutor::execute(CruCommandBuffer& cmdBuffer, fit_swt::SwtFifo swtFifo, std::string& response)
+void CruCommandExecutor::execute(CruCommandBuffer& cmdBuffer, fit_swt::SwtFifo& swtFifo, std::string& response)
 {
     uint32_t emulatedFifoSize = 0x0;
     for(uint32_t idx = 0; idx < cmdBuffer.size; idx++){
@@ -26,7 +26,7 @@ void CruCommandExecutor::execute(CruCommandBuffer& cmdBuffer, fit_swt::SwtFifo s
     swtFifo.clear();
 }
 
-void CruCommandExecutor::exectureRead(CruCommandSequnce::Command& cmd, fit_swt::SwtFifo swtFifo, uint32_t& emulatedFifoSize, std::string& response)
+void CruCommandExecutor::exectureRead(CruCommandSequnce::Command& cmd, fit_swt::SwtFifo& swtFifo, uint32_t& emulatedFifoSize, std::string& response)
 {
     if(emulatedFifoSize == 0){
         throw std::runtime_error(std::string(CruCommandSequnce::Command::ReadStr) + ": there is now data in SWT FIFO to read!");
@@ -40,7 +40,7 @@ void CruCommandExecutor::exectureRead(CruCommandSequnce::Command& cmd, fit_swt::
     }
 }
 
-void CruCommandExecutor::exectureReadCnt(CruCommandSequnce::Command& cmd, fit_swt::SwtFifo swtFifo, uint32_t& emulatedFifoSize, std::string& response)
+void CruCommandExecutor::exectureReadCnt(CruCommandSequnce::Command& cmd, fit_swt::SwtFifo& swtFifo, uint32_t& emulatedFifoSize, std::string& response)
 {
     if(emulatedFifoSize == 0){
          throw std::runtime_error(std::string(CruCommandSequnce::Command::ReadStr) + ": there is now data in SWT FIFO to read!");
@@ -59,13 +59,13 @@ void CruCommandExecutor::exectureReadCnt(CruCommandSequnce::Command& cmd, fit_sw
     }
 }
 
-void CruCommandExecutor::executerWrite(CruCommandSequnce::Command& cmd, fit_swt::SwtFifo swtFifo, uint32_t& emulatedFifoSize, std::string& response)
+void CruCommandExecutor::executerWrite(CruCommandSequnce::Command& cmd, fit_swt::SwtFifo& swtFifo, uint32_t& emulatedFifoSize, std::string& response)
 {
     response.append("0\n");
     emulatedFifoSize++;
 }
 
-void CruCommandExecutor::executeWait(CruCommandSequnce::Command& cmd, fit_swt::SwtFifo swtFifo, uint32_t& emulatedFifoSize, std::string& response)
+void CruCommandExecutor::executeWait(CruCommandSequnce::Command& cmd, fit_swt::SwtFifo& swtFifo, uint32_t& emulatedFifoSize, std::string& response)
 {
     response.append(std::to_string(cmd.data.waitTime) + "\n");
 }
