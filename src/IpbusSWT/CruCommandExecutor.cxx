@@ -25,7 +25,9 @@ void CruCommandExecutor::execute(CruCommandBuffer& cmdBuffer, fit_swt::SwtFifo& 
         }
     }
     cmdBuffer.reset();
-    swtFifo.clear();
+    if(swtFifo.empty()){
+        swtFifo.clear();
+    }
 }
 
 void CruCommandExecutor::exectureRead(CruCommandSequnce::Command& cmd, fit_swt::SwtFifo& swtFifo, uint32_t& emulatedFifoSize, std::string& response)

@@ -124,9 +124,9 @@ bool SwtLink::parseSequence(const char* request)
     case CruCommandSequnce::Command::Type::Read: {
       if(wordsToReadByNextCmd == 0x0) {
         throw std::runtime_error(std::string(CruCommandSequnce::Command::ReadStr) + ": there is no data in SWT FIFO to read!");
-      } else if (m_cmdBuffer(1).type == CruCommandSequnce::Command::Type::ScReset) {
+      } else if (m_cmdBuffer.size > 1 && m_cmdBuffer(1).type == CruCommandSequnce::Command::Type::ScReset) {
         throw std::runtime_error(std::string(CruCommandSequnce::Command::ReadStr) + ": there is no data in SWT FIFO to read!");
-      } else if (m_cmdBuffer(1).type == CruCommandSequnce::Command::Type::Read) {
+      } else if (m_cmdBuffer.size > 1 && m_cmdBuffer(1).type == CruCommandSequnce::Command::Type::Read) {
         throw std::runtime_error(std::string(CruCommandSequnce::Command::ReadStr) + ": there is no data in SWT FIFO to read!");
       } 
       if(executeTransactionsOnNextRead){
