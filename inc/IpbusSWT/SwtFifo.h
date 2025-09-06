@@ -34,7 +34,7 @@ public:
         return m_currentBack == m_currentFront;
     }
     uint32_t size(){
-        return m_currentBack;
+        return m_currentBack - m_currentFront;
     }
     void clear(){
         m_currentBack = 0;
