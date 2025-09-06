@@ -43,9 +43,9 @@ Swt::Swt(const char* str)
   mode = static_cast<uint16_t>(utils::stringToByte(str[1], str[2]));
 }
 
-void writeSwtFrameToStrBuffer(const Swt& frame, std::string& dest)
+void writeSwtFrameToStrBuffer(const Swt& frame, std::string& dest, const uint32_t start)
 {
-  size_t pos = dest.size();
+  size_t pos = start;
   dest[pos++] = '0';
   dest[pos++] = 'x';
 

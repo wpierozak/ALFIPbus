@@ -52,7 +52,7 @@ struct Swt {
   static constexpr uint32_t SwtStrLen = 21;
 };
 
-void writeSwtFrameToStrBuffer(const Swt& frame, std::string& dest);
+void writeSwtFrameToStrBuffer(const Swt& frame, std::string& dest, const uint32_t start);
 
 } // namespace fit_swt
 
