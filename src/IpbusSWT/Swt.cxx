@@ -43,27 +43,26 @@ Swt::Swt(const char* str)
   mode = static_cast<uint16_t>(utils::stringToByte(str[1], str[2]));
 }
 
-void writeSwtFrameToStrBuffer(const Swt& frame, std::string& dest, const uint32_t start)
+void writeSwtFrameToStrBuffer(const Swt& frame, std::string& dest)
 {
-  size_t pos = start;
-  dest[pos++] = '0';
-  dest[pos++] = 'x';
+  dest.push_back('0');
+  dest.push_back('x');
 
   const uint8_t* buffer = (const uint8_t*)&frame.mode;
-  dest[pos++] = utils::hexToChar(buffer[1] & 0x0F); 
-  dest[pos++] = utils::hexToChar(buffer[0] >> 4);
-  dest[pos++] = utils::hexToChar(buffer[0] & 0x0F); 
+  dest.push_back(utils::hexToChar(buffer[1] & 0x0F)); 
+  dest.push_back(utils::hexToChar(buffer[0] >> 4));
+  dest.push_back(utils::hexToChar(buffer[0] & 0x0F)); 
 
   buffer = (const uint8_t*)&frame.address;
   for(int idx = 3; idx >= 0; idx--){
-    dest[pos++] = utils::hexToChar(buffer[idx] >> 4);
-    dest[pos++] = utils::hexToChar(buffer[idx] & 0x0F);
+    dest.push_back(utils::hexToChar(buffer[idx] >> 4));
+    dest.push_back(utils::hexToChar(buffer[idx] & 0x0F));
   }
 
   buffer = (const uint8_t*)&frame.data;
   for(int idx = 3; idx >= 0; idx--){
-    dest[pos++] = utils::hexToChar(buffer[idx] >> 4);
-    dest[pos++] = utils::hexToChar(buffer[idx] & 0x0F);
+    dest.push_back(utils::hexToChar(buffer[idx] >> 4));
+    dest.push_back(utils::hexToChar(buffer[idx] & 0x0F));
   }
 }
 
