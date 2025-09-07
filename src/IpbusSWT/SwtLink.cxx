@@ -180,7 +180,7 @@ bool SwtLink::parseSequence(const char* request)
             throw std::runtime_error("SWT - RMW bits: received RMW OR on address different than in preceeding RMW AND!");
           }
           expectRmwOr = false;
-          responseData = m_fifo.prepareResponseFrame(cmd.data.frame);
+          responseData = m_fifo.prepareResponseFrame(m_cmdBuffer(1).data.frame);
           buffer[0] = m_cmdBuffer(1).data.frame.data;
           buffer[1] = cmd.data.frame.data;
           m_request.addTransaction(ipbus::enums::transactions::RMWbits, cmd.data.frame.address, buffer, responseData);
