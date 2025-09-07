@@ -151,6 +151,7 @@ bool SwtLink::parseSequence(const char* request)
       break;
 
     case CruCommandSequnce::Command::Type::Write: {
+      wordsToReadByNextCmd += cmd.data.frame.responseSize();
       switch (cmd.data.frame.type()){
         case Swt::TransactionType::Read: {
           responseData = m_fifo.prepareResponseFrame(cmd.data.frame);
@@ -168,7 +169,6 @@ bool SwtLink::parseSequence(const char* request)
           break;
         case Swt::TransactionType::RMWbitsAnd: {
           expectRmwOr = true;
-          wordsToReadByNextCmd += cmd.data.frame.responseSize();
           continue;
         }
           break;
@@ -198,7 +198,6 @@ bool SwtLink::parseSequence(const char* request)
         default:
           break;
       }// SWT switch
-      wordsToReadByNextCmd += cmd.data.frame.responseSize();
     } 
       break;
 
