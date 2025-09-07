@@ -81,7 +81,7 @@ void SwtLink::sendResponse()
 
 void SwtLink::sendFailure()
 {
-  m_fredResponse.replace(0, std::char_traits<char>::length("failure\n"), "failure\n");=
+  m_fredResponse.replace(0, std::char_traits<char>::length("failure\n"), "failure\n");
   setData(m_fredResponse.c_str());
   BOOST_LOG_TRIVIAL(debug) << "Request execution failed - sent response";
 }
