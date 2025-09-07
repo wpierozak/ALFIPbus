@@ -127,10 +127,11 @@ bool SwtLink::parseSequence(const char* request)
         throw std::runtime_error(std::string(CruCommandSequnce::Command::ReadStr) + ": there is no data in SWT FIFO to read!");
       }
       if(executeTransactionsOnNextRead){
-        failure = !(executeTransactions());
+        CruCommandExecutor::execute(m_cmdBuffer, m_fifo, m_fredResponse, m_fifo.size());
         executeTransactionsOnNextRead = false;
       } else if(m_cmdBuffer.size == 1 && m_fifo.size() > 0){
         CruCommandExecutor::execute(m_cmdBuffer, m_fifo, m_fredResponse, m_fifo.size());
+        executeTransactionsOnNextRead = false;
       }
       wordsToReadByNextCmd = 0x0;
     }
@@ -143,7 +144,7 @@ bool SwtLink::parseSequence(const char* request)
         throw std::runtime_error(std::string(CruCommandSequnce::Command::ReadCntStr) + ": mismatch between expected words to read and words in SWT FIFO!");
       }
       if(executeTransactionsOnNextRead){
-        failure = !(executeTransactions());
+        CruCommandExecutor::execute(m_cmdBuffer, m_fifo, m_fredResponse, m_fifo.size());
         executeTransactionsOnNextRead = false;
       }
       wordsToReadByNextCmd = 0x0;
