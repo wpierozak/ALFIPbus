@@ -48,7 +48,7 @@ void CruCommandExecutor::exectureReadCnt(CruCommandSequnce::Command& cmd, fit_sw
     if(emulatedFifoSize == 0){
          throw std::runtime_error(std::string(CruCommandSequnce::Command::ReadStr) + ": there is no data in SWT FIFO to read!");
     }
-    const uint32_t initialEmulatedFifoSize = 0;
+    const uint32_t initialEmulatedFifoSize = emulatedFifoSize;
     
     for(uint32_t cnt = 0; cnt < cmd.data.wordsToRead && emulatedFifoSize > 0; cnt++){
         fit_swt::writeSwtFrameToStrBuffer(swtFifo.pop(), response);
