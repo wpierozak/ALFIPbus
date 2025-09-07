@@ -67,7 +67,7 @@ void SwtLink::processRequest(const char* swtSequence)
 
 void SwtLink::resetState()
 {
-  m_fredResponse.clear();
+  m_fredResponse.resize(std::char_traits<char>::length("success\n"));
   m_request.reset();
   m_cmdBuffer.reset();
 }
@@ -75,14 +75,16 @@ void SwtLink::resetState()
 void SwtLink::sendResponse()
 {
   BOOST_LOG_TRIVIAL(debug) << "Request successfully processed - sending response";
-  m_fredResponse = "success\n" + m_fredResponse;
+  m_fredResponse.replace(0, std::char_traits<char>::length("success\n"), "success\n");
+  //m_fredResponse = "success\n" + m_fredResponse;
   setData(m_fredResponse.c_str());
 }
 
 void SwtLink::sendFailure()
 {
   BOOST_LOG_TRIVIAL(error) << "Request execution failed";
-  m_fredResponse = "failure\n" + m_fredResponse;
+  m_fredResponse.replace(0, std::char_traits<char>::length("failure\n"), "failure\n");
+  //m_fredResponse = "failure\n" + m_fredResponse;
   setData(m_fredResponse.c_str());
 }
 
