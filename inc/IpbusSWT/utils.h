@@ -6,19 +6,26 @@
 #include <stdexcept>
 #include<cstdint>
 #include<string>
+#include <limits>
+#include <charconv>
 #include"Swt.h"
+
+namespace utils
+{
+  inline bool parseUnsignedInt(const char* beg, const char* end, uint32_t & dest)
+  {
+    return std::from_chars(beg, end, dest).ptr == end;
+  }
+}
 
 namespace fit_swt
 {
 namespace utils
 {
 
-std::vector<std::string> splitString(const std::string& text, std::string by);
 char hexToChar(uint8_t hex);
 uint8_t charToHex(char ch);
 uint8_t stringToByte(char c1, char c2);
-
-
 
 template< size_t N >
 constexpr size_t length( char const (&)[N] )
