@@ -7,7 +7,7 @@ namespace fit_swt
 class SwtFifo
 {
 public:
-    static constexpr uint32_t FifoLimit = 1024;
+    static constexpr uint32_t FifoLimit = 1023;
 
     uint32_t* prepareResponseFrame(const Swt& frame)
     {

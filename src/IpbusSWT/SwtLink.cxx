@@ -221,7 +221,7 @@ bool SwtLink::readBlock(const Swt& frame)
 {
   constexpr uint32_t maxPacketPayload = ipbus::maxPacket - 3;
 
-  if(frame.data > 1023){
+  if(frame.data > SwtFifo::FifoLimit){
     BOOST_LOG_TRIVIAL(error) << "Exceeded maximum block size (1023); received request for " << frame.data << " words";
     return false;
   }
